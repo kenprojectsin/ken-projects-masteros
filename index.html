@@ -475,7 +475,7 @@
            the page and show only the dispatch content full-width, since the
            existing print rule is built around the main invoice preview, not
            a modal dialog. The .dispatch-printing class is toggled onto
-           <body> right before window.print() is called. */
+           the body element right before window.print() is called. */
         body.dispatch-printing .container,
         body.dispatch-printing .modal-overlay:not(#dispatchViewModal) { display: none !important; }
         @media print {
@@ -8516,4 +8516,4 @@
     }
 </script>
 </body>
-</html> 
+</html>
