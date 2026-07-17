@@ -13,7 +13,12 @@
  *   5. Staff never need to manually update anything
  */
 
-const CACHE_NAME = 'ken-traders-v23';
+// ⚠️ BUMP THIS on every release — must match APP_VERSION in index.html.
+// This is the actual mechanism that makes "new version available" detectable:
+// a changed CACHE_NAME means the browser sees this as a genuinely different
+// service worker file, triggering the install/updatefound/waiting flow that
+// index.html's updatefound listener picks up and turns into the orange banner.
+const CACHE_NAME = 'ken-traders-v37';
 const SHELL_FILES = [
   './index.html',
   './manifest.json',
@@ -38,6 +43,17 @@ self.addEventListener('install', event => {
 });
 
 // ── ACTIVATE: delete old caches ───────────────────────────────────────────
+// ── MESSAGE: respond to SKIP_WAITING from the update banner ──────────────
+// Without this, a waiting SW only activates once every open tab is closed —
+// which could mean a person never sees the update if they keep the app
+// open all day. The banner's "tap to update" sends this message to force
+// immediate activation instead.
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
