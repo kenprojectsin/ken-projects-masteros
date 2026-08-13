@@ -923,6 +923,137 @@
 
         } /* end @media 480px */
 
+        /* ================================================================
+           v73: FORCE MOBILE VIEW (MAIN SCREEN) — "installed PWA shows
+           desktop layout" fix.
+           ================================================================
+           The three @media (max-width: ...) blocks above only fire based
+           on the actual reported viewport width. Some installed-as-PWA
+           Android shells report a wider logical viewport than the same
+           page does in a normal Chrome tab (or the device itself is a
+           larger-screen phone/tablet) — so those media queries silently
+           never trigger there, and the main input screen renders in its
+           1900px-max desktop layout even though there's no room for it.
+
+           Rather than fight an unreliable viewport signal, this gives the
+           person a manual, persistent toggle: "Force Mobile Layout" (see
+           the button wired to toggleForceMobileMain() near the top of the
+           editor panel). When it's on, body gets the class
+           "force-mobile-main" and every rule below applies UNCONDITIONALLY
+           — no media query, so it works no matter what width the shell
+           reports.
+
+           IMPORTANT SCOPE: this block is a careful, hand-classified subset
+           of the three @media blocks above — ONLY the declarations that
+           affect the main screen (.container / .editor-box / .preview-box
+           and everything inside them: the doc-type bar, product picker,
+           cart, action buttons, and the invoice/quotation preview itself).
+           Anything that affects .modal-content or any of the Reports/
+           Tools/Project Manager screens was deliberately left OUT, per the
+           confirmed design — desktop layout stays exactly as-is for those
+           until they get their own proper mobile pass later. A few
+           selectors from the source blocks were too broad to copy as-is
+           (e.g. a bare "table" or "th, td" rule would have also hit
+           Reports tables) — those are scoped down to ".bill-layout" below
+           so they can only ever affect the invoice/quotation preview,
+           never a modal. */
+        body.force-mobile-main .container { flex-direction: column; width: 100%; margin: 0; gap: 0; }
+        body.force-mobile-main .editor-box {
+            flex: none; width: 100%; box-sizing: border-box;
+            position: relative; top: 0; max-height: none;
+            overflow-y: visible; border-radius: 0;
+            padding: 14px 12px;
+            border-bottom: 3px solid #e67e22;
+        }
+        body.force-mobile-main .preview-box { padding: 12px 8px 8px 8px; }
+        body.force-mobile-main { padding-bottom: 90px; font-size: 14px; }
+
+        body.force-mobile-main .doctype-spotlight select { font-size: 15px; padding: 12px 10px; }
+        body.force-mobile-main .doctype-spotlight label { font-size: 9px; }
+
+        body.force-mobile-main .master-bar {
+            padding: 10px; gap: 6px; display: grid; grid-template-columns: 1fr 1fr;
+        }
+        body.force-mobile-main .master-bar > div { min-width: 0; flex: none; }
+        body.force-mobile-main .master-bar select, body.force-mobile-main .master-bar button { font-size: 12px; padding: 10px 6px; }
+        body.force-mobile-main .master-bar > div:last-child { grid-column: 1 / -1; }
+
+        body.force-mobile-main .container > .editor-box > div:first-child button {
+            font-size: 14px !important; padding: 13px 10px !important;
+        }
+
+        body.force-mobile-main .editor-box label { font-size: 11px; margin-top: 12px; }
+        body.force-mobile-main .editor-box input, body.force-mobile-main .editor-box select {
+            padding: 12px 10px; font-size: 15px; border-radius: 6px;
+        }
+        body.force-mobile-main .editor-box input::placeholder { font-size: 14px; }
+
+        body.force-mobile-main #docNoDateRow { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #salesInputs > div:first-child { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #dispatchSettingsBox > div:first-child { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #dispatchSettingsBox > div:nth-child(2) { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #salesInputs .add-product-row { flex-wrap: wrap !important; }
+        body.force-mobile-main #salesInputs .add-product-row > div:first-child { flex: 1 1 100% !important; }
+        body.force-mobile-main #salesInputs .add-product-row > div:not(:first-child) { flex: 1 1 0 !important; min-width: 80px; }
+        body.force-mobile-main .btn-add, body.force-mobile-main .btn-mortar { font-size: 14px; padding: 13px; }
+        body.force-mobile-main #advAdjustBox > div { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #paymentLogBox { margin-top: 14px; }
+        body.force-mobile-main #voucherInputs > div:first-child { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #voucherInputs > div:nth-child(3) { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #voucherInputs > div:nth-child(4) { flex-direction: column !important; gap: 8px !important; }
+
+        body.force-mobile-main .action-trio-group { gap: 6px; }
+        body.force-mobile-main .action-trio-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
+        body.force-mobile-main .action-trio-btn .trio-icon { font-size: 18px; }
+
+        body.force-mobile-main .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        body.force-mobile-main .analytics-grid-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
+        body.force-mobile-main .analytics-grid-btn .ag-icon { font-size: 18px; }
+        body.force-mobile-main .analytics-section { padding: 10px; }
+
+        body.force-mobile-main .action-bar {
+            bottom: 0; left: 0; width: 100%; border-radius: 0; padding: 8px 10px; gap: 8px;
+            background: rgba(26,37,47,0.97); box-shadow: 0 -2px 12px rgba(0,0,0,0.3); box-sizing: border-box;
+        }
+        body.force-mobile-main .btn-print, body.force-mobile-main .btn-pdf, body.force-mobile-main .btn-save {
+            font-size: 13px !important; padding: 12px 6px !important; border-radius: 8px !important;
+        }
+
+        body.force-mobile-main .action-btn { padding: 8px 10px !important; font-size: 12px !important; }
+        body.force-mobile-main .btn-move-item { padding: 6px 8px !important; }
+        body.force-mobile-main .action-flex-wrapper { gap: 6px !important; flex-wrap: wrap; }
+        body.force-mobile-main .docno-warning { font-size: 12px; padding: 8px 10px; }
+
+        /* Invoice/quotation preview itself (.bill-layout lives in
+           .preview-box, part of the main screen) — ported from the 600px
+           block. table/th/td rules scoped to .bill-layout specifically
+           (the source block's bare "table"/"th, td" would otherwise also
+           hit every table inside every Reports/Tools modal, which must
+           stay untouched per the confirmed design). */
+        body.force-mobile-main .bill-layout { padding: 16px; min-height: auto; }
+        body.force-mobile-main .header { flex-direction: column; align-items: flex-start; gap: 14px; min-height: auto; }
+        body.force-mobile-main .invoice-title { min-width: 0; width: 100%; text-align: left; }
+        body.force-mobile-main .invoice-title h1 { font-size: 22px; white-space: normal; }
+        body.force-mobile-main .invoice-title > div { align-items: flex-start !important; text-align: left !important; }
+        body.force-mobile-main .company-sub { font-size: 12px; }
+        body.force-mobile-main .fixed-logo { max-height: 44px; }
+        body.force-mobile-main .info-grid { flex-direction: column; gap: 12px; }
+        body.force-mobile-main .header-divider { margin: 0 0 16px 0; }
+        body.force-mobile-main:not(.preview-fit) #thSno, body.force-mobile-main:not(.preview-fit) .sno-cell { display: none !important; }
+        body.force-mobile-main .bill-layout table { font-size: 11px; }
+        body.force-mobile-main .bill-layout th, body.force-mobile-main .bill-layout td { padding: 6px 4px !important; }
+        body.force-mobile-main .unified-footer { flex-direction: column; gap: 10px; }
+        body.force-mobile-main .signature-box-condensed { border-left: none; padding-left: 0; align-items: center !important; text-align: center !important; }
+        body.force-mobile-main .terms-box-condensed { border-left: none; padding-left: 0; align-items: flex-start !important; text-align: left !important; }
+        body.force-mobile-main .add-product-row { flex-wrap: wrap; }
+        body.force-mobile-main .add-product-row > div:first-child { flex: 1 1 100% !important; }
+        body.force-mobile-main .add-product-row > div:not(:first-child) { flex: 1 1 0 !important; }
+
+        /* Ported from the 1100px block — same container/editor-box/preview-box
+           split as above, listed here too since the 1100px source block is
+           the FIRST one to apply as viewport narrows and this replaces all
+           three at once regardless of width. */
+
         /* Extra narrow (< 360px — Galaxy A series etc.) */
         @media (max-width: 360px) {
             .action-bar { padding: 6px 8px; gap: 6px; }
@@ -1095,7 +1226,24 @@
              Tap to force-check for updates. Update this string (and the
              matching APP_VERSION const in the script block) on every release. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:rgba(255,255,255,0.35); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">v72</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">v73</span> · <span id="appUpdateStatus">tap to check for updates</span>
+        </div>
+
+        <!-- v73: FORCE MOBILE LAYOUT toggle — some installed-as-Android-app
+             (PWA) shells report a wider viewport than the same page gets in
+             a normal Chrome tab, so the @media (max-width: ...) rules that
+             give this main screen its mobile layout never fire there, even
+             on a phone. Rather than guess at viewport width, this is a
+             direct manual switch: ON forces the phone-optimized layout
+             here (product picker, cart, invoice preview) regardless of
+             what width the shell reports. It intentionally does NOT touch
+             Reports/Tools/Project Manager — those stay in their normal
+             (currently desktop-oriented) layout either way, since they
+             haven't had their own mobile pass yet. The choice is
+             remembered (localStorage) so it doesn't need to be set again
+             next time the app opens. -->
+        <div style="text-align:center; margin-bottom:10px;">
+            <button type="button" id="btnForceMobileToggle" onclick="toggleForceMobileMain()" style="width:auto; margin:0; background:#34495e; color:#bdc3c7; border:1px solid #465c71; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:bold; cursor:pointer;">📱 Force Mobile Layout: OFF</button>
         </div>
 
         <div style="display: flex; gap: 15px; margin-bottom: 20px;">
@@ -4065,7 +4213,7 @@
     // This is what the version badge displays and what checkForAppUpdate()
     // compares against. Keeping this in sync is what makes the badge
     // trustworthy — if forgotten, the badge silently shows a stale number.
-    const APP_VERSION = "v72";
+    const APP_VERSION = "v73";
 
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyCEa9mVyScBqRnwNb0AWYl0I4eniKE8sfVgzyaeyUKALNfYqS5BgT5bTMl0vll6TRPPQ/exec"; 
 
@@ -7240,6 +7388,11 @@
     }
 
     switchAppMode();
+    // v73: restore the Force Mobile Layout toggle's saved state as early
+    // as possible in startup, before anything else measures/renders the
+    // main screen, so there's no visible flash of desktop layout before
+    // it snaps to mobile.
+    initForceMobileMain();
     // v70: initialize the new Size+Brand block picker and Pricing Tier
     // bar — populate the live brand dropdown from current pricingConfig,
     // set the tier bar's default active state (Customer, per confirmed
@@ -9868,6 +10021,41 @@
             window.location.reload();
         };
         document.body.prepend(banner);
+    }
+
+    // v73: FORCE MOBILE LAYOUT toggle — see the CSS block tagged "v73:
+    // FORCE MOBILE VIEW (MAIN SCREEN)" for the full reasoning. This just
+    // flips body.force-mobile-main on/off, updates the button's own label,
+    // and remembers the choice in localStorage so it persists across app
+    // launches without needing to be set again every time.
+    function toggleForceMobileMain() {
+        let isOn = document.body.classList.toggle('force-mobile-main');
+        try { localStorage.setItem('kenForceMobileMain', isOn ? '1' : '0'); } catch(e) {}
+        updateForceMobileToggleLabel(isOn);
+        // The invoice/quotation preview's own Fit-Page scaling depends on
+        // the container's actual pixel width, which this toggle just
+        // changed — recompute it immediately so the preview doesn't sit
+        // stale at the wrong scale until the next unrelated redraw.
+        if (typeof applyPreviewFit === 'function') applyPreviewFit();
+    }
+
+    function updateForceMobileToggleLabel(isOn) {
+        let btn = document.getElementById('btnForceMobileToggle');
+        if (!btn) return;
+        btn.innerText = isOn ? '📱 Force Mobile Layout: ON' : '📱 Force Mobile Layout: OFF';
+        btn.style.background = isOn ? '#2980b9' : '#34495e';
+        btn.style.color = '#fff';
+        btn.style.borderColor = isOn ? '#2980b9' : '#465c71';
+    }
+
+    // Restores the saved on/off state on every app launch — without this,
+    // the toggle would silently reset to OFF every time the app is closed
+    // and reopened, defeating the entire point of it being "persistent."
+    function initForceMobileMain() {
+        let saved = false;
+        try { saved = localStorage.getItem('kenForceMobileMain') === '1'; } catch(e) {}
+        document.body.classList.toggle('force-mobile-main', saved);
+        updateForceMobileToggleLabel(saved);
     }
 
     // Manual "tap to check for updates" — gives an immediate, visible
