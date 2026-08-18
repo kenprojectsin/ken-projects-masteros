@@ -202,6 +202,105 @@
         #btnAnalyticsStock       { --analytics-btn-color: #2c3e50; }
 
         /* ============================================================
+           v73a/v74c TRIAL — Blocks Calculator
+        ============================================================ */
+        .bcalc-row { background:#243342; border:1px solid #34495e; border-radius:6px; padding:8px; margin-bottom:8px; }
+        .bcalc-row-top { display:flex; gap:6px; align-items:flex-start; }
+        .bcalc-row-top input[type=number], .bcalc-row-top input[type=text] { background:#2c3e50; border:1px solid #465c71; color:#fff; padding:8px 6px; border-radius:4px; font-size:13px; width:100%; box-sizing:border-box; margin:0; }
+        .bcalc-dim-group { flex:1; display:flex; flex-direction:column; gap:2px; }
+        .bcalc-dim-label { font-size:9px; color:#7f8c8d; text-transform:uppercase; font-weight:bold; height:22px; line-height:11px; overflow:hidden; display:block; }
+        /* Icon buttons (duplicate/delete) sit beside Length/Height/Wall
+           Count. Their column has no label of its own, so it must reserve
+           the SAME 22px + 2px gap the other columns spend on their label
+           before the input starts — otherwise the icons float up next to
+           the labels instead of lining up with the input boxes. */
+        .bcalc-icon-col { display:flex; flex-direction:column; gap:4px; margin-top:24px; }
+        .bcalc-x { align-self:center; color:#7f8c8d; font-weight:bold; padding-top:14px; }
+        .bcalc-size-row { display:flex; gap:5px; margin-top:8px; }
+        .bcalc-size-btn { flex:1; margin:0; padding:7px 2px; font-size:12px; font-weight:bold; border-radius:4px; background:#2c3e50; border:2px solid #465c71; color:#aaa; cursor:pointer; }
+        .bcalc-size-btn.active { background:#3498db; border-color:#3498db; color:#fff; }
+        .bcalc-row-result { font-size:11px; color:#2ecc71; font-weight:bold; margin-top:6px; text-align:right; }
+        .bcalc-label-input { width:100%; box-sizing:border-box; background:transparent; border:none; border-bottom:1px dashed #465c71; color:#fff; font-size:12px; font-weight:bold; padding:2px 0 6px 0; margin-bottom:6px; }
+        .bcalc-label-input::placeholder { color:#5d7285; font-weight:normal; }
+        .bcalc-icon-btn { background:#2c3e50; color:#bdc3c7; border:1px solid #465c71; border-radius:4px; width:32px; height:16px; font-size:12px; cursor:pointer; padding:0; margin:0; }
+        .bcalc-icon-del { background:#c0392b; color:#fff; border-color:#c0392b; }
+
+        /* v74c: green "wall details" and red "deductions" themed sub-boxes,
+           giving each row a clear visual split between what ADDS to the
+           order and what SUBTRACTS from it — the "more visual clues" ask. */
+        .bcalc-section-green { background:rgba(46,204,113,0.10); border:1px solid rgba(46,204,113,0.35); border-radius:5px; padding:7px; margin-bottom:6px; }
+        .bcalc-section-red { background:rgba(231,76,60,0.10); border:1px solid rgba(231,76,60,0.4); border-radius:5px; padding:7px; }
+
+        /* Length field supports "20 16" (space-separated, auto-summed) —
+           needs a plain text input (a native number input rejects spaces
+           and would also hide the space key on many mobile keyboards). */
+        .bcalc-length-input { background:#2c3e50; border:1px solid #465c71; color:#fff; padding:8px 6px; border-radius:4px; font-size:13px; width:100%; box-sizing:border-box; margin:0; }
+        .bcalc-length-sum-hint { font-size:9px; color:#2ecc71; margin-top:2px; min-height:11px; }
+
+        /* Inner/Outer dimension toggle — replaces the old freeform "extra
+           length" field. Outer = no correction (as-measured). Inner = the
+           block-thickness correction is applied automatically once a size
+           is picked, so there is nothing to type or compute by hand. */
+        .bcalc-io-row { display:flex; gap:5px; margin-top:6px; }
+        .bcalc-io-btn { flex:1; margin:0; padding:6px 2px; font-size:11px; font-weight:bold; border-radius:4px; background:#2c3e50; border:2px solid #465c71; color:#aaa; cursor:pointer; text-transform:uppercase; letter-spacing:0.3px; }
+        .bcalc-io-btn.active { background:#27ae60; border-color:#27ae60; color:#fff; }
+        .bcalc-io-hint { font-size:9px; color:#7f8c8d; margin-top:3px; }
+
+        /* v75: Deductions box is collapsed by default per row — a red
+           toggle button reveals a single math-expression input (same
+           grammar as Length). No separate "count" field anymore — the
+           expression itself already handles repeats, e.g. "12x3 10". */
+        .bcalc-ded-toggle { display:block; width:100%; margin:6px 0 0 0; padding:8px; font-size:11px; font-weight:bold; border-radius:5px; cursor:pointer; text-align:center;
+            background:rgba(231,76,60,0.12); border:1px dashed rgba(231,76,60,0.5); color:#e74c3c; }
+        .bcalc-ded-toggle-open { border-style:solid; background:rgba(231,76,60,0.18); }
+        .bcalc-ded-toggle-hasvalue { border-style:solid; background:rgba(231,76,60,0.22); }
+        .bcalc-deduct-input { border-color:rgba(231,76,60,0.5) !important; }
+
+        /* v75: prominent "Add Wall Row" — bold gradient, larger touch
+           target, soft glow. Was previously easy to miss; this should not
+           be missable. */
+        .bcalc-addrow-btn { flex:1.6; margin:0; padding:13px; font-size:14px; font-weight:900; letter-spacing:0.5px; color:#fff; border:none; border-radius:7px; cursor:pointer;
+            background:linear-gradient(135deg, #2ecc71, #27ae60); box-shadow:0 3px 10px rgba(46,204,113,0.5); text-transform:uppercase; }
+        .bcalc-addrow-btn:active { transform:scale(0.97); }
+
+        /* v75: Add Wastage / Round Up — each column is an explicit ON/OFF
+           toggle switch (OFF by default) plus an "elegant" connected
+           segmented control (not separate rounded pills) that dims when
+           its switch is off. Distinct violet/amber palette so this whole
+           strip reads as a different KIND of control from the row cards. */
+        .bcalc-adjust-strip { display:flex; gap:8px; margin-top:10px; }
+        .bcalc-adjust-col { flex:1; border-radius:8px; padding:7px 9px; }
+        .bcalc-adjust-wastage { background:rgba(108,92,231,0.10); border:1px solid rgba(108,92,231,0.35); }
+        .bcalc-adjust-round { background:rgba(243,156,18,0.10); border:1px solid rgba(243,156,18,0.35); }
+        .bcalc-toggle-row { display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:6px; }
+        .bcalc-adjust-label { font-size:10px; font-weight:bold; color:#ddd; }
+        .bcalc-toggle-switch { position:relative; display:inline-block; width:26px; height:15px; flex-shrink:0; }
+        .bcalc-toggle-switch input { opacity:0; width:0; height:0; }
+        .bcalc-toggle-slider { position:absolute; inset:0; background:#465c71; border-radius:15px; transition:background 0.15s; }
+        .bcalc-toggle-slider::before { content:''; position:absolute; width:11px; height:11px; left:2px; top:2px; background:#fff; border-radius:50%; transition:transform 0.15s; }
+        .bcalc-adjust-wastage .bcalc-toggle-switch input:checked + .bcalc-toggle-slider { background:#6c5ce7; }
+        .bcalc-adjust-round .bcalc-toggle-switch input:checked + .bcalc-toggle-slider { background:#f39c12; }
+        .bcalc-toggle-switch input:checked + .bcalc-toggle-slider::before { transform:translateX(11px); }
+        /* Elegant connected segmented control — a single bordered strip
+           with square-ish internal dividers rather than separate floating
+           pills, which reads as more deliberate/refined. */
+        .bcalc-seg { display:flex; border:1px solid #465c71; border-radius:6px; overflow:hidden; transition:opacity 0.15s; }
+        .bcalc-seg.disabled { opacity:0.35; pointer-events:none; }
+        .bcalc-seg-btn { flex:1; margin:0; padding:6px 2px; font-size:11px; font-weight:bold; cursor:pointer; background:#1a2f42; color:#aaa; border:none; border-right:1px solid #465c71; }
+        .bcalc-seg-btn:last-child { border-right:none; }
+        .bcalc-adjust-wastage .bcalc-seg-btn.active { background:#6c5ce7; color:#fff; }
+        .bcalc-adjust-round .bcalc-seg-btn.active { background:#f39c12; color:#1a2f42; }
+
+        /* v75: Save / Load panel */
+        .bcalc-saved-row { display:flex; align-items:center; gap:6px; padding:6px 4px; border-bottom:1px solid #34495e; }
+        .bcalc-saved-info { flex:1; min-width:0; }
+        .bcalc-saved-name { font-size:12px; font-weight:bold; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .bcalc-saved-meta { font-size:10px; color:#7f8c8d; }
+        .bcalc-saved-load { background:#2980b9; color:#fff; border:none; border-radius:4px; padding:5px 10px; font-size:11px; font-weight:bold; cursor:pointer; margin:0; width:auto; }
+        .bcalc-saved-del { background:none; border:none; color:#e74c3c; font-size:13px; cursor:pointer; padding:3px 6px; margin:0; width:auto; }
+
+
+        /* ============================================================
            U6: Item Manager — tabbed modal (Tiers / Item Defaults)
         ============================================================ */
         .engine-tab-bar { display: flex; gap: 6px; margin-bottom: 16px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
@@ -356,8 +455,15 @@
         .cloud-doc-table th:nth-child(8), .cloud-doc-table td:nth-child(8) { width: 140px; }
         .doc-list-table-actions { display: flex; gap: 4px; align-items: center; flex-wrap: nowrap; }
         @media (max-width: 700px) {
-            .doc-list-table { display: block; overflow-x: auto; white-space: nowrap; }
-            .doc-list-table thead, .doc-list-table tbody, .doc-list-table tr { display: table; width: 100%; table-layout: fixed; }
+            /* v76b: same contradiction as .analytics-table had — the rows were
+               pinned to width:100% while the table was told to scroll, so
+               columns were crushed and their text overlapped instead of
+               scrolling. Rows now size to content; min-width:100% keeps
+               narrow tables filling the screen as before. */
+            .doc-list-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .doc-list-table thead, .doc-list-table tbody { display: table; width: max-content; min-width: 100%; table-layout: auto; }
+            .doc-list-table tr { display: table-row; }
+            .doc-list-table th, .doc-list-table td { white-space: nowrap; }
             /* A9: quick high-value mobile fixes — modal content was overflowing
                and stat-card grids/date pickers were cramming into unreadable
                widths on phones (see Customer Ledger / Auditor Export screenshots).
@@ -491,8 +597,27 @@
            forces the modal wider than the viewport. No JS changes needed — applies to
            every analytics-table automatically, including ones added in future batches. */
         @media (max-width: 700px) {
-            .analytics-table { display: block; overflow-x: auto; white-space: nowrap; }
-            .analytics-table thead, .analytics-table tbody, .analytics-table tr { display: table; width: 100%; table-layout: fixed; }
+            /* v76b ROOT-CAUSE FIX — the previous version of this rule set the
+               table to scroll horizontally and then, on the very next line,
+               pinned every row back to `width: 100%; table-layout: fixed`.
+               Those two instructions directly contradict each other: the rows
+               were forced to exactly the screen width and divided into equal
+               columns, so with 8 columns each got ~50px, the scroll container
+               had nothing wider to scroll, and cell content simply spilled
+               over its neighbour. That is the overlapping text seen on the
+               Outstanding screen (dates printing on top of doc numbers, etc.).
+
+               For a horizontally scrollable table the rows must be allowed to
+               size to their CONTENT and exceed the viewport — that overflow is
+               precisely what there is to scroll. `min-width: 100%` keeps a
+               narrow table (3-4 columns) still filling the screen as before,
+               so small tables are unaffected. `white-space: nowrap` on cells
+               is what makes each column take the width its text actually
+               needs, guaranteeing text can never overlap. */
+            .analytics-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .analytics-table thead, .analytics-table tbody { display: table; width: max-content; min-width: 100%; table-layout: auto; }
+            .analytics-table tr { display: table-row; }
+            .analytics-table th, .analytics-table td { white-space: nowrap; }
         }
         .analytics-table th { background:#2c3e50; color:#fff; padding:9px 10px; text-align:left; font-weight:600; }
         .analytics-table td { padding:8px 10px; border-bottom:1px solid #eee; color:#333; }
@@ -1049,6 +1174,207 @@
         body.force-mobile-main .add-product-row > div:first-child { flex: 1 1 100% !important; }
         body.force-mobile-main .add-product-row > div:not(:first-child) { flex: 1 1 0 !important; }
 
+
+        /* ================================================================
+           v74: FORCE MOBILE — FULL COVERAGE (all screens, not just main)
+           ================================================================
+           v73's force-mobile block above was a hand-classified subset that
+           deliberately covered ONLY the main input screen, leaving every
+           modal (Document Manager, Reports & Tools, Project Manager, Stock,
+           Cash Book, Data & Sync...) on its desktop layout. In an installed
+           PWA — where the shell can report a viewport too wide for the
+           @media breakpoints to ever fire — that meant those screens never
+           got their mobile layout at all and overflowed the phone screen.
+
+           This block is a COMPLETE, MECHANICALLY GENERATED mirror of every
+           rule in all the mobile @media blocks (1100/900/700/600/480/360),
+           each selector prefixed with body.force-mobile-main so it applies
+           unconditionally when the toggle is on, regardless of reported
+           width. Generated rather than hand-picked precisely because
+           hand-classification is what missed the modals the first time.
+
+           Source order is preserved WIDEST-FIRST (1100 -> 360) so that the
+           narrower breakpoints still override the wider ones exactly as
+           they would in a real phone's cascade.
+
+           Rules duplicated from the v73 subset above are harmless: same
+           declarations, and appearing later they simply win the tie.
+           ================================================================ */
+        body.force-mobile-main .container { flex-direction: column; width: 100%; margin: 0; }
+        body.force-mobile-main .editor-box { flex: none; width: 100%; position: relative; top: 0; max-height: none; overflow-y: visible; border-radius: 0; }
+        body.force-mobile-main .preview-box { padding: 20px 10px; }
+        body.force-mobile-main .preview-mode-bar { display: flex; }
+        body.force-mobile-main.preview-fit .preview-scale-wrap { overflow: hidden; }
+        body.force-mobile-main.preview-fit .preview-scale-wrap > .bill-layout { width: 794px;            
+                min-height: 1123px;      
+                padding: 40px;
+                transform: scale(var(--preview-scale, 1));
+                transform-origin: top left;
+                flex-shrink: 0; }
+        body.force-mobile-main.preview-fit .bill-layout .header { flex-direction: row; align-items: stretch; min-height: 160px; gap: 0; }
+        body.force-mobile-main.preview-fit .bill-layout .invoice-title { min-width: 350px; width: auto; text-align: right; }
+        body.force-mobile-main.preview-fit .bill-layout .invoice-title h1 { font-size: 32px; white-space: nowrap; }
+        body.force-mobile-main.preview-fit .bill-layout .invoice-title > div { align-items: flex-end !important; text-align: right !important; }
+        body.force-mobile-main.preview-fit .bill-layout .company-sub { font-size: 13px; }
+        body.force-mobile-main.preview-fit .bill-layout .fixed-logo { max-height: 60px; }
+        body.force-mobile-main.preview-fit .bill-layout .info-grid { flex-direction: row; gap: 20px; }
+        body.force-mobile-main.preview-fit .bill-layout table { font-size: 13px; }
+        body.force-mobile-main.preview-fit .bill-layout th, body.force-mobile-main.preview-fit .bill-layout td { padding: 10px !important; }
+        body.force-mobile-main.preview-fit .bill-layout .unified-footer { flex-direction: row; gap: 15px; }
+        body.force-mobile-main.preview-fit .bill-layout .signature-box-condensed { border-left: 1px solid #ddd; padding-left: 12px; align-items: flex-end !important; text-align: right !important; }
+        body.force-mobile-main.preview-fit .bill-layout .terms-box-condensed { border-left: 1px solid #ddd; padding-left: 12px; }
+        body.force-mobile-main .doc-list-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        body.force-mobile-main .doc-list-table thead, body.force-mobile-main .doc-list-table tbody { display: table; width: max-content; min-width: 100%; table-layout: auto; }
+        body.force-mobile-main .doc-list-table tr { display: table-row; }
+        body.force-mobile-main .doc-list-table th, body.force-mobile-main .doc-list-table td { white-space: nowrap; }
+        body.force-mobile-main .modal-content { width: 100%; max-width: 100%; padding: 12px; border-radius: 0; max-height: 100vh; }
+        body.force-mobile-main .modal-header h2 { font-size: 16px; gap: 8px; }
+        body.force-mobile-main .stat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+        body.force-mobile-main .period-select-row { flex-direction: column; align-items: stretch !important; gap: 6px !important; }
+        body.force-mobile-main .period-select-row input[type="date"], body.force-mobile-main .period-select-row select { width: 100% !important; }
+        body.force-mobile-main .analytics-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        body.force-mobile-main .analytics-table thead, body.force-mobile-main .analytics-table tbody { display: table; width: max-content; min-width: 100%; table-layout: auto; }
+        body.force-mobile-main .analytics-table tr { display: table-row; }
+        body.force-mobile-main .analytics-table th, body.force-mobile-main .analytics-table td { white-space: nowrap; }
+        body.force-mobile-main .modal-content [style*="grid-template-columns"] { grid-template-columns: 1fr 1fr !important;
+                gap: 8px !important; }
+        body.force-mobile-main .cash-book-summary, body.force-mobile-main #advPoolSummary { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+        body.force-mobile-main .modal-content [style*="display:flex"], body.force-mobile-main .modal-content [style*="display: flex"] { flex-wrap: wrap; }
+        body.force-mobile-main .modal-content input, body.force-mobile-main .modal-content select, body.force-mobile-main .modal-content textarea { max-width: 100%; box-sizing: border-box; }
+        body.force-mobile-main .modal-content, body.force-mobile-main .doc-list-table td { overflow-wrap: anywhere; } /* v76b: .analytics-table td removed — it now uses white-space:nowrap so its columns size to content and can scroll; the two rules contradicted each other */
+        body.force-mobile-main #invoicePickerDropdown { width: calc(100vw - 24px) !important; max-width: 420px; left: 12px !important; }
+        body.force-mobile-main .modal-content { width: 100% !important; max-width: 100% !important; box-sizing: border-box; }
+        body.force-mobile-main .modal-overlay { padding: 0 !important; align-items: flex-start !important; }
+        body.force-mobile-main .bill-layout { padding: 16px; min-height: auto; }
+        body.force-mobile-main .header { flex-direction: column; align-items: flex-start; gap: 14px; min-height: auto; }
+        body.force-mobile-main .invoice-title { min-width: 0; width: 100%; text-align: left; }
+        body.force-mobile-main .invoice-title h1 { font-size: 22px; white-space: normal; }
+        body.force-mobile-main .invoice-title > div { align-items: flex-start !important; text-align: left !important; }
+        body.force-mobile-main .company-sub { font-size: 12px; }
+        body.force-mobile-main .fixed-logo { max-height: 44px; }
+        body.force-mobile-main .info-grid { flex-direction: column; gap: 12px; }
+        body.force-mobile-main .header-divider { margin: 0 0 16px 0; }
+        body.force-mobile-main:not(.preview-fit) #thSno, body.force-mobile-main:not(.preview-fit) .sno-cell { display: none !important; }
+        body.force-mobile-main table { font-size: 11px; }
+        body.force-mobile-main th, body.force-mobile-main td { padding: 6px 4px !important; }
+        body.force-mobile-main .unified-footer { flex-direction: column; gap: 10px; }
+        body.force-mobile-main .signature-box-condensed { border-left: none; padding-left: 0; align-items: center !important; text-align: center !important; }
+        body.force-mobile-main .terms-box-condensed { border-left: none; padding-left: 0; align-items: flex-start !important; text-align: left !important; }
+        body.force-mobile-main .add-product-row { flex-wrap: wrap; }
+        body.force-mobile-main .add-product-row > div:first-child { flex: 1 1 100% !important; }
+        body.force-mobile-main .add-product-row > div:not(:first-child) { flex: 1 1 0 !important; }
+        body.force-mobile-main .cb-range-row input[type="date"] { width: 0; flex: 1 1 0; min-width: 100px; }
+        body.force-mobile-main .cb-header-buttons { flex-direction: column; }
+        body.force-mobile-main .cb-header-buttons button { width: 100% !important; }
+        body.force-mobile-main { padding-bottom: 90px; font-size: 14px; }
+        body.force-mobile-main .container { flex-direction: column; width: 100%; margin: 0; gap: 0; }
+        body.force-mobile-main .editor-box { flex: none; width: 100%; box-sizing: border-box;
+                position: relative; top: 0; max-height: none;
+                overflow-y: visible; border-radius: 0;
+                padding: 14px 12px;
+                border-bottom: 3px solid #e67e22; }
+        body.force-mobile-main .preview-box { padding: 12px 8px 8px 8px; }
+        body.force-mobile-main .doctype-spotlight select { font-size: 15px; padding: 12px 10px; }
+        body.force-mobile-main .doctype-spotlight label { font-size: 9px; }
+        body.force-mobile-main .master-bar { padding: 10px;
+                gap: 6px;
+                display: grid;
+                grid-template-columns: 1fr 1fr; }
+        body.force-mobile-main .master-bar > div { min-width: 0; flex: none; }
+        body.force-mobile-main .master-bar select, body.force-mobile-main .master-bar button { font-size: 12px; padding: 10px 6px; }
+        body.force-mobile-main .master-bar > div:last-child { grid-column: 1 / -1; }
+        body.force-mobile-main .container > .editor-box > div:first-child button { font-size: 14px !important;
+                padding: 13px 10px !important; }
+        body.force-mobile-main label { font-size: 11px; margin-top: 12px; }
+        body.force-mobile-main input, body.force-mobile-main select { padding: 12px 10px;
+                font-size: 15px; 
+                border-radius: 6px; }
+        body.force-mobile-main input::placeholder { font-size: 14px; }
+        body.force-mobile-main #docNoDateRow { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #salesInputs > div:first-child { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #dispatchSettingsBox > div:first-child { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #dispatchSettingsBox > div:nth-child(2) { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #salesInputs .add-product-row { flex-wrap: wrap !important; }
+        body.force-mobile-main #salesInputs .add-product-row > div:first-child { flex: 1 1 100% !important; }
+        body.force-mobile-main #salesInputs .add-product-row > div:not(:first-child) { flex: 1 1 0 !important; min-width: 80px; }
+        body.force-mobile-main .btn-add, body.force-mobile-main .btn-mortar { font-size: 14px; padding: 13px; }
+        body.force-mobile-main #advAdjustBox > div { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #paymentLogBox { margin-top: 14px; }
+        body.force-mobile-main #voucherInputs > div:first-child { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #voucherInputs > div:nth-child(3) { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #voucherInputs > div:nth-child(4) { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main .action-trio-group { gap: 6px; }
+        body.force-mobile-main .action-trio-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
+        body.force-mobile-main .action-trio-btn .trio-icon { font-size: 18px; }
+        body.force-mobile-main .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        body.force-mobile-main .analytics-grid-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
+        body.force-mobile-main .analytics-grid-btn .ag-icon { font-size: 18px; }
+        body.force-mobile-main .analytics-section { padding: 10px; }
+        body.force-mobile-main .action-bar { bottom: 0; left: 0; width: 100%;
+                border-radius: 0;
+                padding: 8px 10px;
+                gap: 8px;
+                background: rgba(26,37,47,0.97);
+                box-shadow: 0 -2px 12px rgba(0,0,0,0.3);
+                box-sizing: border-box; }
+        body.force-mobile-main .btn-print, body.force-mobile-main .btn-pdf, body.force-mobile-main .btn-save { font-size: 13px !important;
+                padding: 12px 6px !important;
+                border-radius: 8px !important; }
+        body.force-mobile-main .action-btn { padding: 8px 10px !important; font-size: 12px !important; }
+        body.force-mobile-main .btn-move-item { padding: 6px 8px !important; }
+        body.force-mobile-main .action-flex-wrapper { gap: 6px !important; flex-wrap: wrap; }
+        body.force-mobile-main .docno-warning { font-size: 12px; padding: 8px 10px; }
+        body.force-mobile-main .modal-overlay { align-items: flex-end; }
+        body.force-mobile-main .modal-content { width: 100% !important;
+                max-width: 100% !important;
+                border-radius: 16px 16px 0 0 !important;
+                max-height: 92vh !important;
+                padding: 16px 14px !important;
+                overflow-y: auto !important;
+                margin: 0 !important; }
+        body.force-mobile-main .inline-ux-modal { max-width: 100% !important;
+                border-radius: 16px 16px 0 0 !important;
+                padding: 16px 14px !important; }
+        body.force-mobile-main .modal-header h2 { font-size: 16px !important; }
+        body.force-mobile-main .close-btn { padding: 8px 12px !important; }
+        body.force-mobile-main .filter-bar { padding: 10px; gap: 8px; }
+        body.force-mobile-main .filter-bar > div { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+        body.force-mobile-main .cloud-doc-table th:nth-child(6), body.force-mobile-main .cloud-doc-table td:nth-child(6) { display: none; }
+        body.force-mobile-main .analytics-table { font-size: 12px; }
+        body.force-mobile-main .analytics-table th, body.force-mobile-main .analytics-table td { padding: 7px 6px !important; }
+        body.force-mobile-main .cash-entry-form { padding: 10px; }
+        body.force-mobile-main .cash-book-summary { gap: 8px; }
+        body.force-mobile-main .cash-book-card { min-width: 80px; padding: 10px; }
+        body.force-mobile-main .cash-book-card .cb-val { font-size: 16px; }
+        body.force-mobile-main .cash-entry-row { flex-wrap: wrap; font-size: 12px; gap: 6px; }
+        body.force-mobile-main #invoicePickerDropdown { width: 100% !important;
+                left: 0 !important;
+                right: 0 !important;
+                border-radius: 0 !important; }
+        body.force-mobile-main .site-metric { min-width: 80px; }
+        body.force-mobile-main .site-tabs { gap: 2px; }
+        body.force-mobile-main .site-tab-btn { padding: 5px 9px; font-size: 11px; }
+        body.force-mobile-main .site-form-grid { grid-template-columns: 1fr; }
+        body.force-mobile-main .engine-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+        body.force-mobile-main .engine-grid input { font-size: 14px; }
+        body.force-mobile-main #uxEditModal .modal-content { padding: 14px !important; }
+        body.force-mobile-main .period-select-row { flex-wrap: wrap !important; gap: 8px !important; }
+        body.force-mobile-main .period-select-row select, body.force-mobile-main .period-select-row input[type=date] { flex: 1 1 120px !important;
+                font-size: 13px !important; }
+        body.force-mobile-main .outstanding-row-ok td, body.force-mobile-main .outstanding-row-due td, body.force-mobile-main .outstanding-row-overdue td { font-size: 11px !important; padding: 6px 4px !important; }
+        body.force-mobile-main .engine-tab-bar { flex-wrap: wrap; gap: 4px; }
+        body.force-mobile-main .engine-tab-btn { font-size: 11px; padding: 6px 10px; }
+        body.force-mobile-main #advPrintAmt { font-size: 32px !important; }
+        body.force-mobile-main .modal-content [style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+        body.force-mobile-main .cash-book-summary, body.force-mobile-main #advPoolSummary, body.force-mobile-main .stat-grid { grid-template-columns: 1fr 1fr !important; }
+        body.force-mobile-main .modal-content { padding: 10px; }
+        body.force-mobile-main .modal-header h2, body.force-mobile-main .modal-header h3 { font-size: 15px; }
+        body.force-mobile-main .tab-bar, body.force-mobile-main .engine-tab-bar { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+        body.force-mobile-main .tab-btn, body.force-mobile-main .engine-tab-btn { flex: 0 0 auto; }
+        body.force-mobile-main .analytics-table td button { padding: 4px 6px !important; font-size: 10px !important; margin: 1px !important; }
+        body.force-mobile-main .action-bar { padding: 6px 8px; gap: 6px; }
+        body.force-mobile-main .btn-print, body.force-mobile-main .btn-pdf, body.force-mobile-main .btn-save { font-size: 11px !important; padding: 10px 4px !important; }
+        body.force-mobile-main .analytics-grid-btn, body.force-mobile-main .action-trio-btn { font-size: 9px; min-height: 52px; }
         /* Ported from the 1100px block — same container/editor-box/preview-box
            split as above, listed here too since the 1100px source block is
            the FIRST one to apply as viewport narrows and this replaces all
@@ -1059,6 +1385,82 @@
             .action-bar { padding: 6px 8px; gap: 6px; }
             .btn-print, .btn-pdf, .btn-save { font-size: 11px !important; padding: 10px 4px !important; }
             .analytics-grid-btn, .action-trio-btn { font-size: 9px; min-height: 52px; }
+        }
+
+
+        /* ================================================================
+           v76: MOBILE LAYOUT SAFETY NET  (corrected)
+           ================================================================
+           WHAT WENT WRONG IN THE FIRST ATTEMPT (kept as a warning):
+           the first version added `align-items: flex-end` to form rows to
+           line up input boxes whose labels wrapped to different numbers of
+           lines. That is correct ONLY while the row is still a ROW. On
+           mobile this app deliberately flips those same rows to
+           `flex-direction: column` so the fields stack. align-items acts
+           on the CROSS axis — vertical in a row, but HORIZONTAL in a
+           column — so on mobile it right-aligned every stacked field and
+           left a dead band down the left of the screen. A companion rule
+           setting `justify-content: flex-end` on the columns pushed their
+           contents to the bottom, crowding the fixed action bar. Both are
+           gone.
+
+           The lesson applied here: on mobile these rows stack to full
+           width anyway, so the label-wrap misalignment they were meant to
+           fix CANNOT occur there. No alignment rule is needed on mobile at
+           all. What remains below only ever RELAXES a constraint — lets
+           things shrink, wrap, or scroll instead of overflowing — so no
+           rule here can reposition content the way that one did.
+           ================================================================ */
+
+        /* --- 1. TEXT COLLIDING / OVERFLOWING -------------------------
+           A flex child whose min-width exceeds the space available cannot
+           shrink, so it overlaps its neighbour or pushes it off-screen.
+           min-width:0 is the standard remedy. Scoped to modal content so
+           the main screen's carefully tuned layout is untouched. */
+        body.force-mobile-main .modal-content [style*="display:flex"] > *,
+        body.force-mobile-main .modal-content [style*="display: flex"] > * { min-width: 0 !important; }
+
+        /* Once children can shrink, let a crowded row wrap onto a second
+           line rather than squashing everything to unreadable widths. */
+        body.force-mobile-main .modal-content [style*="display:flex"],
+        body.force-mobile-main .modal-content [style*="display: flex"] { flex-wrap: wrap; }
+
+        /* --- 2. LONG UNBREAKABLE STRINGS ----------------------------
+           Doc numbers, GSTINs, IFSC codes and URLs have no spaces to wrap
+           at, so they run past their container. Allow a break anywhere as
+           a last resort. */
+        body.force-mobile-main .modal-content { overflow-wrap: break-word; word-break: break-word; }
+
+        /* --- 3. CONTROLS OVERHANGING THEIR CONTAINER ----------------
+           A width:100% input without border-box sizing adds its padding
+           and border ON TOP of 100%, so it overhangs its parent. */
+        body.force-mobile-main .modal-content input,
+        body.force-mobile-main .modal-content select,
+        body.force-mobile-main .modal-content textarea { max-width: 100% !important; box-sizing: border-box !important; }
+
+        /* --- 4. WIDE TABLES -----------------------------------------
+           A many-column table cannot be narrowed without destroying it —
+           scroll it horizontally instead of letting it overflow the screen
+           or crush its columns into overlap. */
+        body.force-mobile-main .modal-content table { display: block; overflow-x: auto; max-width: 100%; }
+
+        /* Same protections for a normal mobile browser at a genuinely
+           narrow width, so behaviour matches whether or not force-mobile
+           is active. */
+        @media (max-width: 700px) {
+            .modal-content [style*="display:flex"] > *,
+            .modal-content [style*="display: flex"] > * { min-width: 0 !important; }
+
+            .modal-content [style*="display:flex"],
+            .modal-content [style*="display: flex"] { flex-wrap: wrap; }
+
+            .modal-content { overflow-wrap: break-word; word-break: break-word; }
+
+            .modal-content input,
+            .modal-content select,
+            .modal-content textarea { max-width: 100% !important; box-sizing: border-box !important; }
+
+            .modal-content table { display: block; overflow-x: auto; max-width: 100%; }
         }
 
     </style>
@@ -1151,7 +1553,7 @@
 
             /* Long unbroken strings (doc numbers, GSTINs, URLs) are the most
                common silent cause of horizontal overflow. */
-            .modal-content, .analytics-table td, .doc-list-table td { overflow-wrap: anywhere; }
+            .modal-content, .doc-list-table td { overflow-wrap: anywhere; } /* v76b: see note above — analytics-table cells use nowrap + horizontal scroll instead */
 
             /* The floating document picker was a fixed 420px — wider than
                many phones. */
@@ -1226,8 +1628,13 @@
              Tap to force-check for updates. Update this string (and the
              matching APP_VERSION const in the script block) on every release. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:rgba(255,255,255,0.35); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">v73</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">v76c</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
+
+        <!-- v73a: passive unsynced warning. Hidden by default and only
+             shown when something actually hasn't reached the cloud —
+             no per-save toast, no interruption when things are fine. -->
+        <div id="unsyncedIndicator" onclick="handleUnsyncedIndicatorTap()" style="display:none; background:#c0392b; color:#fff; text-align:center; font-size:11px; font-weight:bold; padding:7px 10px; border-radius:5px; margin-bottom:8px; cursor:pointer;"></div>
 
         <!-- v73: FORCE MOBILE LAYOUT toggle — some installed-as-Android-app
              (PWA) shells report a wider viewport than the same page gets in
@@ -1272,7 +1679,7 @@
                 <button id="btnAnalyticsAudit" class="analytics-grid-btn" onclick="openAuditorExport()"><span class="ag-icon">📋</span><span>Audit</span></button>
                 <button id="btnAnalyticsCashBook" class="analytics-grid-btn" onclick="openCashBook()"><span class="ag-icon">💵</span><span>Cash Book</span></button>
                 <button id="btnAnalyticsStock" class="analytics-grid-btn" onclick="openStockManager()"><span class="ag-icon">📦</span><span>Stock</span></button>
-                <button id="btnAnalyticsSyncHealth" class="analytics-grid-btn" onclick="openSyncHealth()"><span class="ag-icon">📡</span><span>Sync Health</span></button>
+                <button id="btnAnalyticsSyncHealth" class="analytics-grid-btn" onclick="openSyncHealth()"><span class="ag-icon">🛟</span><span>Data &amp; Sync</span></button>
                 <button id="btnAnalyticsAdvPool" class="analytics-grid-btn" onclick="openUnregisteredAdvancePoolSearch()"><span class="ag-icon">💰</span><span>Advance Pool</span></button>
                 <button id="btnAnalyticsTrips" class="analytics-grid-btn" onclick="openTrips()"><span class="ag-icon">🚚</span><span>Trips</span></button>
                 <button id="btnAnalyticsClients" class="analytics-grid-btn" onclick="openClientList()"><span class="ag-icon">📇</span><span>Clients</span></button>
@@ -1304,6 +1711,76 @@
                      of action — destructive, not just informational — even
                      though both sit in the same understated row. -->
                 <button onclick="openRestoreModal()" style="width:auto; margin:0; background:none; border:none; color:#d35400; font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">📥 Restore from backup</button>
+            </div>
+        </div>
+
+        <!-- v73a TRIAL FEATURE — BLOCKS CALCULATOR
+             Not part of shipped v73. Sits directly below the Reports & Tools
+             grid per request. Lets you add wall rows (Length x Height in
+             feet, minus an optional opening deduction), tag each row with a
+             block size (4"/6"/8"/9" — deliberately NOT labeled "outer/inner"
+             since any wall can be any size), and get a running block count
+             per size (area ÷ 1.333 sqft-per-block). "Convert" buttons open a
+             fresh Quotation/Sales Invoice and queue each size group into the
+             Block Picker (size + qty pre-filled) one at a time — you just
+             pick the brand and tap "+ Add to Document" for each, same as
+             normal. Entirely self-contained: its own state array, its own
+             functions, touches the block picker only through the same
+             selectBlockSize()/qtyInput path a human tap would use. Deleting
+             this whole block (HTML here + the paired JS block + CSS block)
+             fully removes the feature with zero side effects on v73. -->
+        <div id="blocksCalcSection" style="background:#1a2f42; border:2px solid #3498db; border-radius:8px; padding:14px; margin-bottom:20px;">
+            <!-- v74c: the ENTIRE header row is now the tap target (not just
+                 the small chevron) — tap anywhere across the title/badge/
+                 chevron to expand or collapse. -->
+            <div onclick="toggleBlocksCalcCollapse()" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; cursor:pointer;">
+                <div style="font-weight:bold; color:#3498db; font-size:14px; letter-spacing:0.5px;">🧱 BLOCKS CALCULATOR</div>
+                <span id="btnBlocksCalcCollapse" style="color:#7f8c8d; font-size:18px; padding:2px 8px;">▸</span>
+            </div>
+            <div id="blocksCalcBody" style="display:none;">
+                <div style="font-size:11px; color:#7f8c8d; margin-bottom:10px;">Quick rough estimate.</div>
+
+                <div id="blocksCalcRows"></div>
+
+                <!-- v75: "Add Wall Row" made deliberately bold and impossible
+                     to miss — bright gradient, larger touch target, subtle
+                     glow — per feedback that it was too easy to overlook. -->
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <button type="button" onclick="addBlocksCalcRow()" class="bcalc-addrow-btn">➕ ADD WALL ROW</button>
+                    <button type="button" onclick="clearBlocksCalcAll()" style="flex:0.6; margin:0; background:#2c3e50; border:1px solid #c0392b; color:#e74c3c; padding:9px; font-size:11px; border-radius:5px;">Clear All</button>
+                </div>
+
+                <div id="blocksCalcUndoBar" style="display:none; margin-top:8px; background:#34495e; padding:8px 10px; border-radius:5px; font-size:12px; color:#ecf0f1; align-items:center; justify-content:space-between;">
+                    <span>Wall row removed.</span>
+                    <a href="javascript:void(0)" onclick="undoBlocksCalcRemove()" style="color:#3498db; font-weight:bold; text-decoration:underline;">Undo</a>
+                </div>
+
+                <!-- v75: Wastage / Round-Up — each is now an explicit ON/OFF
+                     toggle switch (both OFF by default) with an elegant
+                     connected segmented control underneath, replacing the
+                     separate floating pill buttons. -->
+                <div class="bcalc-adjust-strip" id="bcalcAdjustStrip"></div>
+
+                <div id="blocksCalcSummary" style="margin-top:14px; background:#243342; border-radius:6px; padding:10px;">
+                    <div style="font-size:10px; font-weight:bold; color:#7f8c8d; text-transform:uppercase; margin-bottom:6px;">Totals by Size</div>
+                    <div id="blocksCalcSummaryBody" style="font-size:12px; color:#ddd;">No rows added yet.</div>
+                </div>
+
+                <!-- v75: Save / Load a named calculation, sitting above the
+                     Convert buttons per request. Save pushes to the cloud
+                     (Config store) since a deliberately-named save is a
+                     real record, unlike the ephemeral autosaved draft. -->
+                <div style="display:flex; gap:8px; margin-top:12px;">
+                    <button type="button" onclick="saveBlocksCalcCalculation()" style="flex:1; margin:0; background:#2980b9; font-size:12px; padding:9px;">💾 Save</button>
+                    <button type="button" id="btnBlocksCalcLoad" onclick="toggleBlocksCalcLoadPanel()" style="flex:1; margin:0; background:#34495e; border:1px solid #465c71; font-size:12px; padding:9px;">📂 Load ▼</button>
+                </div>
+                <div id="bcalcLoadPanel" style="display:none; margin-top:8px; background:#1a2f42; border:1px solid #34495e; border-radius:6px; padding:8px; max-height:200px; overflow-y:auto;"></div>
+
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <button type="button" id="btnBlocksToQuo" onclick="convertBlocksCalcToDoc('QUO')" style="flex:1; margin:0; background:#8e44ad; font-size:12px; padding:10px;" disabled>📝 Convert to Quotation</button>
+                    <button type="button" id="btnBlocksToSal" onclick="convertBlocksCalcToDoc('SAL')" style="flex:1; margin:0; background:#16a085; font-size:12px; padding:10px;" disabled>🧾 Convert to Sales Invoice</button>
+                </div>
+                <div id="blocksCalcQueueBanner" style="display:none; margin-top:10px; background:#e67e22; color:#fff; padding:8px 10px; border-radius:5px; font-size:12px; font-weight:bold; text-align:center;"></div>
             </div>
         </div>
 
@@ -1579,14 +2056,13 @@
                 <div style="flex:2; display:flex; flex-direction: column; gap:5px;">
                     <select id="prodSelect" style="margin-top:0;" onchange="handleProductSelect()">
                         <option value="" selected disabled>(Select Product)</option>
-                        <option value="AAC Block 4 Inch (Meghalite)">AAC Block 4 Inch (Meghalite)</option>
-                        <option value="AAC Block 6 Inch (Meghalite)">AAC Block 6 Inch (Meghalite)</option>
-                        <option value="AAC Block 8 Inch (Meghalite)">AAC Block 8 Inch (Meghalite)</option>
-                        <option value="AAC Block 9 Inch (Meghalite)">AAC Block 9 Inch (Meghalite)</option>
-                        <option value="AAC Block 4 Inch (Birla)">AAC Block 4 Inch (Birla)</option>
-                        <option value="AAC Block 6 Inch (Birla)">AAC Block 6 Inch (Birla)</option>
-                        <option value="AAC Block 8 Inch (Birla)">AAC Block 8 Inch (Birla)</option>
-                        <option value="AAC Block 9 Inch (Birla)">AAC Block 9 Inch (Birla)</option>
+                        <!-- v73a: the hardcoded "AAC Block N Inch (Brand)" options were
+                             removed on request. Blocks are now picked exclusively via the
+                             Size+Brand picker above, which composes the product name and
+                             injects a matching <option> on the fly via setProdSelectValue().
+                             That means block selection still works normally here — the
+                             options simply aren't pre-listed, so this dropdown stays short
+                             and only holds non-block items. -->
                         <option value="Jointing Mortar (40 Kg bag)">Jointing Mortar (40 Kg bag)</option>
                         <option value="Transport">Transport</option>
                         <option value="Unloading Charges">Unloading Charges</option>
@@ -3122,6 +3598,7 @@
 
 <!-- #2: cross-tool global search -->
 <!-- #7: Audit Lock standalone modal — also accessible from Reports & Tools -->
+
 <div id="auditLockModal" class="modal-overlay" onclick="if(event.target===this) closeAuditLockModal()">
     <div class="modal-content" style="max-width:480px;">
         <div class="modal-header">
@@ -3435,16 +3912,40 @@
     </div>
 </div>
 
+<!-- v73a: DATA & SYNC — merges the former "Sync Health" and "Data Recovery"
+     into one place, since both answer the same underlying question:
+     "is my data safe, and can I get it back?" Tab 1 = live sync state,
+     Tab 2 = automatic pre-overwrite snapshots + full backup. -->
 <div id="syncHealthModal" class="modal-overlay" onclick="if(event.target===this) closeSyncHealth()">
     <div class="modal-content" style="max-width:700px;">
         <div class="modal-header">
-            <h2>📡 Sync Health</h2>
+            <h2>🛟 Data &amp; Sync</h2>
             <div style="display:flex; gap:8px;">
                 <button onclick="retryAllPendingSync()" style="width:auto; margin:0; background:#27ae60; color:#fff; border:none; padding:9px 14px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold;">🔄 Retry Everything</button>
                 <button class="close-btn" onclick="closeSyncHealth()">X</button>
             </div>
         </div>
-        <div id="syncHealthBody"></div>
+
+        <div class="engine-tab-bar">
+            <button class="engine-tab-btn active" id="dsTabBtnSync" onclick="switchDataSyncTab('sync')">📡 Sync Status</button>
+            <button class="engine-tab-btn" id="dsTabBtnRecovery" onclick="switchDataSyncTab('recovery')">🛟 Recovery &amp; Backup</button>
+        </div>
+
+        <div class="engine-tab-content active" id="dsTabSync">
+            <div id="syncHealthBody"></div>
+        </div>
+
+        <div class="engine-tab-content" id="dsTabRecovery">
+            <div style="background:#fef5e7; border-left:4px solid #e67e22; padding:12px; border-radius:4px; font-size:13px; color:#7e5109; margin-bottom:15px;">
+                The app automatically snapshots each collection <b>before</b> it gets overwritten. If something disappeared, restore it here.
+                <br><br>
+                <b>Note:</b> snapshots live in this browser's storage, so they cannot survive clearing browser/site data. For that, use the full backup below and keep the file somewhere safe.
+            </div>
+            <div style="margin-bottom:15px;">
+                <button onclick="downloadFullBackup()" style="width:auto; margin:0; background:#27ae60; padding:10px 16px; font-size:13px;">💾 Download full backup now</button>
+            </div>
+            <div id="dataRecoveryBody"></div>
+        </div>
     </div>
 </div>
 
@@ -4213,7 +4714,253 @@
     // This is what the version badge displays and what checkForAppUpdate()
     // compares against. Keeping this in sync is what makes the badge
     // trustworthy — if forgotten, the badge silently shows a stale number.
-    const APP_VERSION = "v73";
+    const APP_VERSION = "v76c";
+
+    // ================================================================
+    // DATA LOSS GUARD  (v73a)
+    //
+    // WHY THIS EXISTS
+    // Every business collection in this app (sites, clients, stock,
+    // projects, trips, cash book, pricing config, the document cache...)
+    // is stored PRIMARILY in localStorage, with the cloud as a debounced,
+    // best-effort mirror. That means three separate things can silently
+    // destroy real data with no trace and no undo:
+    //
+    //   1. Anything that clears browser storage for this origin — Chrome's
+    //      "Clear & reset" under Site settings, "Clear browsing data" with
+    //      site data ticked, some cleaner apps, or a PWA reinstall. This
+    //      wipes localStorage instantly. THIS IS WHAT LOST SITES S1-S3.
+    //   2. A push that never fired. Saves queue a 2.5s debounced cloud
+    //      push; close the app inside that window (very normal on mobile)
+    //      and the record only ever existed locally.
+    //   3. A collection being written back as empty/short — e.g. a failed
+    //      or empty cloud response being adopted as truth, or a filter bug
+    //      producing []. The old value is overwritten with no snapshot.
+    //
+    // WHAT THIS DOES
+    // Rather than patching 30+ individual call sites (and hoping every
+    // FUTURE one remembers to be careful), this wraps localStorage.setItem
+    // itself. Every write to a tracked key — existing or newly added —
+    // passes through here automatically:
+    //
+    //   * Before overwriting, the previous value is snapshotted.
+    //   * A "last known good" copy is kept per key.
+    //   * A catastrophic write (a non-empty collection becoming empty, or
+    //     losing most of its records) is BLOCKED pending confirmation,
+    //     instead of silently going through.
+    //
+    // Nothing here changes what the app stores or how it reads it — it only
+    // adds a snapshot layer and a confirmation gate around destruction.
+    // ================================================================
+    const GUARD_TRACKED_KEYS = [
+        'kenSites', 'kenClients', 'kenProjects', 'kenProjectsFlat',
+        'kenStockItems', 'kenStockBatches', 'kenStockMovements',
+        'kenToolItems', 'kenToolMovements', 'kenTrips', 'kenCashBook',
+        'kenSavedDocsCache', 'kenPricingConfig', 'kenAuditDocs',
+        'kenTermsTemplates', 'kenCbTemplates', 'kenBrandAssets',
+        'kenAdvancePool', 'kenTrash', 'kenAddressOptions',
+        'kenCustomItemUsage', 'kenOfflineDocQueue'
+    ];
+    const GUARD_SNAPSHOT_KEY = 'kenGuardSnapshots';
+    const GUARD_MAX_SNAPSHOTS_PER_KEY = 3;
+
+    // Counts records in a stored JSON payload. Arrays count by length;
+    // objects by key count (pricingConfig is an object, not an array).
+    // Anything unparseable returns null, meaning "can't judge" — the guard
+    // then stays out of the way rather than guessing.
+    function guardCountRecords(rawValue) {
+        if (rawValue === null || rawValue === undefined) return null;
+        try {
+            let parsed = JSON.parse(rawValue);
+            if (Array.isArray(parsed)) return parsed.length;
+            if (parsed && typeof parsed === 'object') return Object.keys(parsed).length;
+            return null;
+        } catch (e) { return null; }
+    }
+
+    function guardReadSnapshots() {
+        try { return JSON.parse(localStorage.getItem(GUARD_SNAPSHOT_KEY) || '{}'); }
+        catch (e) { return {}; }
+    }
+
+    // Writes the snapshot store using the RAW native setItem, never the
+    // wrapped one — otherwise saving a snapshot would recurse back into
+    // the guard. If the write fails on quota, oldest snapshots are dropped
+    // and it retries, so the guard degrades gracefully instead of throwing
+    // inside someone else's save.
+    function guardWriteSnapshots(store) {
+        try {
+            _nativeSetItem.call(localStorage, GUARD_SNAPSHOT_KEY, JSON.stringify(store));
+            return true;
+        } catch (e) {
+            try {
+                for (const k of Object.keys(store)) {
+                    if (store[k] && store[k].length > 1) store[k] = store[k].slice(-1);
+                }
+                _nativeSetItem.call(localStorage, GUARD_SNAPSHOT_KEY, JSON.stringify(store));
+                return true;
+            } catch (e2) { return false; }
+        }
+    }
+
+    // Stores the CURRENT value of a key before it gets overwritten.
+    function guardSnapshot(key, reason) {
+        let existing;
+        try { existing = localStorage.getItem(key); } catch (e) { return; }
+        if (existing === null || existing === undefined) return;
+        let count = guardCountRecords(existing);
+        if (count === 0) return; // nothing worth preserving
+
+        let store = guardReadSnapshots();
+        if (!store[key]) store[key] = [];
+        // Skip if the newest snapshot is already byte-identical — avoids
+        // filling the store with duplicates on repeated identical saves.
+        let newest = store[key][store[key].length - 1];
+        if (newest && newest.data === existing) return;
+
+        store[key].push({ ts: Date.now(), count: count, reason: reason || 'write', data: existing });
+        if (store[key].length > GUARD_MAX_SNAPSHOTS_PER_KEY) {
+            store[key] = store[key].slice(-GUARD_MAX_SNAPSHOTS_PER_KEY);
+        }
+        guardWriteSnapshots(store);
+    }
+
+    // Set to true around genuine, user-intended bulk deletions (backup
+    // restore, "delete all" style actions) so the guard doesn't interrogate
+    // an operation the user explicitly asked for.
+    let _guardAllowDestructive = false;
+    function guardRunDestructive(fn) {
+        _guardAllowDestructive = true;
+        try { return fn(); } finally { _guardAllowDestructive = false; }
+    }
+
+    const _nativeSetItem = localStorage.setItem.bind(localStorage);
+
+    const GUARD_KEY_LABELS = {
+        kenSites: 'Sites', kenClients: 'Clients', kenProjects: 'Projects',
+        kenProjectsFlat: 'Projects (flat)', kenStockItems: 'Stock Items',
+        kenStockBatches: 'Stock Batches', kenStockMovements: 'Stock Movements',
+        kenToolItems: 'Tools', kenToolMovements: 'Tool Movements',
+        kenTrips: 'Trips', kenCashBook: 'Cash Book',
+        kenSavedDocsCache: 'Documents', kenPricingConfig: 'Pricing Config',
+        kenAuditDocs: 'Audit Docs', kenTermsTemplates: 'Terms Templates',
+        kenCbTemplates: 'Cash Book Templates', kenBrandAssets: 'Brand Assets',
+        kenAdvancePool: 'Advance Pool', kenTrash: 'Trash',
+        kenAddressOptions: 'Address Options', kenCustomItemUsage: 'Custom Items',
+        kenOfflineDocQueue: 'Offline Queue'
+    };
+
+    // THE CHOKE POINT. Every localStorage.setItem in the app routes here.
+    localStorage.setItem = function(key, value) {
+        if (GUARD_TRACKED_KEYS.indexOf(key) === -1) {
+            return _nativeSetItem.call(localStorage, key, value);
+        }
+
+        let oldRaw = null;
+        try { oldRaw = localStorage.getItem(key); } catch (e) {}
+        let oldCount = guardCountRecords(oldRaw);
+        let newCount = guardCountRecords(value);
+
+        // Only judge when both sides are countable. If either is unknown,
+        // snapshot and allow — never block on a guess.
+        if (oldCount !== null && newCount !== null && oldCount > 0 && !_guardAllowDestructive) {
+            let wipingAll   = (newCount === 0);
+            let losingMost  = (oldCount >= 3 && newCount < oldCount * 0.5);
+
+            if (wipingAll || losingMost) {
+                guardSnapshot(key, wipingAll ? 'about-to-wipe' : 'about-to-shrink');
+                let label = GUARD_KEY_LABELS[key] || key;
+                let ok = confirm(
+                    `⚠️ DATA LOSS WARNING\n\n` +
+                    `Something is about to reduce "${label}" from ${oldCount} record(s) to ${newCount}.\n\n` +
+                    `If you did NOT just delete these yourself, this is a bug or a failed sync — press Cancel to keep your data.\n\n` +
+                    `OK = allow the change\nCancel = keep existing data (recommended)`
+                );
+                if (!ok) {
+                    console.warn('[DataGuard] BLOCKED destructive write to', key, oldCount, '->', newCount);
+                    return; // old value stays intact
+                }
+            }
+        }
+
+        // Normal path: preserve the outgoing value, then write.
+        guardSnapshot(key, 'auto');
+        return _nativeSetItem.call(localStorage, key, value);
+    };
+
+    // ---------- DATA & SYNC (merged Sync Health + Data Recovery) ----------
+    // Entry point kept as openDataRecovery() so any existing caller still
+    // works — it now opens the merged modal on the Recovery tab.
+    function openDataRecovery() {
+        openSyncHealth();
+        switchDataSyncTab('recovery');
+    }
+    function closeDataRecovery() { closeSyncHealth(); }
+
+    function switchDataSyncTab(which) {
+        let isSync = (which === 'sync');
+        document.getElementById('dsTabSync').classList.toggle('active', isSync);
+        document.getElementById('dsTabRecovery').classList.toggle('active', !isSync);
+        document.getElementById('dsTabBtnSync').classList.toggle('active', isSync);
+        document.getElementById('dsTabBtnRecovery').classList.toggle('active', !isSync);
+        if (isSync) renderSyncHealth(); else renderDataRecovery();
+    }
+
+    function renderDataRecovery() {
+        let store = guardReadSnapshots();
+        let body = document.getElementById('dataRecoveryBody');
+        let keys = Object.keys(store).filter(k => store[k] && store[k].length > 0);
+
+        if (keys.length === 0) {
+            body.innerHTML = '<div style="text-align:center; color:#7f8c8d; padding:20px; font-size:13px;">No snapshots yet. They are created automatically the first time each collection is overwritten.</div>';
+            return;
+        }
+
+        body.innerHTML = keys.map(key => {
+            let label = GUARD_KEY_LABELS[key] || key;
+            let liveCount = guardCountRecords(localStorage.getItem(key));
+            let snaps = [...store[key]].reverse(); // newest first
+            let rows = snaps.map((s, i) => {
+                let when = new Date(s.ts).toLocaleString('en-GB');
+                let isBetter = (liveCount !== null && s.count > liveCount);
+                return `<div style="display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid #eee; gap:10px;">
+                    <div style="font-size:12px; color:#333;">
+                        <b style="color:${isBetter ? '#c0392b' : '#333'};">${s.count} record(s)</b>
+                        <span style="color:#7f8c8d;"> · ${when}</span>
+                        ${isBetter ? '<span style="color:#c0392b; font-weight:bold;"> ← more than now</span>' : ''}
+                    </div>
+                    <button onclick="restoreSnapshot('${key}', ${store[key].length - 1 - i})" style="width:auto; margin:0; background:#2980b9; padding:6px 12px; font-size:11px;">Restore</button>
+                </div>`;
+            }).join('');
+
+            return `<div style="margin-bottom:18px; border:1px solid #ddd; border-radius:6px; padding:12px;">
+                <div style="font-weight:bold; color:#2c3e50; margin-bottom:6px;">
+                    ${label} <span style="font-weight:normal; color:#7f8c8d; font-size:12px;">— currently ${liveCount === null ? '?' : liveCount} record(s)</span>
+                </div>
+                ${rows}
+            </div>`;
+        }).join('');
+    }
+
+    function restoreSnapshot(key, index) {
+        let store = guardReadSnapshots();
+        if (!store[key] || !store[key][index]) { alert('That snapshot is no longer available.'); return; }
+        let snap = store[key][index];
+        let label = GUARD_KEY_LABELS[key] || key;
+        let liveCount = guardCountRecords(localStorage.getItem(key));
+
+        if (!confirm(
+            `Restore "${label}" to the snapshot from ${new Date(snap.ts).toLocaleString('en-GB')}?\n\n` +
+            `This replaces the current ${liveCount === null ? '?' : liveCount} record(s) with ${snap.count} record(s).\n\n` +
+            `Your current data is snapshotted first, so this is reversible.`
+        )) return;
+
+        guardSnapshot(key, 'pre-restore'); // current state preserved before we overwrite it
+        guardRunDestructive(() => _nativeSetItem.call(localStorage, key, snap.data));
+
+        alert(`"${label}" restored. The app will now reload to pick up the restored data.`);
+        location.reload();
+    }
 
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyCEa9mVyScBqRnwNb0AWYl0I4eniKE8sfVgzyaeyUKALNfYqS5BgT5bTMl0vll6TRPPQ/exec"; 
 
@@ -4497,6 +5244,148 @@
         try { localStorage.setItem('kenPendingPush', JSON.stringify([..._pendingPush])); } catch(e) {}
     }
 
+    // ================================================================
+    // CONFIG-BACKED COLLECTION SYNC  (v73a)
+    //
+    // Four collections had NO cloud path at all and lived only in this
+    // browser's localStorage — meaning a storage wipe destroyed them with
+    // no recovery anywhere: Advance Pool (money owed!), Audit Docs, Cash
+    // Book Templates, and Custom Item Usage.
+    //
+    // They're all small and low-churn, so rather than each getting its own
+    // sheet + column schema + bulk-sync wiring, they ride on the backend's
+    // existing generic Config key/value store (saveConfig / getAllConfig).
+    // That needs ZERO backend changes — the action already exists and is
+    // already used by pricingConfig.
+    //
+    // Debounced like every other collection, and flushed immediately on
+    // app background via flushAllPendingSyncsNow().
+    // ================================================================
+    const CONFIG_SYNC_KEYS = {
+        advancePool:      'kenAdvancePool',
+        auditDocs:        'kenAuditDocs',
+        cbTemplates:      'kenCbTemplates',
+        customItemUsage:  'kenCustomItemUsage',
+        creditPeriodDays: 'kenCreditPeriodDays', // v74a: drives Outstanding ageing — a business setting, not a device preference
+        blocksCalcSaved:  'kenBlocksCalcSaved'   // v75: named calculator saves — a deliberate record, unlike the ephemeral autosaved draft
+    };
+
+    function queueConfigCollectionSync(configKey, value) {
+        if (WEB_APP_URL === "PASTE_YOUR_WEB_APP_URL_HERE") return;
+        markPendingPush(configKey);
+        clearTimeout(_syncTimers[configKey]);
+        _syncTimers[configKey] = setTimeout(() => runConfigCollectionSync(configKey, value), SYNC_DEBOUNCE_MS);
+    }
+
+    function runConfigCollectionSync(configKey, value) {
+        if (WEB_APP_URL === "PASTE_YOUR_WEB_APP_URL_HERE") return;
+        if (_syncInFlight[configKey]) return;
+        _syncInFlight[configKey] = true;
+        // Read live from localStorage rather than trusting a captured value —
+        // by the time a debounced/flushed push actually fires, a newer edit
+        // may already have landed, and pushing the stale captured copy would
+        // quietly undo it.
+        let localKey = CONFIG_SYNC_KEYS[configKey];
+        let payload = value;
+        try {
+            let raw = localStorage.getItem(localKey);
+            if (raw !== null) {
+                // Structured collections are stored JSON-encoded; scalar
+                // settings (creditPeriodDays) are stored raw. Try JSON
+                // first and fall back to the raw string rather than
+                // discarding a perfectly valid scalar.
+                try { payload = JSON.parse(raw); }
+                catch (e) { payload = raw; }
+            }
+        } catch (e) {}
+
+        fetch(WEB_APP_URL, {
+            method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'saveConfig', data: { key: configKey, value: payload } })
+        })
+        .then(r => r.json())
+        .then(() => {
+            _syncInFlight[configKey] = false;
+            _syncFailedQueue.delete(configKey);
+            clearPendingPush(configKey);
+            updateUnsyncedIndicator();
+        })
+        .catch(() => {
+            _syncInFlight[configKey] = false;
+            _syncFailedQueue.add(configKey);
+            updateUnsyncedIndicator();
+        });
+    }
+
+    //
+    // Every local change starts a 2.5s DEBOUNCED cloud push. On mobile,
+    // closing or switching away from the app inside that 2.5s window is
+    // completely routine — and when it happens the timer is destroyed with
+    // the page and the push NEVER fires. The record then exists only in
+    // localStorage, so any later storage wipe (Chrome "Clear & reset", a
+    // PWA reinstall, a cleaner app) destroys it permanently with no cloud
+    // copy to restore from. That is precisely how sites can vanish.
+    //
+    // This fires every pending debounced sync IMMEDIATELY the moment the
+    // page is hidden or torn down, instead of waiting out the timer. It
+    // hooks both events on purpose: 'pagehide' is the reliable one for
+    // actual closure, 'visibilitychange' catches app-switching on Android,
+    // which often never fires a real unload at all.
+    // ================================================================
+    function flushAllPendingSyncsNow() {
+        try {
+            Object.keys(_syncTimers).forEach(collectionName => {
+                if (!_syncTimers[collectionName]) return;
+                clearTimeout(_syncTimers[collectionName]);
+                _syncTimers[collectionName] = null;
+                // Re-invoke the same push the timer would have run. Sites has
+                // its own per-entry push path; everything else shares runCloudSync.
+                try {
+                    if (collectionName === 'sites') runSitesCloudSync(getSites());
+                    else if (CONFIG_SYNC_KEYS[collectionName]) runConfigCollectionSync(collectionName, null);
+                    else runCloudSync(collectionName);
+                } catch (e) { console.warn('[Flush] failed for', collectionName, e); }
+            });
+        } catch (e) { console.warn('[Flush] error', e); }
+    }
+
+    window.addEventListener('pagehide', flushAllPendingSyncsNow);
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') flushAllPendingSyncsNow();
+    });
+
+    // ================================================================
+    // PASSIVE UNSYNCED INDICATOR  (v73a)
+    //
+    // Deliberately NOT a per-save toast — that was removed for being slow
+    // and interruptive, and it told you something you didn't need to know
+    // on every single save. This is the inverse: completely INVISIBLE while
+    // everything is synced, and only appears when something genuinely
+    // hasn't reached the cloud. Silence means safe. Tapping it retries and
+    // opens Data & Sync for detail.
+    // ================================================================
+    function updateUnsyncedIndicator() {
+        let el = document.getElementById('unsyncedIndicator');
+        if (!el) return;
+        let pending = _pendingPush.size;
+        let failed = _syncFailedQueue.size;
+        if (pending === 0 && failed === 0) {
+            el.style.display = 'none'; // fully silent when all is well
+            return;
+        }
+        let count = Math.max(pending, failed);
+        el.style.display = 'block';
+        el.innerText = `⚠️ ${count} change${count > 1 ? 's' : ''} not yet saved to cloud — tap to retry`;
+    }
+
+    function handleUnsyncedIndicatorTap() {
+        flushAllPendingSyncsNow();
+        openSyncHealth();
+    }
+
+    // Keep it honest without polling hard — cheap check every few seconds.
+    setInterval(updateUnsyncedIndicator, 4000);
+
     // ----------------------------------------------------------------
     // FRESH-DEVICE PUSH GUARD
     // ----------------------------------------------------------------
@@ -4510,6 +5399,12 @@
     // its pull has completed, so a fresh device can never push a
     // half-loaded (or empty) local copy over real cloud data.
     let _initialPullDone = {};
+    // v74: tracks whether a collection's initial pull actually ADOPTED
+    // cloud state (as opposed to failing, or being refused by the
+    // empty-response guard). Only an adopted pull may unblock pushing —
+    // otherwise a device that couldn't read the cloud would be free to
+    // overwrite it with whatever stale/stub data it happens to hold.
+    let _pullAdopted = {};
 
     // Improvement #2: SYNC CONFLICT DETECTION
     // A stable per-device identifier (persisted, not regenerated each load)
@@ -4797,11 +5692,22 @@
     function saveAuditLockDate(dateStr, types) {
         auditLockDate = dateStr || '';
         if (Array.isArray(types)) auditLockTypes = types;
+        // v74a: stamp the change here rather than only at the modal, and
+        // sync it. Previously kenAuditLockSetAt was written local-only, so
+        // the audit lock's date/types synced across devices but the record
+        // of WHEN the lock was set did not — leaving an audit trail that
+        // was blank or wrong on every device except the one that set it.
+        let setAt = new Date().toISOString();
         try {
             localStorage.setItem('kenAuditLockDate', auditLockDate);
             localStorage.setItem('kenAuditLockTypes', JSON.stringify(auditLockTypes));
+            localStorage.setItem('kenAuditLockSetAt', setAt);
         } catch(e) {}
         if (WEB_APP_URL !== "PASTE_YOUR_WEB_APP_URL_HERE") {
+            fetch(WEB_APP_URL, {
+                method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: 'saveConfig', data: { key: 'auditLockSetAt', value: setAt } })
+            }).catch(() => {});
             fetch(WEB_APP_URL, {
                 method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({ action: 'saveConfig', data: { key: 'auditLockDate', value: auditLockDate } })
@@ -5350,11 +6256,43 @@
 
     // Ensure C0 always exists in the registry — called on startup.
     // Idempotent: does nothing if C0 is already there.
+    //
+    // v74 BUG FIX — this function destroyed real client registries.
+    // It runs during startup, BEFORE pullCloudCollectionsOnLoad() has
+    // fetched anything. On any device whose local storage was empty at
+    // that moment (fresh install, new device, or — as actually happened —
+    // browser site-data cleared), getClients() returned [], C0 was
+    // missing, so this built a one-item list [TESTING_CLIENT] and called
+    // saveClients() — which does NOT just write locally, it also
+    // queueCloudSync('clients'). That pushed a 1-client registry over the
+    // real cloud one. The subsequent pull then correctly retrieved... the
+    // stub this had just written. Net effect: every client wiped, leaving
+    // exactly "empty except C0 Testing".
+    //
+    // Fix: seed LOCAL ONLY here, never push. The C0 row is a local
+    // convenience placeholder — it does not need to originate from this
+    // device, and if the cloud already holds a registry (with or without
+    // C0) the pull will bring it down momentarily anyway. Cloud-seeding of
+    // C0, if genuinely absent everywhere, is handled after the pull by
+    // seedTestingClientAfterPull() below, once we can actually tell the
+    // difference between "cloud has no C0" and "we just haven't looked yet".
     function seedTestingClient() {
         let clients = getClients();
         if (!clients.find(c => c.id === 'C0')) {
             clients.unshift(TESTING_CLIENT);
-            saveClients(clients);
+            saveClientsLocalOnly(clients); // LOCAL ONLY — must not push a stub registry
+        }
+    }
+
+    // Runs AFTER the initial cloud pull has resolved, when local genuinely
+    // reflects the cloud. Only at this point is it safe to conclude C0 is
+    // truly missing everywhere and push it. Guarded so it can never push a
+    // suspiciously-empty registry over a populated cloud one.
+    function seedTestingClientAfterPull() {
+        let clients = getClients();
+        if (!clients.find(c => c.id === 'C0')) {
+            clients.unshift(TESTING_CLIENT);
+            saveClients(clients); // now safe to sync
         }
     }
 
@@ -5647,6 +6585,689 @@
         try { localStorage.setItem('kenUseLegacyProductUI', showLegacy ? '1' : '0'); } catch(e) {}
     }
 
+    // ============================================================
+    // v75 — BLOCKS CALCULATOR  (v5 — math expressions, collapsible deductions,
+    // toggleable wastage/round-up, save/load named calculations)
+    //
+    // Row shape:
+    //   { id, label, length,          — STRING math expression: "20 16"
+    //                                    (sum), "12x3+10" (mul then add,
+    //                                    proper precedence) — see
+    //                                    parseCalcExpression()
+    //     height, size, count,
+    //     dimensionMode: 'outer'|'inner',
+    //     deductSqft: '' | STRING,     — same math-expression grammar as
+    //                                    length. No separate count field —
+    //                                    "10 10 20" already sums three
+    //                                    openings, "12x3 10" already
+    //                                    handles N-identical x size + extra.
+    //     dedOpen: bool }              — is this row's deduction box
+    //                                    expanded? Collapsed by default.
+    //
+    // Global settings (persisted, not per-row):
+    //   blocksCalcWastageEnabled/Pct  — OFF by default; when on, 3/5/10%
+    //   blocksCalcRoundEnabled/RoundTo — OFF by default; when on, 10/25/50
+    //   blocksCalcSavedList           — named saved calculations, synced
+    //                                    to cloud via the Config store
+    //                                    (same pattern as advancePool etc.)
+    // ============================================================
+    let blocksCalcRows = [];
+    let blocksCalcRowSeq = 0;
+    let blocksCalcConvertQueue = [];
+    let blocksCalcLastUsedSize = null;
+    let blocksCalcLastUsedHeight = '';
+    let blocksCalcLastRemoved = null;
+    let blocksCalcWastageEnabled = false;
+    let blocksCalcWastagePct = 3;
+    let blocksCalcRoundEnabled = false;
+    let blocksCalcRoundTo = 10;
+    let blocksCalcSavedList = [];      // [{id, name, savedAt, rows}]
+    let blocksCalcLoadPanelOpen = false;
+    const BLOCKS_PER_SQFT = 1 / 1.333;
+    const BLOCKS_CALC_DRAFT_KEY = 'kenBlocksCalcDraft'; // deliberately NOT in GUARD_TRACKED_KEYS — draft scratch work, not a business record
+
+    // ----------------------------------------------------------------
+    // MATH EXPRESSION PARSER — shared by Length and Deduct fields.
+    // Grammar: numbers combined with '+' (or space, treated identically)
+    // and '*' (or 'x'/'X', coding-style), with standard precedence —
+    // multiplication evaluated before addition. "12 x 3 10" therefore
+    // means (12*3)+10 = 46, matching how a person would say it aloud.
+    // Best-effort on malformed input: invalid tokens are skipped rather
+    // than throwing, so a stray character never crashes the calculator.
+    // ----------------------------------------------------------------
+    function parseCalcExpression(str) {
+        if (typeof str !== 'string') str = String(str == null ? '' : str);
+        let s = str.trim();
+        if (!s) return 0;
+        s = s.replace(/[xX]/g, '*');           // 'x'/'X' -> '*' (coding-style multiply)
+        s = s.replace(/\s*\*\s*/g, '*');        // collapse space around '*' so it's not mistaken for addition
+        s = s.replace(/\s+/g, '+');             // remaining whitespace = implicit addition
+        s = s.replace(/\++/g, '+').replace(/^\+|\+$/g, ''); // tidy stray/duplicate '+'
+        if (!s) return 0;
+
+        let sum = 0;
+        s.split('+').forEach(term => {
+            if (!term) return;
+            let factors = term.split('*').map(f => f.trim()).filter(f => f.length > 0);
+            if (factors.length === 0) return;
+            let product = null;
+            factors.forEach(f => {
+                let n = parseFloat(f);
+                if (isNaN(n)) return; // ignore an invalid factor rather than aborting the whole expression
+                product = (product === null) ? n : product * n;
+            });
+            if (product !== null) sum += product;
+        });
+        return sum;
+    }
+
+    // Whether a raw string is more than "just a single plain number" —
+    // used to decide whether the live "= 46" computed hint is worth
+    // showing. A plain "20" needs no hint (it already reads as 20); "20 16"
+    // or "12x3+10" does.
+    function isCompoundExpression(str) {
+        if (typeof str !== 'string') str = String(str == null ? '' : str);
+        return !/^\s*-?\d+\.?\d*\s*$/.test(str) && str.trim() !== '';
+    }
+
+    // Kept as aliases — earlier code/comments referred to this name for the
+    // Length field specifically; both fields now share the same parser.
+    function parseSummedLength(str) { return parseCalcExpression(str); }
+
+    // The Inner/Outer correction, added to the parsed length before
+    // multiplying by height. Outer = 0 always. Inner: 4"/6" blocks -> add
+    // 6 inches (0.5ft) total; 8"/9" blocks -> add 1ft total. No size picked
+    // yet -> 0 (can't know the correction without it).
+    function blocksCalcDimensionCorrection(row) {
+        if (row.dimensionMode !== 'inner' || !row.size) return 0;
+        if (row.size === 4 || row.size === 6) return 0.5;
+        if (row.size === 8 || row.size === 9) return 1.0;
+        return 0;
+    }
+
+    function blocksCalcNewRow(overrides) {
+        return Object.assign({
+            id: ++blocksCalcRowSeq, label: '', length: '',
+            height: blocksCalcLastUsedHeight || '', size: blocksCalcLastUsedSize,
+            count: 1, dimensionMode: 'outer',
+            deductSqft: '', dedOpen: false
+        }, overrides || {});
+    }
+
+    function addBlocksCalcRow() {
+        blocksCalcRows.push(blocksCalcNewRow());
+        renderBlocksCalcRows();
+        persistBlocksCalcDraft();
+    }
+
+    function duplicateBlocksCalcRow(id) {
+        let row = blocksCalcRows.find(r => r.id === id);
+        if (!row) return;
+        let idx = blocksCalcRows.indexOf(row);
+        let copy = JSON.parse(JSON.stringify(row));
+        copy.id = ++blocksCalcRowSeq;
+        copy.label = row.label ? row.label + ' (copy)' : '';
+        blocksCalcRows.splice(idx + 1, 0, copy);
+        renderBlocksCalcRows();
+        persistBlocksCalcDraft();
+    }
+
+    function removeBlocksCalcRow(id) {
+        let idx = blocksCalcRows.findIndex(r => r.id === id);
+        if (idx === -1) return;
+        blocksCalcLastRemoved = { row: blocksCalcRows[idx], index: idx };
+        blocksCalcRows.splice(idx, 1);
+        renderBlocksCalcRows();
+        persistBlocksCalcDraft();
+        showBlocksCalcUndo();
+    }
+
+    function undoBlocksCalcRemove() {
+        if (!blocksCalcLastRemoved) return;
+        let { row, index } = blocksCalcLastRemoved;
+        let insertAt = Math.min(index, blocksCalcRows.length);
+        blocksCalcRows.splice(insertAt, 0, row);
+        blocksCalcLastRemoved = null;
+        renderBlocksCalcRows();
+        persistBlocksCalcDraft();
+        hideBlocksCalcUndo();
+    }
+
+    function showBlocksCalcUndo() {
+        let bar = document.getElementById('blocksCalcUndoBar');
+        if (!bar) return;
+        bar.style.display = 'flex';
+        clearTimeout(bar._hideTimer);
+        bar._hideTimer = setTimeout(hideBlocksCalcUndo, 6000);
+    }
+    function hideBlocksCalcUndo() {
+        let bar = document.getElementById('blocksCalcUndoBar');
+        if (bar) bar.style.display = 'none';
+        blocksCalcLastRemoved = null;
+    }
+
+    function updateBlocksCalcRow(id, field, value) {
+        let row = blocksCalcRows.find(r => r.id === id);
+        if (!row) return;
+        row[field] = value;
+        if (field === 'height') blocksCalcLastUsedHeight = value; // sticky for the NEXT new row
+
+        // Live "= N" hints for Length/Deduct update in place without a full
+        // row re-render, so the input the person is typing in never loses
+        // focus mid-keystroke.
+        if (field === 'length') {
+            let hintEl = document.getElementById('bcalcLenHint_' + id);
+            if (hintEl) hintEl.textContent = isCompoundExpression(value) ? ('= ' + parseCalcExpression(value).toFixed(2) + ' ft') : '';
+        }
+        if (field === 'deductSqft') {
+            let hintEl = document.getElementById('bcalcDedHint_' + id);
+            if (hintEl) hintEl.textContent = isCompoundExpression(value) ? ('= ' + parseCalcExpression(value).toFixed(2) + ' sq.ft') : '';
+        }
+        renderBlocksCalcSummary();
+        persistBlocksCalcDraft();
+    }
+
+    function selectBlocksCalcRowSize(id, size) {
+        let row = blocksCalcRows.find(r => r.id === id);
+        if (!row) return;
+        row.size = size;
+        blocksCalcLastUsedSize = size; // sticky — next new row starts here too
+        renderBlocksCalcRows();
+        persistBlocksCalcDraft();
+    }
+
+    function setBlocksCalcDimensionMode(id, mode) {
+        let row = blocksCalcRows.find(r => r.id === id);
+        if (!row) return;
+        row.dimensionMode = mode;
+        renderBlocksCalcRows();
+        persistBlocksCalcDraft();
+    }
+
+    // Deduction box is COLLAPSED by default per row — tapping the red
+    // toggle reveals the expression input. When collapsed with a value
+    // already entered, the button itself shows the deducted total so the
+    // information is never hidden, just tucked away.
+    function toggleBlocksCalcDeduct(id) {
+        let row = blocksCalcRows.find(r => r.id === id);
+        if (!row) return;
+        row.dedOpen = !row.dedOpen;
+        renderBlocksCalcRows();
+        persistBlocksCalcDraft();
+    }
+
+    function setBlocksCalcWastageEnabled(on) {
+        blocksCalcWastageEnabled = on;
+        renderAdjustStrip();
+        renderBlocksCalcSummary();
+        persistBlocksCalcDraft();
+    }
+    function setBlocksCalcWastage(pct) {
+        blocksCalcWastagePct = pct;
+        blocksCalcWastageEnabled = true; // picking a value implies wanting it applied
+        renderAdjustStrip();
+        renderBlocksCalcSummary();
+        persistBlocksCalcDraft();
+    }
+    function setBlocksCalcRoundEnabled(on) {
+        blocksCalcRoundEnabled = on;
+        renderAdjustStrip();
+        renderBlocksCalcSummary();
+        persistBlocksCalcDraft();
+    }
+    function setBlocksCalcRoundTo(n) {
+        blocksCalcRoundTo = n;
+        blocksCalcRoundEnabled = true;
+        renderAdjustStrip();
+        renderBlocksCalcSummary();
+        persistBlocksCalcDraft();
+    }
+
+    function renderAdjustStrip() {
+        let wrap = document.getElementById('bcalcAdjustStrip');
+        if (!wrap) return;
+        let wastagePills = [3,5,10].map(p =>
+            `<button type="button" class="bcalc-seg-btn${blocksCalcWastagePct===p?' active':''}" onclick="setBlocksCalcWastage(${p})">${p}%</button>`
+        ).join('');
+        let roundPills = [10,25,50].map(n =>
+            `<button type="button" class="bcalc-seg-btn${blocksCalcRoundTo===n?' active':''}" onclick="setBlocksCalcRoundTo(${n})">${n}</button>`
+        ).join('');
+        wrap.innerHTML = `
+            <div class="bcalc-adjust-col bcalc-adjust-wastage">
+                <label class="bcalc-toggle-row">
+                    <span class="bcalc-toggle-switch"><input type="checkbox" ${blocksCalcWastageEnabled?'checked':''} onchange="setBlocksCalcWastageEnabled(this.checked)"><span class="bcalc-toggle-slider"></span></span>
+                    <span class="bcalc-adjust-label">Add Wastage</span>
+                </label>
+                <div class="bcalc-seg${blocksCalcWastageEnabled?'':' disabled'}">${wastagePills}</div>
+            </div>
+            <div class="bcalc-adjust-col bcalc-adjust-round">
+                <label class="bcalc-toggle-row">
+                    <span class="bcalc-toggle-switch"><input type="checkbox" ${blocksCalcRoundEnabled?'checked':''} onchange="setBlocksCalcRoundEnabled(this.checked)"><span class="bcalc-toggle-slider"></span></span>
+                    <span class="bcalc-adjust-label">Round Up</span>
+                </label>
+                <div class="bcalc-seg${blocksCalcRoundEnabled?'':' disabled'}">${roundPills}</div>
+            </div>`;
+    }
+
+    function toggleBlocksCalcCollapse() {
+        let body = document.getElementById('blocksCalcBody');
+        let btn = document.getElementById('btnBlocksCalcCollapse');
+        let collapsed = body.style.display === 'none';
+        body.style.display = collapsed ? 'block' : 'none';
+        btn.innerText = collapsed ? '▾' : '▸';
+    }
+
+    // ---------- DRAFT PERSISTENCE ----------
+    // Deliberately a plain localStorage read/write, NOT routed through
+    // saveXxxLocalOnly()/queueCloudSync() patterns used elsewhere — this is
+    // in-progress scratch work for a calculator, not a business record, so
+    // it does not belong in the Data Loss Guard's tracked keys or in the
+    // cloud sync collections. It exists purely so a killed tab/app on-site
+    // doesn't erase wall entries already typed in. Named SAVES (below) are
+    // a different, deliberately cloud-backed thing.
+    function persistBlocksCalcDraft() {
+        try {
+            localStorage.setItem(BLOCKS_CALC_DRAFT_KEY, JSON.stringify({
+                rows: blocksCalcRows, seq: blocksCalcRowSeq,
+                lastSize: blocksCalcLastUsedSize, lastHeight: blocksCalcLastUsedHeight,
+                wastageEnabled: blocksCalcWastageEnabled, wastagePct: blocksCalcWastagePct,
+                roundEnabled: blocksCalcRoundEnabled, roundTo: blocksCalcRoundTo
+            }));
+        } catch (e) {}
+    }
+
+    function restoreBlocksCalcDraft() {
+        try {
+            let raw = localStorage.getItem(BLOCKS_CALC_DRAFT_KEY);
+            if (!raw) return;
+            let d = JSON.parse(raw);
+            if (Array.isArray(d.rows)) blocksCalcRows = d.rows;
+            if (typeof d.seq === 'number') blocksCalcRowSeq = d.seq;
+            if (typeof d.lastSize === 'number') blocksCalcLastUsedSize = d.lastSize;
+            if (typeof d.lastHeight === 'string') blocksCalcLastUsedHeight = d.lastHeight;
+            if (typeof d.wastageEnabled === 'boolean') blocksCalcWastageEnabled = d.wastageEnabled;
+            if ([3,5,10].includes(d.wastagePct)) blocksCalcWastagePct = d.wastagePct;
+            if (typeof d.roundEnabled === 'boolean') blocksCalcRoundEnabled = d.roundEnabled;
+            if ([10,25,50].includes(d.roundTo)) blocksCalcRoundTo = d.roundTo;
+            // Defensive defaults for rows saved under an older draft schema
+            // — never let a stale draft shape crash the render.
+            blocksCalcRows.forEach(row => {
+                if (row.dimensionMode !== 'inner' && row.dimensionMode !== 'outer') row.dimensionMode = 'outer';
+                if (typeof row.length !== 'string') row.length = String(row.length == null ? '' : row.length);
+                if (typeof row.deductSqft !== 'string') row.deductSqft = String(row.deductSqft == null ? '' : row.deductSqft);
+                if (typeof row.dedOpen !== 'boolean') row.dedOpen = false;
+            });
+        } catch (e) {}
+    }
+
+    function clearBlocksCalcAll() {
+        if (blocksCalcRows.length === 0) return;
+        if (!confirm('Clear all wall rows? This cannot be undone.')) return;
+        blocksCalcRows = [];
+        renderBlocksCalcRows();
+        persistBlocksCalcDraft();
+    }
+
+    // Net sq.ft for ONE instance of the wall:
+    //   (parsed Length expression + Inner/Outer correction) x Height
+    //   − parsed Deduct expression
+    // Floored at 0 — a wall can't have negative area no matter what was typed.
+    function blocksCalcRowNetArea(row) {
+        let baseLen = parseCalcExpression(row.length);
+        let correction = blocksCalcDimensionCorrection(row);
+        let correctedLen = baseLen + correction;
+        let height = parseFloat(row.height) || 0;
+        let gross = correctedLen * height;
+        let deduct = parseCalcExpression(row.deductSqft);
+        let net = gross - deduct;
+        return net > 0 ? net : 0;
+    }
+
+    // Total sq.ft the row contributes = single-instance net area x Count.
+    function blocksCalcRowTotalArea(row) {
+        let count = parseFloat(row.count) || 0;
+        return blocksCalcRowNetArea(row) * count;
+    }
+
+    function renderBlocksCalcRows() {
+        let box = document.getElementById('blocksCalcRows');
+        if (!box) return;
+        box.innerHTML = blocksCalcRows.map(row => {
+            let netEach = blocksCalcRowNetArea(row);
+            let totalArea = blocksCalcRowTotalArea(row);
+            let blocks = totalArea * BLOCKS_PER_SQFT;
+            let sizeButtons = [4,6,8,9].map(sz =>
+                `<button type="button" class="bcalc-size-btn${row.size===sz?' active':''}" onclick="selectBlocksCalcRowSize(${row.id},${sz})">${sz}"</button>`
+            ).join('');
+            let lenHint = isCompoundExpression(row.length) ? ('= ' + parseCalcExpression(row.length).toFixed(2) + ' ft') : '';
+            let correctionFt = blocksCalcDimensionCorrection(row);
+            let ioHint = row.dimensionMode === 'inner'
+                ? (row.size ? `+${correctionFt}ft applied for a ${row.size}" wall` : 'pick a size to apply the correction')
+                : 'as measured, no correction';
+
+            let dedValue = parseCalcExpression(row.deductSqft);
+            let dedHint = isCompoundExpression(row.deductSqft) ? ('= ' + dedValue.toFixed(2) + ' sq.ft') : '';
+
+            // Collapsed deduction control: a plain "+ Deduct" prompt when
+            // empty, or a red summary pill showing the current total when
+            // a deduction is already set — so the info is visible even
+            // while tucked away.
+            let dedToggle = row.dedOpen
+                ? `<button type="button" class="bcalc-ded-toggle bcalc-ded-toggle-open" onclick="toggleBlocksCalcDeduct(${row.id})">✂️ Deductions ▲</button>`
+                : (dedValue > 0
+                    ? `<button type="button" class="bcalc-ded-toggle bcalc-ded-toggle-hasvalue" onclick="toggleBlocksCalcDeduct(${row.id})">✂️ −${dedValue.toFixed(2)} sq.ft deducted — tap to edit</button>`
+                    : `<button type="button" class="bcalc-ded-toggle" onclick="toggleBlocksCalcDeduct(${row.id})">✂️ + Deduct openings</button>`);
+
+            let dedBox = row.dedOpen ? `
+                <div class="bcalc-section-red">
+                    <div class="bcalc-dim-group">
+                        <span class="bcalc-dim-label">Deduct (sq.ft)</span>
+                        <input type="text" class="bcalc-length-input bcalc-deduct-input" value="${esc(row.deductSqft)}" oninput="updateBlocksCalcRow(${row.id},'deductSqft',this.value)" placeholder="e.g. 10 10 20 or 12x3+10">
+                        <div class="bcalc-length-sum-hint" id="bcalcDedHint_${row.id}" style="color:#e74c3c;">${dedHint}</div>
+                    </div>
+                </div>` : '';
+
+            return `<div class="bcalc-row">
+                <input type="text" class="bcalc-label-input" placeholder="Wall label (optional) — e.g. Front wall" value="${esc(row.label)}" oninput="updateBlocksCalcRow(${row.id},'label',this.value)">
+
+                <div class="bcalc-section-green">
+                    <div class="bcalc-row-top">
+                        <div class="bcalc-dim-group">
+                            <span class="bcalc-dim-label">Length (ft)</span>
+                            <input type="text" class="bcalc-length-input" value="${esc(row.length)}" oninput="updateBlocksCalcRow(${row.id},'length',this.value)" placeholder="e.g. 20 16 or 12x3">
+                            <div class="bcalc-length-sum-hint" id="bcalcLenHint_${row.id}">${lenHint}</div>
+                        </div>
+                        <div class="bcalc-x">×</div>
+                        <div class="bcalc-dim-group">
+                            <span class="bcalc-dim-label">Height (ft)</span>
+                            <input type="number" step="0.01" value="${esc(String(row.height))}" oninput="updateBlocksCalcRow(${row.id},'height',this.value)" placeholder="0">
+                        </div>
+                        <div class="bcalc-dim-group" style="flex:0.6;">
+                            <span class="bcalc-dim-label">Wall Count</span>
+                            <input type="number" step="1" min="1" value="${esc(String(row.count))}" oninput="updateBlocksCalcRow(${row.id},'count',this.value)" placeholder="1">
+                        </div>
+                        <div class="bcalc-icon-col">
+                            <button type="button" class="bcalc-icon-btn" title="Duplicate" onclick="duplicateBlocksCalcRow(${row.id})">⧉</button>
+                            <button type="button" class="bcalc-icon-btn bcalc-icon-del" title="Delete" onclick="removeBlocksCalcRow(${row.id})">✕</button>
+                        </div>
+                    </div>
+                    <div class="bcalc-size-row">${sizeButtons}</div>
+                    <div class="bcalc-io-row">
+                        <button type="button" class="bcalc-io-btn${row.dimensionMode==='outer'?' active':''}" onclick="setBlocksCalcDimensionMode(${row.id},'outer')">Outer</button>
+                        <button type="button" class="bcalc-io-btn${row.dimensionMode==='inner'?' active':''}" onclick="setBlocksCalcDimensionMode(${row.id},'inner')">Inner</button>
+                    </div>
+                    <div class="bcalc-io-hint">${ioHint}</div>
+                </div>
+
+                ${dedToggle}
+                ${dedBox}
+
+                <div class="bcalc-row-result">${netEach.toFixed(2)} sq.ft each${row.count>1 ? ` × ${row.count} = ${totalArea.toFixed(2)} sq.ft` : ''} ${row.size ? '→ ' + blocks.toFixed(1) + ' blocks (' + row.size + '")' : '(pick a size)'}</div>
+            </div>`;
+        }).join('') || '<div style="font-size:12px; color:#7f8c8d; text-align:center; padding:10px;">No wall rows yet — tap "+ Add Wall Row" below.</div>';
+        renderBlocksCalcSummary();
+    }
+
+    // Groups all rows by tagged size, summing each row's TOTAL area
+    // (net-per-wall x count). Rows with no size tagged yet are excluded
+    // from totals and called out separately.
+    function getBlocksCalcSizeTotals() {
+        let totals = {};
+        let untaggedArea = 0;
+        blocksCalcRows.forEach(row => {
+            let total = blocksCalcRowTotalArea(row);
+            if (total <= 0) return;
+            if (!row.size) { untaggedArea += total; return; }
+            totals[row.size] = (totals[row.size] || 0) + total;
+        });
+        return { totals, untaggedArea };
+    }
+
+    // Applies, in order: raw block count (ceil of sq.ft/1.333) -> optional
+    // wastage % (ceil, only if enabled) -> optional round-up to nearest N
+    // (only if enabled). Both are OFF by default — with both off, `final`
+    // equals `raw`. This is the number queued into "Convert to Doc".
+    function blocksCalcAdjustedCount(sqft) {
+        let raw = Math.ceil(sqft * BLOCKS_PER_SQFT);
+        let afterWastage = blocksCalcWastageEnabled ? Math.ceil(raw * (1 + blocksCalcWastagePct / 100)) : raw;
+        let final = blocksCalcRoundEnabled ? Math.ceil(afterWastage / blocksCalcRoundTo) * blocksCalcRoundTo : afterWastage;
+        return { raw, final };
+    }
+
+    // ---------- SAVE / LOAD NAMED CALCULATIONS ----------
+    // Unlike the autosaved draft above, a named save is a deliberate,
+    // durable record — so it's synced to the cloud through the Config
+    // store, same pattern as advancePool/auditDocs/cbTemplates. Losing a
+    // draft to a killed tab is an inconvenience; losing a named "Sharma
+    // House Estimate" someone deliberately saved is a bigger deal.
+    function getBlocksCalcSavedList() {
+        try { return JSON.parse(localStorage.getItem('kenBlocksCalcSaved') || '[]'); } catch(e) { return []; }
+    }
+    function saveBlocksCalcSavedListLocalOnly(list) {
+        blocksCalcSavedList = Array.isArray(list) ? list : [];
+        try { localStorage.setItem('kenBlocksCalcSaved', JSON.stringify(blocksCalcSavedList)); } catch(e) {}
+    }
+    function persistBlocksCalcSavedList() {
+        saveBlocksCalcSavedListLocalOnly(blocksCalcSavedList);
+        queueConfigCollectionSync('blocksCalcSaved', blocksCalcSavedList);
+    }
+
+    function saveBlocksCalcCalculation() {
+        if (blocksCalcRows.length === 0) { alert('Nothing to save — add at least one wall row first.'); return; }
+        let name = prompt('Save this calculation as:');
+        if (!name || !name.trim()) return;
+        name = name.trim();
+
+        blocksCalcSavedList = getBlocksCalcSavedList();
+        let existing = blocksCalcSavedList.find(s => s.name.toLowerCase() === name.toLowerCase());
+        if (existing) {
+            if (!confirm(`"${name}" already exists. Overwrite it?`)) return;
+        }
+
+        let entry = {
+            id: existing ? existing.id : Date.now(),
+            name: name,
+            savedAt: new Date().toISOString(),
+            rows: JSON.parse(JSON.stringify(blocksCalcRows)),
+            wastageEnabled: blocksCalcWastageEnabled, wastagePct: blocksCalcWastagePct,
+            roundEnabled: blocksCalcRoundEnabled, roundTo: blocksCalcRoundTo
+        };
+
+        if (existing) {
+            let idx = blocksCalcSavedList.indexOf(existing);
+            blocksCalcSavedList[idx] = entry;
+        } else {
+            blocksCalcSavedList.push(entry);
+        }
+        persistBlocksCalcSavedList();
+        showToast('✅ Saved "' + name + '"', 'success');
+        renderBlocksCalcLoadPanel();
+    }
+
+    function toggleBlocksCalcLoadPanel() {
+        blocksCalcLoadPanelOpen = !blocksCalcLoadPanelOpen;
+        if (blocksCalcLoadPanelOpen) blocksCalcSavedList = getBlocksCalcSavedList();
+        renderBlocksCalcLoadPanel();
+    }
+
+    function renderBlocksCalcLoadPanel() {
+        let panel = document.getElementById('bcalcLoadPanel');
+        let btn = document.getElementById('btnBlocksCalcLoad');
+        if (!panel) return;
+        panel.style.display = blocksCalcLoadPanelOpen ? 'block' : 'none';
+        if (btn) btn.textContent = '📂 Load' + (blocksCalcLoadPanelOpen ? ' ▲' : ' ▼');
+        if (!blocksCalcLoadPanelOpen) return;
+
+        if (blocksCalcSavedList.length === 0) {
+            panel.innerHTML = '<div style="font-size:12px; color:#7f8c8d; text-align:center; padding:8px;">No saved calculations yet.</div>';
+            return;
+        }
+        panel.innerHTML = blocksCalcSavedList.slice().reverse().map(s => {
+            let when = new Date(s.savedAt).toLocaleString('en-GB');
+            return `<div class="bcalc-saved-row">
+                <div class="bcalc-saved-info">
+                    <div class="bcalc-saved-name">${esc(s.name)}</div>
+                    <div class="bcalc-saved-meta">${when} · ${s.rows.length} row${s.rows.length!==1?'s':''}</div>
+                </div>
+                <button type="button" class="bcalc-saved-load" onclick="loadBlocksCalcCalculation(${s.id})">Load</button>
+                <button type="button" class="bcalc-saved-del" onclick="deleteBlocksCalcSaved(${s.id})">🗑️</button>
+            </div>`;
+        }).join('');
+    }
+
+    function loadBlocksCalcCalculation(id) {
+        let entry = blocksCalcSavedList.find(s => s.id === id);
+        if (!entry) return;
+        if (blocksCalcRows.length > 0 && !confirm(`Load "${entry.name}"? This replaces the ${blocksCalcRows.length} row(s) currently in the calculator.`)) return;
+
+        blocksCalcRows = JSON.parse(JSON.stringify(entry.rows));
+        // Re-key ids so they never collide with anything already seen this
+        // session, and keep the running sequence ahead of every loaded row.
+        let maxId = 0;
+        blocksCalcRows.forEach(r => { r.id = ++blocksCalcRowSeq; if (r.id > maxId) maxId = r.id; });
+        if (typeof entry.wastageEnabled === 'boolean') blocksCalcWastageEnabled = entry.wastageEnabled;
+        if ([3,5,10].includes(entry.wastagePct)) blocksCalcWastagePct = entry.wastagePct;
+        if (typeof entry.roundEnabled === 'boolean') blocksCalcRoundEnabled = entry.roundEnabled;
+        if ([10,25,50].includes(entry.roundTo)) blocksCalcRoundTo = entry.roundTo;
+
+        blocksCalcLoadPanelOpen = false;
+        renderBlocksCalcLoadPanel();
+        renderAdjustStrip();
+        renderBlocksCalcRows();
+        persistBlocksCalcDraft();
+        showToast('📂 Loaded "' + entry.name + '"', 'success');
+    }
+
+    function deleteBlocksCalcSaved(id) {
+        let entry = blocksCalcSavedList.find(s => s.id === id);
+        if (!entry) return;
+        if (!confirm(`Delete saved calculation "${entry.name}"? This cannot be undone.`)) return;
+        blocksCalcSavedList = blocksCalcSavedList.filter(s => s.id !== id);
+        persistBlocksCalcSavedList();
+        renderBlocksCalcLoadPanel();
+    }
+
+
+    function renderBlocksCalcSummary() {
+        let { totals, untaggedArea } = getBlocksCalcSizeTotals();
+        let sizes = Object.keys(totals).map(Number).sort((a,b) => a-b);
+        let body = document.getElementById('blocksCalcSummaryBody');
+        let quoBtn = document.getElementById('btnBlocksToQuo');
+        let salBtn = document.getElementById('btnBlocksToSal');
+
+        if (sizes.length === 0) {
+            body.innerHTML = untaggedArea > 0
+                ? `<span style="color:#e67e22;">${untaggedArea.toFixed(2)} sq.ft entered but no size picked yet on those rows.</span>`
+                : 'No rows added yet.';
+            quoBtn.disabled = true; salBtn.disabled = true;
+            return;
+        }
+
+        let grandBlocks = 0;
+        let rowsHtml = sizes.map(sz => {
+            let sqft = totals[sz];
+            let { raw, final } = blocksCalcAdjustedCount(sqft);
+            grandBlocks += final;
+            let adjustedNote = final !== raw ? ` <span style="color:#7f8c8d; font-weight:normal;">(net ${raw})</span>` : '';
+            return `<div style="display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid #34495e;">
+                <span>${sz}" Block — ${sqft.toFixed(2)} sq.ft</span>
+                <span style="font-weight:bold; color:#2ecc71;">${final} blocks${adjustedNote}</span>
+            </div>`;
+        }).join('');
+        if (untaggedArea > 0) {
+            rowsHtml += `<div style="color:#e67e22; font-size:11px; margin-top:4px;">+ ${untaggedArea.toFixed(2)} sq.ft on rows with no size picked (excluded from totals)</div>`;
+        }
+        rowsHtml += `<div style="display:flex; justify-content:space-between; padding:6px 0 0 0; margin-top:4px; border-top:1px solid #465c71; font-weight:bold;">
+            <span>Total blocks (all sizes)</span><span style="color:#2ecc71;">${grandBlocks}</span>
+        </div>`;
+        let adjustParts = [];
+        if (blocksCalcWastageEnabled) adjustParts.push(`+${blocksCalcWastagePct}% wastage`);
+        if (blocksCalcRoundEnabled) adjustParts.push(`rounded up to nearest ${blocksCalcRoundTo}`);
+        if (adjustParts.length > 0) {
+            rowsHtml += `<div style="font-size:10px; color:#7f8c8d; margin-top:3px;">Includes ${adjustParts.join(', ')}</div>`;
+        }
+        body.innerHTML = rowsHtml;
+        quoBtn.disabled = false; salBtn.disabled = false;
+    }
+
+
+    // "Convert to Quotation/Sales Invoice": opens a fresh document of the
+    // chosen type, then queues one {size, qty} entry per size group. The
+    // queue is consumed one at a time — each call pre-fills the Block
+    // Picker (size selected, qty in #qtyInput) and waits; the user picks a
+    // brand and taps "+ Add to Document" as normal. addItemBlocksCalcAware()
+    // (a thin wrapper installed once, below) detects when an add just
+    // happened while a queue is active and automatically advances to the
+    // next size — so nothing about addItem() itself was changed.
+    function convertBlocksCalcToDoc(docType) {
+        let { totals } = getBlocksCalcSizeTotals();
+        let sizes = Object.keys(totals).map(Number).sort((a,b) => a-b);
+        if (sizes.length === 0) { alert('Add at least one sized wall row first.'); return; }
+
+        if (cart.length > 0 || hasUnsavedChanges) {
+            if (!confirm('This will start a new document and clear the current one. Continue?')) return;
+        }
+
+        blocksCalcConvertQueue = sizes.map(sz => ({ size: sz, qty: blocksCalcAdjustedCount(totals[sz]).final }));
+
+        createNewDoc();
+        document.getElementById('docType').value = docType;
+        switchAppMode();
+        hasUnsavedChanges = false;
+
+        advanceBlocksCalcQueue();
+
+        // Scroll the picker into view so the pre-filled size/qty is visible
+        // immediately rather than requiring a manual scroll on mobile.
+        let picker = document.getElementById('blockPickerBox');
+        if (picker) picker.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Pulls the next {size, qty} off the queue and pre-fills the picker.
+    // If the queue is empty, hides the banner — the user is done, the
+    // calculator's job here is finished, and the doc behaves exactly like
+    // any normal document from this point on.
+    function advanceBlocksCalcQueue() {
+        let banner = document.getElementById('blocksCalcQueueBanner');
+        if (blocksCalcConvertQueue.length === 0) {
+            banner.style.display = 'none';
+            return;
+        }
+        let next = blocksCalcConvertQueue[0];
+        if (useLegacyProductUI) toggleLegacyProductUI(false); // ensure the Size+Brand picker is visible to pre-fill into
+        selectBlockSize(next.size);
+        document.getElementById('qtyInput').value = next.qty;
+        banner.style.display = 'block';
+        banner.innerText = `🧱 ${next.qty} blocks (${next.size}") queued — pick a brand and tap "+ Add to Document" (${blocksCalcConvertQueue.length} size${blocksCalcConvertQueue.length>1?'s':''} remaining)`;
+    }
+
+    // Thin wrapper around the real addItem(), installed once at the bottom
+    // of this module (see IIFE below). Calls the original unmodified
+    // function first, then — only if a conversion queue is active AND the
+    // item that was just added matches the size that was queued — pops the
+    // queue and advances to the next size. If the user changes the size
+    // mid-way or adds something else, the queue simply stays put rather
+    // than guessing; nothing breaks, it just waits.
+    function blocksCalcHandlePostAdd(addedProductName) {
+        if (blocksCalcConvertQueue.length === 0) return;
+        let next = blocksCalcConvertQueue[0];
+        let expectedPrefix = `AAC Block ${next.size} Inch`;
+        if (addedProductName && addedProductName.indexOf(expectedPrefix) === 0) {
+            blocksCalcConvertQueue.shift();
+            advanceBlocksCalcQueue();
+        }
+    }
+
+    (function installBlocksCalcAddItemHook() {
+        let originalAddItem = addItem;
+        addItem = function() {
+            let productBeforeAdd = document.getElementById('prodSelect').value;
+            let cartLenBefore = cart.length;
+            originalAddItem();
+            if (cart.length > cartLenBefore) blocksCalcHandlePostAdd(productBeforeAdd);
+        };
+    })();
+
     // v70: BRIDGE FUNCTIONS — every piece of pricing math (getDynamicBlockRate,
     // triggerRateAutoFill, etc.) reads "the currently selected product" and
     // "the currently selected tier" through these two functions instead of
@@ -5722,6 +7343,13 @@
     let savedDocs = (() => {
         try { return JSON.parse(localStorage.getItem('kenSavedDocsCache') || '[]'); } catch(e) { return []; }
     })();
+
+    // PERF: timestamp of the last successful docs pull from the cloud.
+    // Used to skip redundant refetches when the list is reopened moments
+    // later (see openSavedDocs). Deliberately session-scoped (not
+    // persisted) so a fresh page load always does one real sync.
+    let _lastCloudDocsSyncMs = 0;
+    const CLOUD_DOCS_FRESH_MS = 20000; // 20s — long enough to kill repeat opens, short enough to stay current
 
     function persistSavedDocsCache() {
         try { localStorage.setItem('kenSavedDocsCache', JSON.stringify(savedDocs)); } catch(e) {
@@ -7296,6 +8924,7 @@
                 // string vs number ids (which broke "select all" / bulk actions).
                 savedDocs = (data || []).map(d => ({ ...d, id: Number(d.id) }));
                 mergeOfflineQueueIntoSavedDocs(); // keep offline/pending docs visible
+                _lastCloudDocsSyncMs = Date.now(); // PERF: mark docs as freshly synced
                 persistSavedDocsCache();
                 isCloudSyncing = false;
                 lastSyncOk = true; lastSyncAt = new Date(); lastSyncError = '';
@@ -7400,6 +9029,15 @@
     // was last chosen via "Use old dropdown instead" on this device.
     populateBlockBrandDropdown();
     selectTier(getCurrentTier());
+    // v73a TRIAL: restore any in-progress calculator draft (a killed tab/
+    // app on-site should never erase wall entries already typed in) —
+    // falls back to seeding one empty row only if there's truly nothing
+    // saved, so the calculator is never just a blank dead end.
+    restoreBlocksCalcDraft();
+    if (blocksCalcRows.length === 0) addBlocksCalcRow();
+    blocksCalcSavedList = getBlocksCalcSavedList();
+    renderAdjustStrip();
+    renderBlocksCalcRows();
     try {
         if (localStorage.getItem('kenUseLegacyProductUI') === '1') toggleLegacyProductUI(true);
     } catch(e) {}
@@ -7419,6 +9057,9 @@
     // pull has genuinely finished, so there's nothing left that can pull
     // the old data back in afterward.
     pullCloudCollectionsOnLoad().then(() => {
+        // v74: safe to seed C0 to the cloud only now that the pull has
+        // resolved and local actually reflects what the cloud holds.
+        runSelfHealSafely('seedTestingClientAfterPull', seedTestingClientAfterPull);
         runSelfHealSafely('autoCleanupLegacySiteRows', autoCleanupLegacySiteRows);
         runSelfHealSafely('autoCleanupLegacyProjectRows', autoCleanupLegacyProjectRows);
         runSelfHealSafely('autoCleanupLegacyTripRows', autoCleanupLegacyTripRows);
@@ -7550,6 +9191,7 @@
                 if (docs && docs.length > 0) {
                     savedDocs = docs.map(d => ({ ...d, id: Number(d.id) || d.id }));
                     mergeOfflineQueueIntoSavedDocs(); // keep offline/pending docs visible
+                    _lastCloudDocsSyncMs = Date.now(); // PERF: mark docs as freshly synced
                     persistSavedDocsCache();
                     if (!isCurrentVoided && currentlyLoadedDocId === null) {
                         document.getElementById('docNoIn').value = getNextDocNo(document.getElementById('docType').value);
@@ -7580,24 +9222,55 @@
         // If the pendingPush flag was just stale (no genuinely new local
         // data, e.g. Testing client that already exists in cloud), it's
         // cleared automatically. This breaks every deadlock at the root.
-        let pulls = collectionsToPull.map(([remoteKey, , , localOnlySetter]) => {
+        let pulls = collectionsToPull.map(([remoteKey, , localGetter, localOnlySetter]) => {
             let pushKey = toPushKey(remoteKey);
             return fetch(WEB_APP_URL + '?sheet=' + remoteKey)
                 .then(r => r.json())
                 .then(raw => {
                     let { data, stamp } = parseCollectionResponse(raw);
-                    // Record stamp immediately — this is the key that
-                    // eliminates false conflicts on fresh/reloaded devices.
+
+                    // v74 CRITICAL GUARD — "adopt cloud unconditionally" is
+                    // right when we genuinely heard from the cloud, but
+                    // parseCollectionResponse() returns an EMPTY ARRAY for
+                    // any response it can't understand: a backend error
+                    // object, an Apps Script HTML error page, a truncated
+                    // body, a transient failure. Adopting that blindly
+                    // wipes a populated local collection — and because the
+                    // wipe lands locally, the debounced push that follows
+                    // then propagates the emptiness to the cloud, making a
+                    // momentary network hiccup permanent, everywhere.
+                    //
+                    // So: an empty result is only trusted when the response
+                    // was well-formed enough to prove the cloud really is
+                    // empty (recognised shape AND a stamp, or an explicit
+                    // empty array in the modern envelope). Otherwise keep
+                    // local, leave _initialPullDone unset for this
+                    // collection so no push can fire on stale state, and
+                    // let the next load retry.
+                    let localData = [];
+                    try { localData = localGetter() || []; } catch(e) {}
+                    let wellFormed = Array.isArray(raw) || (raw && Array.isArray(raw.data));
+
+                    if (data.length === 0 && localData.length > 0 && !wellFormed) {
+                        console.warn('[Pull] refusing to wipe', remoteKey,
+                            '— empty/unparseable cloud response but', localData.length, 'local record(s). Keeping local.');
+                        return; // finally{} below is skipped for _initialPullDone via the flag check
+                    }
+
                     if (stamp) recordStamp(pushKey, stamp);
-                    // Adopt cloud data unconditionally. Cloud is the bible.
                     localOnlySetter(data);
-                    // Clear stale pendingPush for this collection. The pull
-                    // just confirmed our local state matches the cloud, so
-                    // there's nothing genuinely pending anymore.
                     clearPendingPush(pushKey);
+                    _pullAdopted[pushKey] = true;
                 })
                 .catch(() => {})
-                .finally(() => { _initialPullDone[pushKey] = true; });
+                .finally(() => {
+                    // Only mark the initial pull complete — which is what
+                    // unblocks pushing for this collection — if we actually
+                    // adopted cloud state. A failed or refused pull must NOT
+                    // unblock a push, or local (possibly stub/empty) data
+                    // gets written over good cloud data.
+                    if (_pullAdopted[pushKey]) _initialPullDone[pushKey] = true;
+                });
         });
 
         // Sites — always pull and adopt cloud (same RC2 fix as collections above)
@@ -7716,6 +9389,35 @@
                             if (Array.isArray(parsed)) { localStorage.setItem('kenAddressOptions', JSON.stringify(parsed)); }
                         } catch(e) {}
                     }
+
+                    // v73a: the four formerly local-only collections. Same
+                    // merge-safe rule used elsewhere — adopt the cloud copy
+                    // ONLY when this device has nothing pending for that key,
+                    // so an unpushed local edit is never clobbered by an
+                    // older cloud value. getAllConfig() may hand these back
+                    // already-parsed (it JSON.parses each cell), so both
+                    // shapes are handled.
+                    Object.keys(CONFIG_SYNC_KEYS).forEach(configKey => {
+                        if (!(configKey in data)) return;
+                        if (_pendingPush.has(configKey)) return; // local is ahead — leave it alone
+                        let val = data[configKey];
+                        if (typeof val === 'string') {
+                            try { val = JSON.parse(val); } catch(e) { /* may be a plain scalar string */ }
+                        }
+                        if (val === null || val === undefined) return;
+                        try {
+                            // Most of these collections are arrays/objects, but
+                            // some are plain scalars (creditPeriodDays is a
+                            // number). Store scalars raw so getters that do
+                            // parseInt(getItem(...)) still read them correctly,
+                            // and JSON-encode structured values as before.
+                            if (Array.isArray(val) || typeof val === 'object') {
+                                localStorage.setItem(CONFIG_SYNC_KEYS[configKey], JSON.stringify(val));
+                            } else {
+                                localStorage.setItem(CONFIG_SYNC_KEYS[configKey], String(val));
+                            }
+                        } catch(e) {}
+                    });
                 })
                 .catch(() => {})
         );
@@ -7868,7 +9570,26 @@
             // always has these two keys. Catches "wrong file selected"
             // before any preview is shown, rather than silently restoring
             // garbage.
-            if (!('exportedAt' in parsed) || !('appVersion' in parsed)) {
+            //
+            // v74a: ALSO accept the standalone client-registry backup that
+            // resetClientRegistry() downloads. That file is written with
+            // {type:'ClientRegistryBackup', clients:[...]} and no
+            // appVersion, so the check below used to reject it outright —
+            // meaning the app could WRITE that backup but had no way to
+            // read it back, making it a dead end exactly when someone
+            // needed it most. It's normalised into the standard shape here
+            // so the existing preview/confirm/restore path handles it
+            // unchanged.
+            let isClientRegistryBackup = (parsed && parsed.type === 'ClientRegistryBackup' && Array.isArray(parsed.clients));
+
+            if (isClientRegistryBackup) {
+                parsed = {
+                    exportedAt: parsed.exportedAt || new Date().toISOString(),
+                    appVersion: parsed.appVersion || '(client registry backup)',
+                    _clientsOnly: true,
+                    clients: parsed.clients
+                };
+            } else if (!('exportedAt' in parsed) || !('appVersion' in parsed)) {
                 statusEl.innerHTML = '❌ This doesn\'t look like a KEN Traders backup file (missing expected fields).';
                 return;
             }
@@ -7885,7 +9606,17 @@
 
     function renderRestorePreview(data) {
         let exportedDate = data.exportedAt ? new Date(data.exportedAt).toLocaleString('en-IN') : 'unknown date';
-        let collections = [
+        // v74a: make a clients-only restore visually unmistakable, so it
+        // can't be misread as a full backup that's mysteriously missing
+        // everything else.
+        let clientsOnlyNotice = data._clientsOnly
+            ? `<div style="background:#fef5e7; border-left:4px solid #e67e22; padding:10px; border-radius:4px; font-size:12px; color:#7e5109; margin-bottom:10px;">
+                 <b>Client registry backup</b> — this file contains ONLY clients. Restoring it will replace your client list and leave documents, stock, sites and everything else untouched.
+               </div>`
+            : '';
+        let collections = data._clientsOnly ? [
+            ['clients', 'Clients']
+        ] : [
             ['documents', 'Documents (invoices, quotes, etc.)'],
             ['clients', 'Clients'],
             ['stockItems', 'Stock Items'],
@@ -7909,6 +9640,7 @@
         }).join('');
 
         document.getElementById('restorePreviewBody').innerHTML = `
+            ${clientsOnlyNotice}
             <div style="font-size:12px; color:#7f8c8d; margin-bottom:10px;">Backup taken: <b>${exportedDate}</b> (${data.appVersion || 'unknown version'})</div>
             <table class="analytics-table"><tbody>${rows}</tbody></table>
             <div style="font-size:11px; color:#888; margin-top:8px;">Only the collections actually present in this file will be touched — anything missing from the file (shown greyed out above) is left exactly as it is now.</div>
@@ -9117,6 +10849,7 @@
     }
     function saveCustomItemUsage(usage) {
         try { localStorage.setItem('kenCustomItemUsage', JSON.stringify(usage)); } catch(e) {}
+        queueConfigCollectionSync('customItemUsage', usage); // v73a: was local-only
     }
 
     function trackCustomItemUsage(name, rate) {
@@ -9700,7 +11433,15 @@
         // until a full page reload.
         _cachedLineItems = null;
         saveBtn.innerText = "💾 SAVE DOC"; saveBtn.disabled = false;
-        showToast('✅ Saved — syncing to cloud...', 'success');
+        // UX: this is the ONE toast a successful save shows. The document is
+        // already written to savedDocs + localStorage and is already visible
+        // in View List by this point, so the cloud push that follows has
+        // nothing left to tell the user on success — a second "synced"
+        // toast arriving 4-5s later just interrupts whatever they moved on
+        // to, confirming something they were already shown. Failures still
+        // toast loudly below, because those DO change what the user needs
+        // to do. Cloud status remains inspectable any time via Sync Health.
+        showToast('✅ Saved', 'success');
 
         fetch(WEB_APP_URL, {
             method: 'POST',
@@ -9724,7 +11465,9 @@
                 }
                 return;
             }
-            showToast('☁️ Synced to cloud', 'success');
+            // Success: intentionally silent. See the '✅ Saved' toast above —
+            // the user already got their confirmation the moment the save
+            // landed locally. Nothing new to report here.
         })
         .catch(err => {
             queueOfflineDocSave(docData);
@@ -9844,7 +11587,14 @@
 
     function openSyncHealth() {
         document.getElementById('syncHealthModal').style.display = 'flex';
+        // Default to the Sync tab; openDataRecovery() switches to Recovery
+        // immediately after calling this, so both entry points land correctly.
+        document.getElementById('dsTabSync').classList.add('active');
+        document.getElementById('dsTabRecovery').classList.remove('active');
+        document.getElementById('dsTabBtnSync').classList.add('active');
+        document.getElementById('dsTabBtnRecovery').classList.remove('active');
         renderSyncHealth();
+        renderDataRecovery(); // prerender so switching tabs is instant
     }
     function closeSyncHealth() { document.getElementById('syncHealthModal').style.display = 'none'; }
 
@@ -10052,8 +11802,39 @@
     // the toggle would silently reset to OFF every time the app is closed
     // and reopened, defeating the entire point of it being "persistent."
     function initForceMobileMain() {
-        let saved = false;
-        try { saved = localStorage.getItem('kenForceMobileMain') === '1'; } catch(e) {}
+        let saved = null;
+        try {
+            let raw = localStorage.getItem('kenForceMobileMain');
+            if (raw !== null) saved = (raw === '1');
+        } catch(e) {}
+
+        // v74: if the person has never explicitly chosen, auto-enable when
+        // this is running as an INSTALLED PWA on a phone-sized screen.
+        //
+        // The whole reason this toggle exists is that some installed
+        // Android shells report a logical viewport too wide for the
+        // @media breakpoints to fire, so the app renders desktop layout on
+        // a phone. Detecting standalone display-mode catches exactly that
+        // case. The screen.width check keeps a genuine desktop/tablet PWA
+        // install on its normal desktop layout rather than forcing a
+        // phone layout onto a large screen.
+        //
+        // An explicit saved choice ALWAYS wins — this only fills in a
+        // sensible default for someone who has never touched the toggle,
+        // and never overrides a decision already made.
+        if (saved === null) {
+            let isStandalone = false;
+            try {
+                isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                    || window.matchMedia('(display-mode: fullscreen)').matches
+                    || window.matchMedia('(display-mode: minimal-ui)').matches
+                    || window.navigator.standalone === true; // iOS
+            } catch(e) {}
+            let physicalWidth = 0;
+            try { physicalWidth = Math.min(screen.width || 0, screen.height || 0); } catch(e) {}
+            saved = isStandalone && physicalWidth > 0 && physicalWidth <= 820;
+        }
+
         document.body.classList.toggle('force-mobile-main', saved);
         updateForceMobileToggleLabel(saved);
     }
@@ -10115,6 +11896,17 @@
         renderDocList();
         document.getElementById('docModal').style.display = 'flex';
 
+        // PERF: skip the background cloud refetch if we already pulled (or
+        // pushed) very recently. Every save already updates savedDocs +
+        // localStorage locally, so reopening the list seconds later has
+        // nothing new to learn from the cloud — the old code refetched
+        // unconditionally, so closing and reopening View List meant sitting
+        // through another full round-trip for identical data. Outside this
+        // window it refreshes exactly as before.
+        if (Date.now() - _lastCloudDocsSyncMs < CLOUD_DOCS_FRESH_MS) {
+            return;
+        }
+
         // Background refresh
         let listBtn = document.querySelector('.btn-list');
         listBtn.innerText = "⏳ SYNCING..."; listBtn.disabled = true;
@@ -10123,6 +11915,7 @@
             .then(data => {
                 savedDocs = (data || []).map(d => ({ ...d, id: Number(d.id) }));
                 mergeOfflineQueueIntoSavedDocs(); // keep offline/pending docs visible in the list
+                _lastCloudDocsSyncMs = Date.now(); // PERF: mark docs as freshly synced
                 persistSavedDocsCache();
                 renderDocList();
                 listBtn.innerText = "📂 VIEW LIST"; listBtn.disabled = false;
@@ -12575,6 +14368,12 @@
     }
     function setCreditPeriodDays(v) {
         try { localStorage.setItem('kenCreditPeriodDays', String(parseInt(v, 10) || 0)); } catch(e) {}
+        // v74a: this is a real business setting (it drives the Outstanding
+        // ageing buckets), not a device preference — so it belongs on the
+        // cloud like every other shared setting. Previously local-only,
+        // meaning it silently reverted to 0 on any new device or after a
+        // storage clear, quietly changing what "overdue" meant in reports.
+        queueConfigCollectionSync('creditPeriodDays', parseInt(v, 10) || 0);
         renderOutstanding();
     }
 
@@ -13352,6 +15151,7 @@
     }
     function saveAuditDocsLocal(docs) {
         try { localStorage.setItem('kenAuditDocs', JSON.stringify(docs)); } catch(e) {}
+        queueConfigCollectionSync('auditDocs', docs); // v73a: was local-only
     }
 
     // Converts a File object to a base64 string (without the data: URL
@@ -14735,7 +16535,10 @@
     // ================================================================
 
     function getCbTemplates() { try { return JSON.parse(localStorage.getItem('kenCbTemplates') || '[]'); } catch(e) { return []; } }
-    function saveCbTemplates(t) { try { localStorage.setItem('kenCbTemplates', JSON.stringify(t)); } catch(e) {} }
+    function saveCbTemplates(t) {
+        try { localStorage.setItem('kenCbTemplates', JSON.stringify(t)); } catch(e) {}
+        queueConfigCollectionSync('cbTemplates', t); // v73a: was local-only
+    }
 
     function renderCbQuickTemplates() {
         let box = document.getElementById('cbQuickTemplates');
@@ -17245,7 +19048,7 @@
         let idx = savedLetters.findIndex(l => l.id === letterData.id);
         if (idx > -1) savedLetters[idx] = letterData; else savedLetters.push(letterData);
         currentlyLoadedLetterId = letterData.id;
-        showToast('✅ Letter saved — syncing to cloud...', 'success');
+        showToast('✅ Letter saved', 'success'); // final toast on success — see saveDocument() for rationale
 
         fetch(WEB_APP_URL, {
             method: 'POST',
@@ -17256,9 +19059,8 @@
         .then(res => {
             if (res && res.success === false) {
                 showToast('⚠️ Cloud sync failed: ' + (res.error || 'Unknown error') + ' — saved locally', 'error');
-            } else {
-                showToast('☁️ Letter synced to cloud', 'success');
             }
+            // Success: intentionally silent (see saveDocument()).
         })
         .catch(() => showToast('📡 Offline — letter saved locally, will need manual re-save when back online', 'info'));
     }
@@ -17645,6 +19447,7 @@
     }
     function saveAdvancePool(pool) {
         try { localStorage.setItem('kenAdvancePool', JSON.stringify(pool)); } catch(e) {}
+        queueConfigCollectionSync('advancePool', pool); // v73a: was local-only — advance balances are money owed
     }
     function getClientAdvPool(clientId) {
         return getAdvancePool()[clientId] || { entries: [] };
