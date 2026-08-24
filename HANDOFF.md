@@ -1,7 +1,7 @@
 # KEN Traders Master OS — Project Handoff
 
 **Owner:** Raaja — AAC blocks business, Udumalpet, Tamil Nadu
-**Current shipped version:** v79
+**Current shipped version:** v80
 **Last updated:** 24 August 2026
 
 ---
@@ -19,13 +19,14 @@
 | Database | Google Sheets |
 | Offline support | Service worker (`sw.js`) with versioned cache |
 | PDF generation | `html2pdf.js` |
-| Testing | Node + jsdom harness |
+| Testing | Node + jsdom harness, plus a mock Apps Script runtime |
 
-The entire application is one HTML file, currently ~1.27 million characters. There is no build step — the file is deployed as-is.
+The entire application is one HTML file, currently ~1.37 million characters. There is no build step — the file is deployed as-is.
 
 ### Business domain model
 
 **Product catalogue**
+
 - AAC Blocks: 4, 6, 8 and 9 inch — brand-distinct SKUs (Meghalite, Birla)
 - Jointing Mortar (40 Kg bag) — single SKU, **never** brand-split
 - Services: Transport, Loading, Unloading, Loading & Unloading
@@ -44,6 +45,7 @@ The entire application is one HTML file, currently ~1.27 million characters. The
 | `EXP` | General Expense Voucher | |
 
 **Pricing engine.** Block rates are calculated dynamically, not fixed:
+
 - Per-inch base rate varies by **tier** — Customer / Engineer / Builder / Sub-Dealer
 - A **retail premium** (+₹10/block) applies unless the order crosses a **wholesale tonnage threshold** (default 12 tonnes), calculated live from cart weight
 - Because rates are dynamic, blocks are deliberately excluded from any "last used rate" shortcut
@@ -60,10 +62,11 @@ These conventions were established over multiple sessions and should be carried 
 
 1. **Read the actual file before modifying anything.** Never recommend or edit based on assumption. Grep and read the real function first. This has repeatedly caught wrong assumptions.
 2. **Test logic before building UI.** Isolated Node fixtures first, UI second.
-3. **Extracting real functions from the shipped file and testing those is stronger than testing hand-copies.** Used for the auto-link engine (v78) and the shortfall engine (v79).
-4. **Check for dead code before implementing.** The duplicate invoice guard turned out to be already live and fully wired — nearly rebuilt for nothing.
+3. **Extracting real functions from the shipped file and testing those is stronger than testing hand-copies.** Used for the auto-link engine (v78), the shortfall engine (v79), and every v80 engine.
+4. **Check for dead code before implementing.** Caught twice now — the duplicate invoice guard (v79 item 7) and bulk PDF export (v80 item 24) were both already live and fully wired.
 5. **Honest disclosure.** Sandbox losses, wrong first attempts and incorrect diagnoses get stated plainly, not quietly worked around.
 6. **Don't build tests against UX that's about to change.** Decide and implement UX first, then test.
+7. **Extract, never duplicate, a rule that already exists.** Where a second caller needs logic that lives inside a render function, lift it out and have both use it. Two copies of the outstanding-balance rules or the document-list filter would drift within a release.
 
 ### Version bump protocol — one atomic step
 
@@ -72,262 +75,236 @@ All three must move together, then ship:
 1. `const APP_VERSION = "vNN";`
 2. `<span id="appVersionBadge">vNN</span>`
 3. `sw.js` → `const CACHE_NAME = 'ken-traders-vNN';`
-4. Copy both files to `/mnt/user-data/outputs/`
-5. Call `present_files`
+4. Commit and push both files to `origin/main`
 
-### Environment notes
+### ⚠️ Environment lesson learned in v80
 
-- `/mnt/user-data/outputs/` **survives sandbox resets** — it is the source of truth for recovery
-- `/home/claude/` **does not survive** — working copies must be restored from outputs
-- `bash_tool` availability has varied between sessions; `subprocess.run(['bash','-lc', ...])` via `code_execution` is the fallback
-- jsdom may need reinstalling after a reset: `npm install jsdom --silent`
+**The chat sandbox's `/mnt/user-data/outputs/` is NOT durable across sessions.** The v78 and v79 work was delivered as file downloads and never committed — when v80 started, the repository was still at **v77** and the v78/v79 source existed nowhere the new session could reach. Raaja recovered it by pasting v79 in by hand.
 
-### Test harness (`/home/claude/harness.js`)
+**From now on: the git repository is the only source of truth.** Every release gets committed and pushed the same day it ships. Never rely on a sandbox path surviving.
 
-Boots the real application HTML inside jsdom with stubbed browser APIs.
+### Test harness
 
-**API signatures (easy to get wrong):**
-```js
-const { win, doc, captured, setPromptAnswers, setConfirmAnswers } = await bootApp({
-  seed: { kenStockBatches: '...' },   // NOTE: 'seed', not 'preseed'
-  fetchResponse: [...]
-});
+Three suites, all runnable with plain `node`:
 
-t.check(label, pass, detail)          // label FIRST
-t.eq(label, actual, expected)         // label FIRST
-captured.errors                       // NOT a bare `errors` variable
-```
+| File | Purpose |
+|---|---|
+| `harness.js` | Boots the real application HTML inside jsdom with stubbed browser APIs |
+| `extract.js` | Pulls named functions out of the shipped HTML by brace-matching, so tests exercise shipped code |
+| `gas_mock.js` | In-memory Apps Script runtime (SpreadsheetApp / DriveApp / LockService / Utilities) |
+| `t.js` | Assertion helper — label FIRST, matching the v79 convention |
 
 **Critical gotchas:**
-- Must call `process.exit(0)` at the end — the app sets intervals that keep Node's event loop alive forever
-- The harness does **not** export DOM helpers (`byId`, `setValue`) — define them locally in each test
+
+- Must call `process.exit()` at the end — the app sets intervals that keep Node's event loop alive forever
+- **App state is closure-scoped.** `cart`, `savedDocs`, `currentlyLoadedDocId` and `selectedDocIds` are `let` bindings at the top level of a classic script. They live in the global *lexical* environment, so `win.cart` is `undefined` and assigning to it silently does nothing. The harness exposes `app(code)` — an indirect `window.eval` that *can* see them. This is the only way to drive real app state from a test.
 - `navigator.serviceWorker` must be stubbed with a real `.register()` returning a promise
-- **App state is closure-scoped.** `cart`, `savedDocs` and `currentlyLoadedDocId` are *not* assignable from outside via `win.` — seed through localStorage, or extract the function and inject dependencies
+- jsdom may need reinstalling: `npm install jsdom --silent`
 
 ---
 
 ## 3. Journey So Far
 
 ### v77 — PDF export fix
+
 CSS specificity fix for A4 PDF export. Shipped.
 
 ### v78 — Stock Manager redesign
 
-A substantial rebuild of stock tracking, completed after a mid-session sandbox reset destroyed the in-progress work (disclosed plainly; all changes were reapplied from the documented plan and re-verified from scratch).
+A substantial rebuild of stock tracking.
 
 **Decisions locked with Raaja:**
+
 - Sold quantities come from **Tax Invoices only**, never Sales Invoices — SAL is re-issued for revisions without voiding the old one, which was causing genuine double-counting
 - Credit Notes reduce sold counts
 - Landing cost / margin detail stays available but collapsed; the primary view is plain Bought / Sold / Ledger quantity
 - All Tax Invoices auto-link to stock on save — no manual linking step
 - Mortar is tracked but never brand-split; blocks stay brand-distinct
 
-**What was built:**
-- Simple stock data layer: `getSimpleBoughtQty`, `getSimpleSoldQty`, `getSimpleLedgerQty`, physical count storage
-- Automatic invoice→stock linking with full idempotency: `reverseStockMovementsForDoc`, `autoLinkInvoiceStock`, `applyCreditNoteReturn`. Handles edit, void, un-void and re-save without double-deducting
-- Overview tab: per-item cards showing Bought / Sold / Ledger plus an editable physical count with live mismatch display
-- **Bug fixed:** `searchLinkableInvoices()` included `['INV','SAL']`, causing double-counting. Restricted to `INV`
-- Link Invoice tab reframed as backfill-only for pre-v78 invoices
-- Add Batch simplified — cost no longer required to log a batch
-
-**Verification:** 8/8 simple stock logic, 11/11 auto-link lifecycle (against functions extracted from the shipped file), jsdom structural checks, full-file syntax and duplicate checks.
+**Verification:** 8/8 simple stock logic, 11/11 auto-link lifecycle, jsdom structural checks.
 
 ### UX audit (between v78 and v79)
 
-Rather than immediately writing a test suite, Raaja redirected to fixing UX first. A systematic scan was performed of all 226 `<input>` tags, 81 `<select>` tags, 415 onclick handlers, 292 distinct handler functions and 42 modals.
-
-**Key finding:** three fields required typing a document number from memory (`crnOrigRef`, `rcpInvoiceRef`, `supersedesRef`), while the correct search-and-tap picker pattern already existed elsewhere in the app and simply hadn't been applied consistently.
-
-This audit produced the 25-item roadmap in section 5.
+A systematic scan of all 226 `<input>` tags, 81 `<select>` tags, 415 onclick handlers, 292 distinct handler functions and 42 modals. Produced the 25-item roadmap.
 
 ### v79 — Stock entry simplification + nine UX features
 
-Shipped in two stages. See section 4.
+Quick Stock Entry (brand once, preset sizes, quantity only) plus UX items 1–9. **99/99 tests.** Two real bugs caught by the tests: a temporal-dead-zone crash on boot, and quick-add chips leaking dynamically-priced blocks with stale rates. Also fixed `convertDocument()` silently dropping the client's GSTIN.
+
+### v80 — The remaining 15 roadmap items
+
+See section 4. **387/387 tests.** The roadmap is now complete.
 
 ---
 
-## 4. What v79 Delivers
+## 4. What v80 Delivers
 
-### Stage 1 — Quick Stock Entry
+All 15 remaining roadmap items, plus a rebuilt backend.
 
-**Problem:** logging a delivery required typing the full item name as free text (`AAC Block 8 Inch (Meghalite)`) on every row, plus cost details that Raaja didn't want to deal with.
+### Money-saving
 
-**Solution:** a Quick Entry panel at the top of Add Batch — pick the brand **once**, then all four block sizes plus mortar are preset with only a quantity box each.
+| # | Item | What it does |
+|---|---|---|
+| 16 | **Below-cost sale warning** | *The one that pays for the release.* Live banner while building the cart, plus an overridable pre-save confirmation. Compares the rate **net of GST and discount** (via the shared `computeDocLines` engine, so it can never disagree with the printed invoice) against the weighted-average landing cost. |
+| 17 | Slow-moving stock ageing | Per-**batch** ageing on quantity still on hand — valid because consumption is FIFO, so quantity left on an old batch genuinely is old stock. Buckets 0–30 / 31–60 / 61–90 / 90+, with everything over 60 days listed individually. In Stock → Overview. |
+| 18 | Freight charged vs paid | Transport lines billed out on INV/SAL against transport recorded on purchase batches, with a recovery percentage and a count of invoices carrying **no** transport line at all. In Stock → Profit. |
+| 19 | Breakage costing | The physical-count mismatch valued in rupees at landing cost. In Stock → Overview, directly under the counts. |
+| 20 | Credit-period enforcement | Live banner when a past-terms client is named, plus a pre-save confirmation on INV/SAL. |
 
-- Composes canonical item names via `composeBlockProductName()` so they match invoice line names character-for-character
-- Feeds the existing batch engine — no parallel storage path
-- Switching brand and entering again **appends** (second lorry, different brand)
-- Boxes clear between entries so stale numbers can't be re-added
-- Cost remains entirely optional in a collapsed section
+### UX
 
-**Tests:** 19/19.
+| # | Item | What it does |
+|---|---|---|
+| 11 | Site suggestions | `<datalist>` on the delivery-site field, fed from the Sites registry **and** from sites actually typed on past documents. |
+| 12 | Vehicle number chips | Recent lorries derived from saved documents (`vehicle` and `vVeh`) — no new storage to drift. Recency first, frequency as tiebreak. Tapping the active chip clears it. |
+| 13 | Sticky mobile grand total | Fixed bottom bar under 700px. Injected outside `#billPage` and marked `no-print`, and hidden during PDF capture. |
+| 14 | Cloud sync status | Per-document badge in the list plus a headline count. The existing indicator was a transient global toast — it answered "is a sync running", not "is this invoice safe". |
+| 15 | Large-document confirmation | Two independent tests: **relative** (>3× the median of the last 20 same-type documents — median, so one past fat-finger can't desensitise it) and **absolute** (a configurable ceiling, set in Outstanding). |
 
-### Stage 2 — UX items 1–9
+### Time-saving
 
-Detailed in section 5. **Two real bugs were caught by the tests during this work:**
+| # | Item | What it does |
+|---|---|---|
+| 21 | Repeat last invoice | Uses this client's last invoice when a name is typed, else the most recent. Reuses `loadDocument()` for full field restoration. Block rates **recalculated** at current tier and tonnage; vehicle and e-way deliberately cleared. |
+| 22 | Saved item bundles | Named cart combinations. Quantities saved; **block rates deliberately not saved** and recomputed on apply, same distinction the v79 chips draw. |
+| 23 | Bulk WhatsApp statements | One statement per client covering every overdue invoice. A **checklist**, not a `window.open()` loop — mobile browsers block all but the first popup, so a loop would send one message while looking like it sent twenty. |
+| 24 | Bulk PDF export | **Was already implemented and wired** — `exportSelectedToPDF()`, found during the audit. Nothing was rebuilt. What was genuinely missing: "select all" only saw the current page of 50, so month-end meant paging through. Added **Select All Matching** across every page. |
+| 25 | Auto-advance qty → rate | Enter in Qty → Rate; Enter in Rate → adds the line and returns to the product picker. Only advances if the line was actually accepted, so a rejection alert stays visible. |
 
-1. **Temporal dead zone crash.** `renderTable()` runs during boot *before* the new `let`/`const` declarations are reached, throwing on every page load. The `typeof fn === 'function'` guard did not catch it, because function declarations hoist but `let`/`const` do not. Fixed by using `var` for boot-reachable bindings and wrapping the boot-time calls in try/catch so a convenience feature can never take the core render down.
-2. **Quick-add chips leaked blocks.** `trackItemFrequency` refused to *write* block entries, but `getTopFrequentItems` did not filter on *read* — so legacy or cloud-synced block entries would still surface a chip advertising a stale fixed rate for a dynamically-priced item. Fixed at the read side too.
+### Two refactors (extractions, not rewrites)
 
-**Also fixed:** `convertDocument()` was silently dropping the client's GSTIN, so every quotation→invoice conversion produced a Tax Invoice marked URD even for a registered client.
+Both were done because a second caller needed logic buried inside a render function, and a second copy would have drifted:
 
-### v79 test results
+- **`computeOutstandingRows()`** lifted out of `renderOutstanding()`. Carries the advance double-counting fix (D2), the RCP pool, payMode-implies-paid (D1), write-offs, the IST ageing skew (A6) and due-date ageing (D4). Item 20 now shares the exact numbers the report shows.
+- **`getFilteredDocsForList()`** lifted out of `renderDocList()`, so "select all matching" asks the same question the list does.
+
+### Bugs the v80 tests caught before shipping
+
+1. **Floating-point false alarm in the below-cost warning.** `56 / 1.12` evaluates to `49.999999999999993`, so a rate sitting *exactly* at cost triggered "below cost". Selling at cost is the normal end of a negotiation — this would have fired constantly, and a warning that cries wolf gets ignored and then trusted by nobody. Fixed by rounding to paise before comparing and requiring at least a full paisa of shortfall.
+2. **Quotations escaped the below-cost check entirely.** `computeDocLines` treats every non-INV type as billing gross, which is right for what a quotation *prints* — but a quoted ₹50 against a ₹50 cost becomes ₹44.64 net the moment it converts to a Tax Invoice. Since a quotation is exactly where a bad rate gets committed to, it is now evaluated under Tax Invoice rules. The `inclusiveTax` toggle still governs, and nothing about what the quotation prints changed.
+
+### v80 test results
 
 | Suite | Result |
 |---|---|
-| `test_quick_stock.js` — Quick Stock Entry | 19/19 |
-| `test_v79_ux.js` — UX items 1–9 | 41/41 |
-| `test_v79_logic.js` — password tiering | 11/11 |
-| `test_v79_shortfall.js` — shortfall engine (real extracted source) | 28/28 |
-| **Total** | **99/99** |
+| `test_v80_logic.js` — engines, extracted from the shipped file | 151/151 |
+| `test_v80_ui.js` — jsdom boot + structural + regression | 133/133 |
+| `test_backend.js` — Code_v6.gs in a mock Apps Script runtime | 103/103 |
+| **Total** | **387/387** |
 
-Full-file checks: JS syntax valid, JS braces balanced (4814/4814), CSS braces balanced (740/740), no duplicate IDs, no duplicate function names, every new function defined exactly once and referenced.
+Full-file checks: JS syntax valid, JS braces balanced (5137/5137), CSS braces balanced (741/741), no duplicate IDs, no duplicate function names (740 functions), every new function defined exactly once and referenced.
 
 ---
 
-## 5. The 25-Item Roadmap
+## 5. The Backend — `Code_v6.gs`
 
-**Status: 10 accomplished, 15 remaining.**
+**⚠️ This file is a reconstruction. Back up the spreadsheet before deploying it.**
 
-### ✅ Accomplished
+The original was not in the repository and did not survive the sandbox. It was rebuilt from the only authoritative source left: every call the frontend actually makes. The request and response contracts are exact and each handler cites its call site.
 
-| # | Item | Notes |
-|---|---|---|
-| — | **Stock entry simplification** | Quick Entry: brand once + preset sizes, quantity only. *(v79)* |
-| 1 | **Pickers for the three type-by-memory reference fields** | `crnOrigRef`, `rcpInvoiceRef`, `supersedesRef` now search-and-tap. Matches on doc number **or** client name; digit-only input works ("42" finds INV/0042); voided docs excluded. *(v79)* |
-| 2 | **Autosave in-progress invoice** | Debounced snapshot of fields + cart to localStorage, restore banner on reload, cleared on save or New Doc. Local-only, never cloud-synced. *(v79)* |
-| 3 | **Quick-add chips for frequent items** | New general frequency tracker (the pre-existing one only counted free-text custom items). Top 5 non-block items as one-tap chips. *(v79)* |
-| 4 | **Tier password prompts by risk** | Six routine admin gates unlock once for a 15-minute in-memory window; destructive actions (deletes, audit lock, factory reset, number overwrite) always re-prompt. *(v79)* |
-| 5 | **Mobile card layouts for wide tables** | Document Manager and Outstanding become readable cards below 700px. **Scoped deliberately** to `.cloud-doc-table` / `.outstanding-flat-table`, never the shared `.doc-list-table` / `.analytics-table` classes. *(v79)* |
-| 6 | **Stock shortfall before save, not after** | Live cart-wide warning plus a pre-save confirmation. Correctly credits back an invoice's own quantities when editing, so an unchanged re-save doesn't false-alarm. *(v79)* |
-| 7 | **Duplicate-invoice guard (same client + date)** | **Was already implemented and wired** before v79 — found during audit. Initially misdiagnosed as dead code because the grep included parentheses and missed the `addEventListener` wiring. |
-| 8 | **One-tap quotation → invoice** | ⚡INV button directly on quotation rows in the document list. Reuses `loadDocument()` for full field restoration rather than hand-copying fields. Also fixed the GSTIN-drop bug. *(v79)* |
-| 9 | **Unmissable voided docs** | Struck-through number with a red VOID badge in the list. *(v79)* |
+**What could not be recovered:** the sheet column layout. The wire format is JSON and says nothing about storage. So the backend is **header-driven** — it reads row 1 of each sheet and maps columns by header name, appends columns for fields it hasn't seen, and never moves or renames an existing one. Point it at the existing spreadsheet and it adapts rather than imposing a schema.
 
-### ⬜ Remaining — UX (5)
+**Contract implemented:**
 
-| # | Item | Why it matters |
-|---|---|---|
-| 11 | Site field suggestions from the sites registry | Delivery site is plain free text despite a sites registry existing |
-| 12 | Vehicle number history chips | No history at all; the same lorries get retyped daily |
-| 13 | Sticky grand total on mobile | Figure scrolls out of view while building an invoice |
-| 14 | Cloud sync status indicator | No visibility into which documents haven't reached the cloud |
-| 15 | Confirmation on unusually large invoices | A slipped digit currently goes out as a real bill |
+- **GET** `?sheet=<key>` for every collection; bare GET returns the documents array; `?sheet=config` returns a flat key/value object; `?sheet=lineItems` is **derived** from the Documents sheet (so the GSTR-1 HSN summary can never drift from the invoices it reports on)
+- **POST** actions: `save`, `delete`, `bulkSync`, `bulkDeleteDocuments`, `bulkSetClientIds`, `saveConfig`, `saveSite`, `deleteSite`, `saveLetter`, `deleteLetter`, `uploadAuditPdf`, `uploadLetterScan`, `deleteAuditDoc`
 
-### ⬜ Remaining — Money-saving (5)
+**Three things worth knowing:**
 
-| # | Item | Why it matters |
-|---|---|---|
-| 16 | **Below-cost sale warning** | **Highest priority.** The app calculates landing cost but never warns when a rate falls below it — bad rates go out silently. Cheap to build, protects margin on every sale |
-| 17 | Slow-moving stock ageing | No tracking; capital sits in the yard unnoticed |
-| 18 | Freight charged vs. paid comparison | Transport paid per batch is recorded but never compared against freight billed out — leakage is invisible |
-| 19 | Breakage costing from physical counts | Count mismatch is currently a block count, not a rupee figure |
-| 20 | Credit-period enforcement | Ageing exists, but nothing stops the next load going to a client already past terms |
+1. **Config values must come back as strings** (except `pricingConfig`, which must be an object). `index.html` guards `auditLockDate`, `auditLockTypes`, `addressOptions`, `termsTemplates` and every `CONFIG_SYNC_KEYS` entry with `typeof === 'string'`. Parsing them server-side makes every one of those guards fail and the setting is silently discarded.
+2. **`bulkSync` implements the concurrency stamp.** The frontend's whole conflict-recovery path (re-pull → adopt cloud → retry) is dead code unless the server issues and checks stamps.
+3. **An unknown `?sheet=` key returns an error, never a fallback.** The old backend silently returned every document for an unknown key, which is recorded in `index.html` as having poisoned the projects cache on fresh devices.
 
-### ⬜ Remaining — Time-saving (5)
+**Deploy:** paste into the Apps Script editor → run `setupSheets()` → run `healthCheck()` to confirm it sees the right spreadsheet → Deploy → New deployment → Web app, *Execute as: Me*, *Who has access: Anyone* → confirm the `/exec` URL matches `WEB_APP_URL` in `index.html`. If it doesn't match, the app keeps working offline and silently never syncs.
 
-| # | Item | Why it matters |
-|---|---|---|
-| 21 | Repeat last invoice as template | Every invoice starts from scratch |
-| 22 | Saved item bundles | Blocks + mortar + transport as a single tap |
-| 23 | Bulk WhatsApp statements to overdue clients | Currently one client at a time |
-| 24 | Bulk PDF export | Needed for month-end |
-| 25 | Auto-advance between qty/rate fields | Removes a tap on every single line |
+`resetSyncStamps()` exists to break a genuine sync deadlock. It disables conflict protection until the next push, so use it only when actually stuck.
 
 ---
 
 ## 6. Open Decisions
 
-### Brand-mandatory on Tax Invoices — **awaiting decision**
+### Brand-mandatory on Tax Invoices — **still awaiting decision**
 
-Raaja's proposal, discussed but not yet implemented:
+- **Tax Invoice** = the strict, auditable document. Brand **always** named on blocks, removing the unbranded-block ambiguity and making stock tracking exact
+- **Sales Invoice** = the flexible one
 
-- **Tax Invoice** = the strict, auditable document. Brand **always** named on blocks. This removes the unbranded-block ambiguity entirely, making stock tracking exact rather than best-guess
-- **Sales Invoice** = the flexible one. Unbranded lines, transport, loading, unloading all fine
-
-**Assistant's recorded pushback:** blocking transport/loading charges from Tax Invoices entirely is risky — those are legitimately invoiceable, and a customer may need freight on the tax invoice for their own records. Stock tracking does **not** require that restriction, since non-block lines are simply ignored for stock purposes. Recommendation: make brand mandatory, but leave charges allowed.
+**Recorded pushback:** blocking transport/loading charges from Tax Invoices entirely is risky — those are legitimately invoiceable, and a customer may need freight on the tax invoice for their own records. Stock tracking does not require that restriction, since non-block lines are ignored for stock purposes. Recommendation: make brand mandatory, leave charges allowed.
 
 **Still to resolve:**
-1. Does brand-mandatory apply to mortar, or blocks only? (Mortar is currently never brand-split, and tracking it without brand works fine.)
-2. Roughly 30 existing invoices have unbranded blocks. Raaja has confirmed he can correct these by hand — nothing has been officially filed yet. Decide whether to leave them, flag them, or bulk-correct.
+
+1. Does brand-mandatory apply to mortar, or blocks only?
+2. Roughly 30 existing invoices have unbranded blocks. Leave, flag, or bulk-correct?
 3. Hard block or overridable warning?
 
 ### GST rate verification — **action for Raaja's CA**
 
-The 12% rate on AAC blocks under HSN 6815 applies to blocks with **more than 50% fly ash content**. The app currently hardcodes 12% for every block. Written confirmation of fly ash content should be obtained from Meghalite and Birla — if any product doesn't qualify, there is an 18% liability being carried silently.
+The 12% rate on AAC blocks under HSN 6815 applies to blocks with **more than 50% fly ash content**. The app hardcodes 12% for every block. Get written confirmation of fly ash content from Meghalite and Birla — if any product doesn't qualify, there is an 18% liability being carried silently.
 
 ### Other pending items
 
-- **Historical stock backfill.** Pre-v78 Tax Invoices were never auto-linked. The reframed Link Invoice tab can backfill them — not yet discussed whether Raaja wants this done.
-- **Backend redeploy.** `Code_v6.gs` still needs a manual redeploy in the Apps Script editor; deployment status unconfirmed.
-- **Comprehensive test suite.** Deliberately deferred. Once the UX roadmap settles, build it split by area (documents / stock / reports & tools) rather than one monolithic file, using `harness.js` as the foundation.
+- **Backend redeploy.** `Code_v6.gs` is rebuilt but has never run against the live spreadsheet. Back up the sheet, deploy, run `healthCheck()`.
+- **Historical stock backfill.** Pre-v78 Tax Invoices were never auto-linked. The Link Invoice tab can backfill them — not yet discussed whether Raaja wants this done.
+- **Landing costs are optional, and several v80 features need them.** Below-cost warnings, breakage costing, ageing values and the freight comparison are all silent for items with no costed batch — deliberately, since a false "below ₹0" alarm is worse than none. The more batches get cost details, the more these earn their keep.
 
 ---
 
 ## 7. Business Advisory (non-app)
 
-Captured from a strategy discussion; no code implications.
-
 ### Cost-saving opportunities
-1. **Verify the fly ash / GST position** (see above) — potentially the largest single exposure
-2. **Input tax credit discipline** — every purchase bill, freight voucher and expense captured; unclaimed credit is cash already paid out
-3. **Freight recovery** — compare transport paid against freight charged (roadmap item 18)
-4. **Cost the breakage** — value count mismatches in rupees to support supplier damage claims (roadmap item 19)
-5. **Enforce credit periods** before dispatch, not after (roadmap item 20)
+
+1. **Verify the fly ash / GST position** — potentially the largest single exposure
+2. **Input tax credit discipline** — every purchase bill, freight voucher and expense captured
+3. **Freight recovery** — now measurable (item 18); the "invoices with no transport line" count is the place to start
+4. **Cost the breakage** — now in rupees (item 19), which is what a supplier damage claim needs
+5. **Enforce credit periods** before dispatch — now enforced at save time (item 20)
 
 ### Lead generation
-1. **Mine your own database** — every quotation that never became an invoice is a warm lead with a name, phone number and known requirement. Nobody is following these up systematically. This is the highest-value, zero-cost option
-2. **Masons and site contractors** specify materials before the owner sees a quote — a per-load referral arrangement reaches buyers earlier than advertising
+
+1. **Mine your own database** — every quotation that never became an invoice is a warm lead with a name, phone number and known requirement. Nobody follows these up systematically. Highest-value, zero-cost option, and still not built.
+2. **Masons and site contractors** specify materials before the owner sees a quote
 3. **Google Business listing** — someone searching "AAC blocks Udumalpet" is ready to buy today
-4. **Architects and structural engineers** across the Pollachi / Palani corridor write the specifications; one relationship wins many jobs
+4. **Architects and structural engineers** across the Pollachi / Palani corridor write the specifications
 5. **Small hardware shops as sub-dealers** — sub-dealer pricing already exists in the app
 
 ---
 
 ## 8. Key Files
 
-### Shipped
 | File | Purpose |
 |---|---|
-| `/mnt/user-data/outputs/v79.html` | Frontend — current version |
-| `/mnt/user-data/outputs/sw.js` | Service worker, `CACHE_NAME = 'ken-traders-v79'` |
-| `/mnt/user-data/outputs/Code_v6.gs` | Backend Apps Script (needs redeploy) |
-
-### Prior versions (in outputs)
-`v75a.html` (trusted mobile baseline), `v76a/b/c.html`, `v77.html`, `v78.html`
-
-### Test files (in `/home/claude/` — lost on sandbox reset, recreate as needed)
-| File | Covers |
-|---|---|
-| `harness.js` | jsdom app-boot harness — foundation for everything |
-| `test_quick_stock.js` | Quick Stock Entry (19 checks) |
-| `test_v79_ux.js` | UX items 1–9 (41 checks) |
-| `test_v79_logic.js` | Password tiering (11 checks) |
-| `test_v79_shortfall.js` | Shortfall engine via real extracted source (28 checks) |
+| `index.html` | Frontend — v80, the whole application |
+| `sw.js` | Service worker, `CACHE_NAME = 'ken-traders-v80'` |
+| `Code_v6.gs` | Backend Apps Script — rebuilt, **not yet deployed** |
+| `manifest.json` | PWA manifest |
+| `tests/` | `harness.js`, `extract.js`, `gas_mock.js`, `t.js`, and the three suites |
 
 ---
 
 ## 9. Quick Start for a New Session
 
 ```bash
-# 1. Restore the working copy (outputs survives resets, /home/claude does not)
-cp /mnt/user-data/outputs/v79.html /home/claude/v79.html
-cp /mnt/user-data/outputs/sw.js /home/claude/sw.js
+# The repo is the source of truth. Nothing else survives.
+cd ken-projects-masteros
+npm install jsdom --silent
 
-# 2. Reinstall jsdom if the sandbox was reset
-cd /home/claude && npm install jsdom --silent
-
-# 3. Verify the file is healthy before touching anything
+# Verify the file is healthy before touching anything
 python3 -c "
 import re, collections
-html=open('/home/claude/v79.html').read()
+html=open('index.html',encoding='utf-8').read()
 s=re.findall(r'<script>(.*?)</script>',html,re.S)
-open('/home/claude/_c.js','w').write(max(s,key=len))
+open('_c.js','w',encoding='utf-8').write(max(s,key=len))
 print('js braces', html.count('{'), html.count('}'))
 ids=re.findall(r'id=\"([^\"]+)\"',html)
 print('dup ids:', {k:v for k,v in collections.Counter(ids).items() if v>1})
 "
-node --check /home/claude/_c.js && echo SYNTAX_OK
+node --check _c.js && echo SYNTAX_OK
+
+# Run the suites
+node tests/test_v80_logic.js
+node tests/test_v80_ui.js
+node tests/test_backend.js
 ```
 
 **Then, before any edit:** grep and read the actual function. Never modify on assumption.
+
+**And before adding any new module-level state:** use `var`, or read it lazily from localStorage inside a function. A top-level `let` or `const` that a render path can reach during boot is the exact shape of the crash v79 shipped.
