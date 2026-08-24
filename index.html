@@ -564,6 +564,7 @@
         .pdf-export-mode .no-print { display: none !important; }
         .pdf-export-mode .unified-footer { margin-top: auto !important; position: static !important; }
 
+
         /* --- BATCH 3 & 4 STYLES --- */
         /* F17: Item notes */
         .item-notes-print { font-size: 11px; color: #777; font-style: italic; margin-top: 3px; }
@@ -1607,6 +1608,64 @@
                query never needs to touch S.No at all: print always matches
                whatever the doc type's own JS decided. */
         }
+
+        /* ================================================================
+           v77 ROOT-CAUSE FIX — PDF export was rendering with the two
+           side-by-side sections (BILL TO / DISPATCH, and BANK DETAILS /
+           TERMS / SIGNATURE) stacked vertically instead of in columns,
+           plus a smaller logo, smaller header/table fonts, and tighter
+           spacing throughout — a visibly different, cramped document
+           compared to what used to export.
+
+           MECHANISM: exportToPDF() deliberately removes the `preview-fit`
+           class right before capture (correctly — otherwise the CSS
+           scale() transform used for the on-screen mobile preview would
+           rasterise a tiny document). The row-layout-restoring rules
+           elsewhere in this stylesheet are scoped to
+           `body.force-mobile-main.preview-fit`, requiring BOTH classes.
+           With preview-fit removed but force-mobile-main still present
+           (which it now is on essentially any phone, following the width-
+           based auto-detect fix), every mobile-reflow rule for the
+           invoice fired uncontested during the capture, and nothing
+           cancelled it. This didn't happen on older versions because
+           force-mobile-main used to only activate for installed PWAs, so
+           a normal browser tab never carried it during export.
+
+           FIX: `.pdf-export-mode` is the signal that ALREADY means "this
+           is a fixed-size A4 document being captured, not a live phone
+           screen" — it's added to the #billPage element for exactly that
+           purpose. Every rule below is anchored on `#billPage.pdf-export-
+           mode` specifically (not just `.pdf-export-mode`) so its
+           specificity — an ID plus two classes — beats EVERY
+           `body.force-mobile-main ...` rule in this file outright, on the
+           very first component of the specificity comparison, regardless
+           of !important or source order. (An earlier version of this fix
+           used only `.pdf-export-mode ...`, which I verified — by actually
+           computing specificity, not assuming — would have LOST against
+           some of these rules. That mistake is not repeated here, and this
+           block is also placed as the LAST rules in the document as a
+           second, redundant safety margin.)
+
+           Every value below is copied verbatim from this file's own base
+           (desktop) rule for the same selector — not re-guessed — so the
+           exported PDF matches the original design exactly.
+           ================================================================ */
+        #billPage.pdf-export-mode .header { display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: stretch !important; min-height: 160px !important; gap: 0 !important; }
+        #billPage.pdf-export-mode .invoice-title { text-align: right !important; min-width: 350px !important; width: auto !important; }
+        #billPage.pdf-export-mode .invoice-title h1 { font-size: 32px !important; white-space: nowrap !important; }
+        #billPage.pdf-export-mode .invoice-title > div { align-items: flex-end !important; text-align: right !important; }
+        #billPage.pdf-export-mode .company-sub { font-size: 13px !important; }
+        #billPage.pdf-export-mode .fixed-logo { max-height: 60px !important; }
+        #billPage.pdf-export-mode .header-divider { margin: 0 0 25px 0 !important; }
+        #billPage.pdf-export-mode .info-grid { flex-direction: row !important; gap: 20px !important; }
+        #billPage.pdf-export-mode table { font-size: 13px !important; }
+        #billPage.pdf-export-mode th { padding: 12px 10px !important; }
+        #billPage.pdf-export-mode td { padding: 10px !important; }
+        #billPage.pdf-export-mode .unified-footer { flex-direction: row !important; gap: 15px !important; }
+        #billPage.pdf-export-mode .signature-box-condensed { border-left: 1px solid #ddd !important; padding-left: 12px !important; align-items: flex-end !important; text-align: right !important; }
+        #billPage.pdf-export-mode .terms-box-condensed { border-left: 1px solid #ddd !important; padding-left: 12px !important; align-items: normal !important; text-align: left !important; }
+        #billPage.pdf-export-mode #advPrintAmt { font-size: 42px !important; }
+
     </style>
 </head>
 <body>
@@ -1628,7 +1687,7 @@
              Tap to force-check for updates. Update this string (and the
              matching APP_VERSION const in the script block) on every release. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:rgba(255,255,255,0.35); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">v76c</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">v77</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- v73a: passive unsynced warning. Hidden by default and only
@@ -4714,7 +4773,7 @@
     // This is what the version badge displays and what checkForAppUpdate()
     // compares against. Keeping this in sync is what makes the badge
     // trustworthy — if forgotten, the badge silently shows a stale number.
-    const APP_VERSION = "v76c";
+    const APP_VERSION = "v77";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
