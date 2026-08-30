@@ -145,22 +145,35 @@
         .action-trio-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
         .action-trio-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 6px; border-radius: 6px; border: none; cursor: pointer; font-size: 11px; font-weight: bold; color: #fff; text-align: center; min-height: 64px; width: 100%; margin: 0; box-sizing: border-box; }
         .action-trio-btn .trio-icon { font-size: 20px; line-height: 1; }
-        /* v82: the <select> is no longer this tile's visible label (see the
-           HTML comment above signatorySelect for why) — it's now a fully
-           invisible, click-through helper that exists purely so
-           openSignatureSelect() has an element to call .showPicker()/.focus()
-           on to open the native picker. opacity:0 + pointer-events:none keeps
-           it from ever rendering anything or intercepting a tap itself; the
-           visible tile div's own onclick is what triggers it. */
         .action-trio-btn select.trio-select {
-            position: absolute; opacity: 0; pointer-events: none;
-            width: 1px; height: 1px; padding: 0; margin: 0; border: none;
+            -webkit-appearance: none; appearance: none;
+            background: transparent; border: none; color: #fff;
+            font-size: 11px; font-weight: bold; text-align: center; text-align-last: center;
+            cursor: pointer; padding: 0; margin: 0;
+            /* v71 FIX: this tile visibly sat higher/lower than its Boss
+               Mode / Void siblings even though all three use the exact
+               same .action-trio-btn flex container. Root cause: a native
+               <select> carries its own browser-default line-height and
+               vertical box metrics that don't match a plain <span> (the
+               element Boss Mode/Void use for their label) — appearance:none
+               strips the dropdown arrow and native chrome but does NOT
+               normalize this. height:auto alone left it to the browser's
+               native form-control sizing, which is inconsistent between
+               platforms (and was the actual source of the "some boxes up,
+               some down" look). Forcing line-height to match the icon's
+               already-normalized line-height (1), plus a fixed height and
+               display:block, makes this element's box model behave
+               exactly like the label <span> it's replacing, so all three
+               tiles now align on the same baseline regardless of platform. */
+            line-height: 1;
+            height: 16px;
+            display: block;
         }
         /* BUG FIX: <option> elements render against the browser's native dropdown
            background (white), so they need an explicit dark color — without this
            they inherit the closed-select's white text and become invisible. */
         .action-trio-btn select.trio-select option { color: #222; background: #fff; }
-        .trio-signature { background: #8e44ad; position: relative; }
+        .trio-signature { background: #8e44ad; }
         .trio-bossmode { background: #2e7d32; }
         .trio-bossmode.is-on { background: #1b5e20; box-shadow: inset 0 0 0 2px #a5d6a7; }
         .trio-void { background: #c0392b; }
@@ -316,7 +329,7 @@
         .bulk-action-bar { display: flex; background: #f4f6f7; color: #aaa; padding: 10px 14px; border-radius: 6px; margin-bottom: 10px; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; border: 1px solid #e0e0e0; transition: background 0.2s ease, color 0.2s ease; }
         .bulk-action-bar.show { background: #2c3e50; color: #fff; border-color: #2c3e50; }
         .bulk-action-bar .bulk-count { font-size: 13px; font-weight: bold; }
-        .bulk-action-bar .bulk-buttons { display: flex; gap: 8px; flex-wrap: wrap; } /* v84: was nowrap -> Load / Select All / Export PDFs / Delete crushed onto one phone line */
+        .bulk-action-bar .bulk-buttons { display: flex; gap: 8px; }
         .btn-bulk { background: #e74c3c; color: #fff; border: none; padding: 7px 14px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; width: auto; margin: 0; }
         .btn-bulk-pdf { background: #8e44ad; }
         .btn-bulk.disabled-bulk { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
@@ -329,7 +342,7 @@
         input, select { width: 100%; padding: 10px; margin-top: 5px; background: #34495e; border: 1px solid #465c71; color: white; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
         
         button { cursor: pointer; border: none; padding: 12px; border-radius: 4px; font-weight: bold; width: 100%; margin-top: 15px; font-size: 15px; color: white; transition: transform 0.1s ease, background-color 0.2s ease; }
-        button:active, .action-trio-btn:active, .pressed-state { /* v84: .action-trio-btn added - the signature tile is a <div>, so it never got press feedback */ transform: scale(0.95); opacity: 0.85; box-shadow: inset 0 3px 5px rgba(0,0,0,0.4)!important; }
+        button:active, .pressed-state { transform: scale(0.95); opacity: 0.85; box-shadow: inset 0 3px 5px rgba(0,0,0,0.4)!important; }
         .btn-add { background: #3498db; }
         .btn-mortar { background: #9b59b6; margin-top: 8px; }
         
@@ -394,13 +407,6 @@
         .signature-sub { margin: 0; font-size: 11px; color: #555; }
 
         /* MODALS */
-        /* v84 FIX: the global editor theme sets `input, select { background:#34495e; color:white }`
-           for the dark sidebar. Any <select> that ends up inside a WHITE modal without its own
-           colour therefore renders white-on-white in the native dropdown popup, because <option>
-           inherits the closed select's colour and Android draws the list on a white sheet. One
-           file-wide option rule kills that entire bug class (the same fix already existed, but
-           scoped only to .action-trio-btn select.trio-select option). */
-        select option { color: #222; background: #fff; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; }
 
         /* BUG FIX (issue 7): the Advance Pool can be opened FROM the
@@ -507,15 +513,6 @@
                so numbers don't visually collide. Full responsive pass deferred —
                not worth the effort given the planned Android app conversion. */
             .modal-content { width: 100%; max-width: 100%; padding: 12px; border-radius: 0; max-height: 100vh; }
-            /* v84 FIX: .modal-header is a flex row holding the <h2> plus a button
-               cluster (and in the Document Manager the buttons live INSIDE the h2).
-               With nowrap the title was squeezed to min-content and broke mid-word
-               — "Outstandin/g Dues". Give the title its own full-width line on
-               phones and let the action buttons wrap beneath it. */
-            .modal-header { flex-wrap: wrap; row-gap: 8px; }
-            .modal-header h2 { flex: 1 1 100%; min-width: 0; flex-wrap: wrap; row-gap: 6px; }
-            .modal-header > div { flex-wrap: wrap; }
-            .modal-header h2 .btn-db { font-size: 11px; padding: 5px 9px; }
             .modal-header h2 { font-size: 16px; gap: 8px; }
             .stat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
             .period-select-row { flex-direction: column; align-items: stretch !important; gap: 6px !important; }
@@ -1125,15 +1122,8 @@
 
             /* Period select rows in Summary / Ledger */
             .period-select-row { flex-wrap: wrap !important; gap: 8px !important; }
-            /* v84 FIX: .period-select-row becomes `flex-direction: column` at
-               <=700px, and in a column container flex-basis sizes the MAIN axis
-               = height. `flex: 1 1 120px` therefore made every Period / Show /
-               Sort / From / To control ~120px TALL, so the Cash Book and Auditor
-               headers ate ~400px before any data showed. Width is what was
-               intended here. */
             .period-select-row select, .period-select-row input[type=date] {
-                flex: 0 0 auto !important;
-                width: 100% !important;
+                flex: 1 1 120px !important;
                 font-size: 13px !important;
             }
 
@@ -1462,8 +1452,7 @@
         body.force-mobile-main .engine-grid input { font-size: 14px; }
         body.force-mobile-main #uxEditModal .modal-content { padding: 14px !important; }
         body.force-mobile-main .period-select-row { flex-wrap: wrap !important; gap: 8px !important; }
-        body.force-mobile-main .period-select-row select, body.force-mobile-main .period-select-row input[type=date] { flex: 0 0 auto !important;
-                width: 100% !important;
+        body.force-mobile-main .period-select-row select, body.force-mobile-main .period-select-row input[type=date] { flex: 1 1 120px !important;
                 font-size: 13px !important; }
         body.force-mobile-main .outstanding-row-ok td, body.force-mobile-main .outstanding-row-due td, body.force-mobile-main .outstanding-row-overdue td { font-size: 11px !important; padding: 6px 4px !important; }
         body.force-mobile-main .engine-tab-bar { flex-wrap: wrap; gap: 4px; }
@@ -1521,13 +1510,8 @@
            shrink, so it overlaps its neighbour or pushes it off-screen.
            min-width:0 is the standard remedy. Scoped to modal content so
            the main screen's carefully tuned layout is untouched. */
-        /* v84 FIX: was `min-width:0`, which zeroed the 140-180px floors the markup
-               uses to force a wrap. With flex-basis 0 AND min-width 0 a child's hypothetical
-               size is 0, so flex-wrap never triggers and the Purchase Bills upload row kept
-               six fields jammed on one phone line. A floor of min(100%,140px) still prevents
-               a single wide child overflowing, but lets crowded rows break. */
         body.force-mobile-main .modal-content [style*="display:flex"] > *,
-        body.force-mobile-main .modal-content [style*="display: flex"] > * { min-width: min(100%, 140px) !important; }
+        body.force-mobile-main .modal-content [style*="display: flex"] > * { min-width: 0 !important; }
 
         /* Once children can shrink, let a crowded row wrap onto a second
            line rather than squashing everything to unreadable widths. */
@@ -1558,7 +1542,7 @@
            is active. */
         @media (max-width: 700px) {
             .modal-content [style*="display:flex"] > *,
-            .modal-content [style*="display: flex"] > * { min-width: min(100%, 140px) !important; }
+            .modal-content [style*="display: flex"] > * { min-width: 0 !important; }
 
             .modal-content [style*="display:flex"],
             .modal-content [style*="display: flex"] { flex-wrap: wrap; }
@@ -1572,164 +1556,6 @@
             .modal-content table { display: block; overflow-x: auto; max-width: 100%; }
         }
 
-    </style>
-    <!-- v82: TONNAGE & LOAD BALANCER — every selector below is scoped under
-         #tonnageModal / #tonnageSettingsModal specifically so its dark
-         theme (and generic-looking rules like `input[type=number]`) can
-         never leak onto the rest of the app, and its CSS variables live on
-         #tonnageModal rather than :root for the same reason. -->
-    <style>
-        #tonnageModal {
-            --tng-bg: #1a252f;
-            --tng-card: #2c3e50;
-            --tng-accent: #f1c40f;
-            --tng-muted: #bdc3c7;
-            --tng-input-bg: #34495e;
-            --tng-border: #465c71;
-            --tng-success: #2ecc71;
-            --tng-danger: #e74c3c;
-        }
-        #tonnageModal.modal-overlay { align-items: center; }
-        #tonnageModal .tng-container {
-            width: 100%; max-width: 550px; background: var(--tng-card); color: #fff;
-            border-radius: 8px; box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-            padding: 20px; box-sizing: border-box; position: relative;
-            max-height: 90vh; overflow-y: auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        #tonnageModal .tng-header-wrapper { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--tng-border); padding-bottom: 15px; margin-bottom: 20px; }
-        #tonnageModal .tng-header h1 { margin: 0; font-size: 22px; letter-spacing: 1px; color: var(--tng-accent); text-transform: uppercase; }
-        #tonnageModal .tng-header p { margin: 5px 0 0 0; font-size: 12px; color: var(--tng-muted); text-transform: uppercase; letter-spacing: 2px; }
-        #tonnageModal .tng-btn-settings, #tonnageModal .tng-btn-close {
-            border: none; border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer;
-            text-transform: uppercase; display: flex; align-items: center; gap: 5px; padding: 8px 14px; margin: 0; width: auto;
-        }
-        #tonnageModal .tng-btn-settings { background: #16a085; color: #fff; }
-        #tonnageModal .tng-btn-settings:hover { background: #1abc9c; }
-        #tonnageModal .tng-btn-close { background: var(--tng-danger); color: #fff; padding: 8px 12px; }
-        #tonnageModal .tng-btn-close:hover { background: #c0392b; }
-        #tonnageModal .tng-target-box { background: rgba(0,0,0,0.2); border: 1px dashed var(--tng-accent); border-radius: 6px; padding: 15px; margin-bottom: 20px; }
-        #tonnageModal .tng-flex-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        #tonnageModal .tng-toggle-container { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: bold; font-size: 14px; color: #fff; }
-        #tonnageModal .tng-grid-header { display: grid; grid-template-columns: 1.9fr 1.05fr 1.35fr; gap: 8px; font-size: 11px; font-weight: bold; text-transform: uppercase; color: var(--tng-muted); padding-bottom: 5px; border-bottom: 1px solid var(--tng-border); margin-bottom: 10px; text-align: center; }
-        #tonnageModal .tng-grid-header div:first-child { text-align: left; }
-        #tonnageModal .tng-item-row { display: grid; grid-template-columns: 1.9fr 1.05fr 1.35fr; gap: 8px; align-items: center; margin-bottom: 12px; }
-        #tonnageModal .tng-item-row label { font-size: 14px; font-weight: 600; color: #fff; }
-        #tonnageModal .tng-item-row label span { display: block; font-size: 11px; color: var(--tng-muted); font-weight: normal; }
-        #tonnageModal input[type="number"] {
-            width: 100%; padding: 10px; background: var(--tng-input-bg); border: 1px solid var(--tng-border);
-            color: #fff; border-radius: 4px; box-sizing: border-box; font-size: 15px; text-align: center; font-weight: bold;
-            -moz-appearance: textfield;
-        }
-        #tonnageModal input[type="number"]::-webkit-outer-spin-button,
-        #tonnageModal input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        #tonnageModal input[type="number"]:focus { outline: none; border-color: var(--tng-accent); }
-        #tonnageModal .tng-radio-group { display: flex; justify-content: center; align-items: center; }
-        /* v84: the v83 track/thumb switch is replaced by a two-segment
-           control. A toggle only ever shows ONE state, so the user still had
-           to work out whether the thing shown was the current mode or the
-           mode they'd get by tapping — and the emoji crammed into an 18px
-           thumb rendered squashed on Android. A segmented control shows BOTH
-           options at once with the active one filled, which is unambiguous by
-           construction: no verb to misread, nothing hidden. Green = the app
-           fills this line in; Orange = you type it yourself (deliberately not
-           red — this is a normal choice, not an error state).
-           The <input type=checkbox> is kept purely as the state store so
-           tngHandleLockChange()/tngToggleTargetMode() are untouched; the
-           buttons drive it through tngSetRowMode(). */
-        #tonnageModal .tng-mode-seg {
-            display: flex; width: 100%; background: #22303d; border: 1px solid var(--tng-border);
-            border-radius: 6px; overflow: hidden;
-        }
-        #tonnageModal .tng-mode-seg input.tng-lock-btn { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; padding: 0; pointer-events: none; }
-        #tonnageModal .tng-seg-btn {
-            flex: 1; width: auto; margin: 0; padding: 8px 2px; font-size: 9px; font-weight: 800;
-            letter-spacing: 0.3px; text-transform: uppercase; background: transparent; color: #8fa3b5;
-            border: none; cursor: pointer; transition: background 0.15s ease, color 0.15s ease; line-height: 1.2;
-        }
-        #tonnageModal .tng-seg-btn.active[data-mode="auto"] { background: #27ae60; color: #fff; }
-        #tonnageModal .tng-seg-btn.active[data-mode="manual"] { background: #e67e22; color: #fff; }
-        #tonnageModal .tng-mode-seg.is-disabled { opacity: 0.35; }
-        #tonnageModal .tng-mode-seg.is-disabled .tng-seg-btn { cursor: not-allowed; }
-        /* v84: target-tonnage stepper. The input keeps a generous tap
-           target and right-aligned text; the -/+ buttons let a half-tonne
-           adjustment happen without the keyboard covering half the screen. */
-        #tonnageModal .tng-stepper { display: flex; align-items: stretch; gap: 0; border: 1px solid var(--tng-border); border-radius: 6px; overflow: hidden; background: var(--tng-input-bg); }
-        #tonnageModal .tng-step-btn {
-            width: 38px; margin: 0; padding: 0; border: none; background: #22303d; color: var(--tng-accent);
-            font-size: 20px; font-weight: bold; line-height: 1; cursor: pointer; flex-shrink: 0; transition: background 0.15s ease;
-        }
-        #tonnageModal .tng-step-btn:hover { background: var(--tng-border); }
-        #tonnageModal .tng-step-btn:active { background: var(--tng-accent); color: #1a252f; }
-        #tonnageModal .tng-stepper input[type="number"] {
-            width: 92px; border: none; border-radius: 0; text-align: center; font-size: 17px; padding: 10px 4px; background: var(--tng-input-bg);
-        }
-        #tonnageModal .tng-stepper input[type="number"]:focus { outline: none; background: #3d5468; }
-        /* v83: quick tonnage presets */
-        #tonnageModal .tng-preset-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
-        #tonnageModal .tng-preset-label { font-size: 10px; font-weight: bold; color: var(--tng-muted); letter-spacing: 0.5px; margin-right: 2px; }
-        #tonnageModal .tng-preset-btn {
-            width: auto; margin: 0; background: var(--tng-input-bg); color: #fff; border: 1px solid var(--tng-border);
-            border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: bold; cursor: pointer; transition: all 0.15s ease;
-        }
-        #tonnageModal .tng-preset-btn:hover { background: var(--tng-border); }
-        #tonnageModal .tng-preset-btn.active { background: var(--tng-accent); color: #1a252f; border-color: var(--tng-accent); }
-        /* v83: highlights whichever row is currently absorbing the
-           target-mode weight adjustment, so it's clear what will change
-           next as you edit other lines. */
-        #tonnageModal .tng-item-row.tng-active-row {
-            background: rgba(241,196,15,0.08); border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(241,196,15,0.45);
-            padding: 4px 6px; margin-left: -6px; margin-right: -6px;
-        }
-        #tonnageModal .tng-readonly-banner { background: rgba(255,255,255,0.04); padding: 10px 12px; border-radius: 4px; border-left: 4px solid var(--tng-success); margin-bottom: 6px; font-size: 13px; }
-        #tonnageModal .tng-summary-card { background: rgba(0,0,0,0.3); border-radius: 6px; padding: 15px; margin-top: 25px; border-top: 3px solid var(--tng-accent); }
-        #tonnageModal .tng-weight-line { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
-        #tonnageModal .tng-gross-total { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--tng-border); font-size: 20px; font-weight: 900; color: var(--tng-accent); }
-        #tonnageModal .tng-btn-reset {
-            background: #7f8c8d; color: #fff; border: none; padding: 12px; border-radius: 4px; font-weight: bold;
-            width: 100%; margin-top: 15px; font-size: 14px; cursor: pointer; text-transform: uppercase; transition: background 0.2s;
-        }
-        #tonnageModal .tng-btn-reset:hover { background: #95a5a6; }
-
-        /* Settings sub-modal — nested above #tonnageModal (z-index set inline) */
-        #tonnageSettingsModal { --tng-bg: #1a252f; --tng-card: #2c3e50; --tng-accent: #f1c40f; --tng-muted: #bdc3c7; --tng-border: #465c71; --tng-success: #2ecc71; }
-        #tonnageSettingsModal .tng-settings-modal {
-            background: var(--tng-card); color: #fff; width: 90%; max-width: 420px; border-radius: 6px; padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid var(--tng-border); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        #tonnageSettingsModal .tng-modal-header { font-size: 18px; font-weight: bold; color: var(--tng-accent); margin-bottom: 15px; border-bottom: 1px solid var(--tng-border); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        #tonnageSettingsModal .tng-modal-close { background: transparent; border: none; color: var(--tng-muted); font-size: 20px; cursor: pointer; width: auto; margin: 0; }
-        #tonnageSettingsModal .tng-target-box { background: rgba(0,0,0,0.2); border: 1px dashed var(--tng-accent); border-radius: 6px; padding: 15px; }
-        #tonnageSettingsModal .tng-setting-field-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 15px; }
-        #tonnageSettingsModal .tng-setting-field-row label { font-size: 13px; color: #fff; }
-        #tonnageSettingsModal input[type="number"] {
-            padding: 8px 10px; background: var(--tng-bg); border: 1px solid var(--tng-border); color: #fff;
-            border-radius: 4px; box-sizing: border-box; font-size: 14px; text-align: center; font-weight: bold; -moz-appearance: textfield;
-        }
-        #tonnageSettingsModal input[type="number"]::-webkit-outer-spin-button,
-        #tonnageSettingsModal input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        #tonnageSettingsModal .tng-btn-save-settings {
-            background: #27ae60; color: #fff; border: none; padding: 10px; border-radius: 4px; width: 100%;
-            font-weight: bold; cursor: pointer; margin-top: 15px; text-transform: uppercase;
-        }
-        @media (max-width: 480px) {
-            #tonnageModal .tng-container { padding: 12px; }
-            /* v84: at 360px the spec column was wrapping to three lines,
-               making every row a different height. Tighter type + a shorter
-               line-height keeps each row to two lines and the grid even. */
-            #tonnageModal .tng-item-row label { font-size: 12px; line-height: 1.25; }
-            #tonnageModal .tng-item-row label span { font-size: 10px; line-height: 1.2; }
-            #tonnageModal input[type="number"] { padding: 8px; font-size: 14px; }
-            #tonnageModal .tng-stepper input[type="number"] { width: 70px; font-size: 16px; }
-            #tonnageModal .tng-step-btn { width: 34px; font-size: 18px; }
-            #tonnageModal .tng-seg-btn { font-size: 8px; padding: 8px 1px; letter-spacing: 0; }
-            #tonnageModal .tng-preset-btn { padding: 6px 10px; font-size: 11px; }
-            #tonnageModal .tng-preset-label { width: 100%; margin-bottom: 2px; }
-            /* Keep the headline figure and its label on one line each. */
-            #tonnageModal .tng-gross-total { font-size: 15px; gap: 8px; }
-            #tonnageModal .tng-gross-total > span { flex: 1; }
-            #tonnageModal .tng-gross-total > div { white-space: nowrap; }
-            #tonnageModal #tngGrossTonnage { font-size: 20px; }
-        }
     </style>
     <style>
         /* ============================================================
@@ -1839,13 +1665,7 @@
         @media (max-width: 480px) {
             /* Single column for anything still cramped at 2. */
             .modal-content [style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
-            /* v84 FIX: .cash-book-summary is display:flex, so grid-template-columns was
-               inert on it and the four cards laid out 3-across + 1. Promote it to a real
-               grid here so the 2x2 actually happens. #advPoolSummary/.stat-grid are
-               already grids and only need the column count. */
-            .cash-book-summary { display: grid !important; grid-template-columns: 1fr 1fr !important; }
-            .cash-book-summary .cash-book-card { min-width: 0 !important; }
-            #advPoolSummary,
+            .cash-book-summary, #advPoolSummary,
             .stat-grid { grid-template-columns: 1fr 1fr !important; }
 
             .modal-content { padding: 10px; }
@@ -1959,7 +1779,7 @@
              Tap to force-check for updates. Update this string (and the
              matching APP_VERSION const in the script block) on every release. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:rgba(255,255,255,0.35); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">v86</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">v81</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- v73a: passive unsynced warning. Hidden by default and only
@@ -2030,17 +1850,13 @@
                      not deleted, so it can be re-enabled later. Removing this
                      one button from the 3-column grid takes it from 16 items
                      (an unbalanced last row of 1) down to exactly 15 — five
-                     full rows of 3 — which is why Tonnage and Letterpad
-                     (the two buttons after this comment) shift left/up on
-                     their own with no other markup changes needed; that's
-                     just normal grid reflow. -->
+                     full rows of 3 — which is why Audit Lock and Letterpad
+                     shift left/up on their own with no other markup changes
+                     needed; that's just normal grid reflow. -->
                 <!--
                 <button id="btnAnalyticsGlobalSearch" class="analytics-grid-btn" onclick="openGlobalSearch()"><span class="ag-icon">🔍</span><span>Search Everything</span></button>
                 -->
-                <!-- v82: Audit Lock moved into the Audit modal as its own tab
-                     (switchAuditTab('lock')) — this slot now opens the
-                     Tonnage & Load Balancer calculator instead. -->
-                <button id="btnAnalyticsTonnage" class="analytics-grid-btn" onclick="openTonnageCalc()"><span class="ag-icon">⚖️</span><span>Tonnage</span></button>
+                <button id="btnAnalyticsAuditLock" class="analytics-grid-btn" onclick="openAuditLockModal()"><span class="ag-icon">🔒</span><span>Audit Lock</span></button>
                 <button id="btnAnalyticsProjects" class="analytics-grid-btn" onclick="openContracts()"><span class="ag-icon">📋</span><span>Letterpad</span></button>
             </div>
             <!-- Improvement #1: full data backup/export — deliberately understated
@@ -2209,26 +2025,10 @@
                  the <select> itself is a native click target for opening a dropdown.
                  Now the whole tile is clickable — it programmatically opens the
                  select (openSignatureSelect), same as tapping Boss Mode or Void
-                 anywhere on their button. The <select> itself stays usable too.
-
-                 v82 FIX: the <select> USED to double as this tile's visible label
-                 (its own text showing "Pen Signature" / "Sign: Aadil" etc). On at
-                 least some mobile browsers a native <select> forced to a small
-                 fixed height via CSS (the v71 alignment fix below) renders with
-                 its own internal vertical padding that pushes the option text
-                 outside that box — so the label silently disappeared while the
-                 tile's background/icon still showed fine. Boss Mode and Void
-                 never had this problem because their label is a plain <span>,
-                 which has no such internal UA padding.
-                 Fix: give this tile the same plain <span> label as its siblings
-                 (id="signatureLabel", updated by applySignature()) and demote the
-                 <select> to an invisible, unclickable helper that only exists so
-                 openSignatureSelect() has something to call .showPicker()/.focus()
-                 on — it no longer needs to render any text itself. -->
+                 anywhere on their button. The <select> itself stays usable too. -->
             <div class="action-trio-btn trio-signature" onclick="openSignatureSelect(event)">
                 <span class="trio-icon">🖊️</span>
-                <span id="signatureLabel">Pen Signature</span>
-                <select id="signatorySelect" class="trio-select" onchange="applySignature()" tabindex="-1" aria-hidden="true">
+                <select id="signatorySelect" class="trio-select" onchange="applySignature()" onclick="event.stopPropagation()">
                     <option value="NONE">Pen Signature</option>
                     <option value="AADIL">Sign: Aadil</option>
                     <option value="RAJA">Sign: Raja</option>
@@ -2907,7 +2707,7 @@
                          container, pushing the image to the right edge instead of
                          centering it. align-self:center overrides that for the image only. -->
                     <div id="sigDisclaimer" style="font-size:9px; color:#5d6d7e; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:auto; display:none; font-weight:600;">Electronically Signed</div>
-                    <img id="sigImage" src="" style="max-height: 45px; display: none; margin-bottom: 2px; align-self: center;">
+                    <img id="sigImage" src="" style="max-height: 45px; display: none; margin-bottom: 2px; margin-right: 20px; align-self: right;">
                     <div class="signature-title boss-text">For KEN PROJECTS</div>
                     <div class="signature-sub boss-text" id="sigNameText">Authorized Signatory</div>
                 </div>
@@ -3405,7 +3205,7 @@
                 <!-- v80 (item 15): the ceiling above which a document asks for
                      a second look before saving. Blank/0 leaves only the
                      relative "3× the usual" test active. -->
-                <label id="largeDocLabel" style="margin-left:4px; color:#2c3e50; text-transform:none; font-size:12px;">Flag over ₹:</label>
+                <label id="largeDocLabel" style="margin-left:4px;">Flag over ₹:</label>
                 <input type="number" id="largeDocThresholdIn" min="0" step="1000" placeholder="off" onchange="setLargeDocThreshold(this.value)" title="Ask for confirmation before saving an invoice above this amount. Leave blank to rely only on the automatic 3×-the-usual check." style="width:100px; margin:0; padding:8px 10px; font-size:13px; color:#333; background:#fff; border:1px solid #ccc; border-radius:4px;">
                 <button class="close-btn" onclick="closeOutstanding()">X</button>
             </div>
@@ -3464,7 +3264,7 @@
         </div>
         <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
             <label style="margin:0; text-transform:none; font-size:13px; color:#333;">At least</label>
-            <select id="bulkStatementMinDays" onchange="renderBulkStatements()" style="width:auto; margin:0; background:#fff; color:#333; border:1px solid #ccc;">
+            <select id="bulkStatementMinDays" onchange="renderBulkStatements()" style="width:auto; margin:0;">
                 <option value="1">1 day past due</option>
                 <option value="7">7 days past due</option>
                 <option value="15">15 days past due</option>
@@ -3614,11 +3414,6 @@
             <button class="engine-tab-btn active" id="auditTabBtnExport" onclick="switchAuditTab('export')">📊 Monthly Export</button>
             <button class="engine-tab-btn" id="auditTabBtnGstr" onclick="switchAuditTab('gstr')">🧾 GSTR-1 HSN Summary</button>
             <button class="engine-tab-btn" id="auditTabBtnPurchases" onclick="switchAuditTab('purchases')">📎 Purchase Bills</button>
-            <!-- v82: was its own standalone modal (auditLockModal), opened from
-                 its own grid button. Moved here so everything audit-related
-                 lives in one place, and its old grid slot could be freed up
-                 for the Tonnage calculator. -->
-            <button class="engine-tab-btn" id="auditTabBtnLock" onclick="switchAuditTab('lock')">🔒 Audit Lock</button>
         </div>
 
         <div class="engine-tab-content active" id="auditTabExport">
@@ -3735,246 +3530,6 @@
 
             <div id="auditPdfMonthList"></div>
         </div>
-
-        <!-- v82: Audit Lock tab — was its own standalone modal, now lives
-             here so the grid slot it took up could become the Tonnage
-             calculator instead. Same fields/ids as before (alm_*, almDate),
-             just re-homed — setAuditLockFromModal()/clearAuditLockFromModal()
-             and updateAuditLockModalStatus() are untouched. -->
-        <div class="engine-tab-content" id="auditTabLock">
-            <div style="font-size:12px; color:#555; margin-bottom:14px;">Documents of the selected types, dated before the lock date, require the master password to save, delete, or void — protects periods already filed with GST.</div>
-            <div id="auditLockModalStatus" style="background:#eaf2f8; border:1px solid #aed6f1; border-radius:6px; padding:10px; margin-bottom:14px; font-size:12px; color:#1b4f72;"></div>
-            <label style="color:#333; margin-top:0;">Lock these document types:</label>
-            <div style="display:flex; flex-wrap:wrap; gap:10px; margin:6px 0 14px;">
-                <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#333;"><input type="checkbox" id="alm_INV" checked style="margin:0;"> Tax Invoice</label>
-                <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#333;"><input type="checkbox" id="alm_RCM" checked style="margin:0;"> RCM Voucher</label>
-                <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#333;"><input type="checkbox" id="alm_SAL" style="margin:0;"> Sales Invoice</label>
-                <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#333;"><input type="checkbox" id="alm_ADV" style="margin:0;"> Advance</label>
-                <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#333;"><input type="checkbox" id="alm_RCP" style="margin:0;"> Receipt</label>
-                <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#333;"><input type="checkbox" id="alm_CRN" style="margin:0;"> Credit Note</label>
-                <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#333;"><input type="checkbox" id="alm_EXP" style="margin:0;"> Expense</label>
-            </div>
-            <label style="color:#333;">Lock everything before</label>
-            <input type="date" id="almDate" style="background:#f4f6f7; color:#333; border:1px solid #bdc3c7;">
-            <div style="display:flex; gap:10px; margin-top:16px;">
-                <button onclick="setAuditLockFromModal()" style="margin:0; background:#1a5276; padding:10px; flex:2;">🔒 Set Lock</button>
-                <button onclick="clearAuditLockFromModal()" style="margin:0; background:#95a5a6; padding:10px; flex:1;">Clear</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- v82: TONNAGE & LOAD BALANCER — took over the grid slot Audit Lock
-     used to occupy (Audit Lock moved into the Audit modal's own tab, see
-     switchAuditTab('lock') above). Ported from a standalone calculator
-     page the same way the Blocks Calculator lives self-contained inside
-     this file: its own CSS scoped entirely under #tonnageModal /
-     #tonnageSettingsModal (so its dark theme and its `input[type=number]`
-     etc. rules can never leak onto the rest of the app), and every
-     function/variable prefixed `tng` so nothing here can collide with
-     the thousands of other globals in this file. Behavior is unchanged
-     from the original: target-tonnage mode with per-line AUTO/LOCK,
-     a Specs gear to edit block weights (with a per-inch multiplier
-     shortcut), and a live recommended-mortar estimate. -->
-<!-- ============================================================ -->
-<div id="tonnageModal" class="modal-overlay" onclick="if(event.target===this) closeTonnageCalc()">
-    <div class="tng-container">
-        <div class="tng-header-wrapper">
-            <div class="tng-header">
-                <h1>⚖️ Tonnage</h1>
-                <p>Load Balancer</p>
-            </div>
-            <div style="display:flex; gap:8px;">
-                <button class="tng-btn-settings" onclick="openTonnageSettings()">⚙️ Specs</button>
-                <button class="tng-btn-close" onclick="closeTonnageCalc()">✕</button>
-            </div>
-        </div>
-
-        <div class="tng-target-box">
-            <div class="tng-flex-row" style="margin-bottom: 10px;">
-                <label class="tng-toggle-container">
-                    <input type="checkbox" id="tngTargetModeToggle" onchange="tngToggleTargetMode()">
-                    ENABLE TARGET TONNAGE MODE
-                </label>
-            </div>
-            <!-- v84: typing a custom tonnage used to mean tapping into a
-                 field pre-filled with "1.000" and backspacing five characters
-                 before you could type "12.5". Three changes fix that:
-                 onfocus=select() so the first keystroke replaces the whole
-                 value; inputmode="decimal" so Android shows a keypad WITH a
-                 decimal point (type=number alone does not guarantee one); and
-                 minus/plus steppers for half-tonne nudges without opening the
-                 keyboard at all. The value is a plain number now, not padded
-                 to 3dp - "12.000" is what made it look un-editable. -->
-            <div class="tng-flex-row" id="tngTargetInputWrapper" style="opacity: 0.4; pointer-events: none; transition: opacity 0.2s;">
-                <span style="font-size: 13px; font-weight: bold; color: var(--tng-accent);">TARGET TONNES:</span>
-                <div class="tng-stepper">
-                    <button type="button" class="tng-step-btn" onclick="tngNudgeTarget(-0.5)" aria-label="Decrease by half a tonne">&#8722;</button>
-                    <input type="number" id="tngTargetTonnage" value="12" step="0.5" min="0" inputmode="decimal"
-                           onfocus="this.select()" oninput="tngCalculateWeights(this)">
-                    <button type="button" class="tng-step-btn" onclick="tngNudgeTarget(0.5)" aria-label="Increase by half a tonne">+</button>
-                </div>
-            </div>
-            <!-- v83: quick presets for the tonnages usually ordered — one tap
-                 instead of typing "12.000" etc. by hand every time. Shares
-                 the same enable/disable state as the manual input above. -->
-            <div class="tng-preset-row" id="tngPresetRow" style="opacity: 0.4; pointer-events: none; transition: opacity 0.2s;">
-                <span class="tng-preset-label">QUICK PICK:</span>
-                <button type="button" class="tng-preset-btn" data-tonnes="7" onclick="tngSetPreset(7)">7t</button>
-                <button type="button" class="tng-preset-btn" data-tonnes="12" onclick="tngSetPreset(12)">12t</button>
-                <button type="button" class="tng-preset-btn" data-tonnes="19" onclick="tngSetPreset(19)">19t</button>
-                <button type="button" class="tng-preset-btn" data-tonnes="25" onclick="tngSetPreset(25)">25t</button>
-                <button type="button" class="tng-preset-btn" data-tonnes="30" onclick="tngSetPreset(30)">30t</button>
-            </div>
-            <!-- v83: live readout of how much weight is still unallocated
-                 (or how far over) so target mode isn't a black box — you see
-                 progress toward the target as you type, and which line is
-                 currently absorbing it (also highlighted below, see
-                 .tng-active-row). -->
-            <div id="tngTargetProgress" style="display:none; margin-top:10px; font-size:12px; color:var(--tng-muted); text-align:right;"></div>
-        </div>
-
-        <div class="tng-grid-header">
-            <div>Item Specification</div>
-            <div>Quantity</div>
-            <div>Fill Mode</div>
-        </div>
-
-        <!-- v83: each row's mode control used to be a single pill button
-             labeled AUTO (green, unchecked) / LOCK (red, checked) — feedback
-             was that "LOCK" read as an action to take ("lock this in"), not
-             as the resulting state, so people expected tapping it to freeze
-             the auto-calculated number rather than switch the row to manual
-             entry. Replaced with a small track/thumb switch plus a text
-             label that always names the CURRENT mode (Auto / Manual / Fixed
-             when target mode itself is off) — no verb, just a state, so
-             there's nothing to misread as an instruction. Same underlying
-             checkbox + tngHandleLockChange()/tngToggleTargetMode() logic;
-             the label/icon swap is pure CSS (see .tng-mode-switch rules). -->
-        <div class="tng-item-row" id="tngRow4">
-            <label id="tngLbl4">4" AAC Blocks <span id="tngSpan4">Weight: 9.0 kg | 1 Bag/90 Blks</span></label>
-            <input type="number" id="tngQty4" value="0" min="0" oninput="tngCalculateWeights(this)">
-            <div class="tng-radio-group">
-                <div class="tng-mode-seg" role="group" aria-label="Quantity mode">
-                    <input type="checkbox" class="tng-lock-btn" id="tngLock4" onchange="tngHandleLockChange(this)">
-                    <button type="button" class="tng-seg-btn" data-mode="auto" onclick="tngSetRowMode('tngLock4', false)">Auto</button>
-                    <button type="button" class="tng-seg-btn" data-mode="manual" onclick="tngSetRowMode('tngLock4', true)">Manual</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="tng-item-row" id="tngRow6">
-            <label id="tngLbl6">6" AAC Blocks <span id="tngSpan6">Weight: 13.5 kg | 1 Bag/60 Blks</span></label>
-            <input type="number" id="tngQty6" value="0" min="0" oninput="tngCalculateWeights(this)">
-            <div class="tng-radio-group">
-                <div class="tng-mode-seg" role="group" aria-label="Quantity mode">
-                    <input type="checkbox" class="tng-lock-btn" id="tngLock6" onchange="tngHandleLockChange(this)">
-                    <button type="button" class="tng-seg-btn" data-mode="auto" onclick="tngSetRowMode('tngLock6', false)">Auto</button>
-                    <button type="button" class="tng-seg-btn" data-mode="manual" onclick="tngSetRowMode('tngLock6', true)">Manual</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="tng-item-row" id="tngRow8">
-            <label id="tngLbl8">8" AAC Blocks <span id="tngSpan8">Weight: 18.0 kg | 1 Bag/45 Blks</span></label>
-            <input type="number" id="tngQty8" value="0" min="0" oninput="tngCalculateWeights(this)">
-            <div class="tng-radio-group">
-                <div class="tng-mode-seg" role="group" aria-label="Quantity mode">
-                    <input type="checkbox" class="tng-lock-btn" id="tngLock8" onchange="tngHandleLockChange(this)">
-                    <button type="button" class="tng-seg-btn" data-mode="auto" onclick="tngSetRowMode('tngLock8', false)">Auto</button>
-                    <button type="button" class="tng-seg-btn" data-mode="manual" onclick="tngSetRowMode('tngLock8', true)">Manual</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="tng-item-row" id="tngRow9">
-            <label id="tngLbl9">9" AAC Blocks <span id="tngSpan9">Weight: 20.0 kg | 1 Bag/42.5 Blks</span></label>
-            <input type="number" id="tngQty9" value="0" min="0" oninput="tngCalculateWeights(this)">
-            <div class="tng-radio-group">
-                <div class="tng-mode-seg" role="group" aria-label="Quantity mode">
-                    <input type="checkbox" class="tng-lock-btn" id="tngLock9" onchange="tngHandleLockChange(this)">
-                    <button type="button" class="tng-seg-btn" data-mode="auto" onclick="tngSetRowMode('tngLock9', false)">Auto</button>
-                    <button type="button" class="tng-seg-btn" data-mode="manual" onclick="tngSetRowMode('tngLock9', true)">Manual</button>
-                </div>
-            </div>
-        </div>
-
-        <div style="border-bottom: 1px solid var(--tng-border); margin: 15px 0 10px 0;"></div>
-
-        <div class="tng-readonly-banner">
-            <div class="tng-flex-row">
-                <span style="color: var(--tng-muted); font-weight: 600;">Recommended Mortar Quantity:</span>
-                <span style="font-weight: bold; color: var(--tng-success); font-size: 14px;" id="tngRecommendedMortarDisplay">0 Bags</span>
-            </div>
-        </div>
-
-        <div class="tng-item-row" id="tngRowMortar">
-            <label>Actual Mortar Bags <span>Weight: 40.0 kg</span></label>
-            <input type="number" id="tngQtyMortar" value="0" min="0" oninput="tngCalculateWeights(this)">
-            <div class="tng-radio-group">
-                <div class="tng-mode-seg" role="group" aria-label="Quantity mode">
-                    <input type="checkbox" class="tng-lock-btn" id="tngLockMortar" onchange="tngHandleLockChange(this)">
-                    <button type="button" class="tng-seg-btn" data-mode="auto" onclick="tngSetRowMode('tngLockMortar', false)">Auto</button>
-                    <button type="button" class="tng-seg-btn" data-mode="manual" onclick="tngSetRowMode('tngLockMortar', true)">Manual</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="tng-summary-card">
-            <div class="tng-weight-line">
-                <span style="color: var(--tng-muted);">Total Block Count:</span>
-                <span id="tngTotalBlocks" style="font-weight: bold;">0 Blocks</span>
-            </div>
-            <div class="tng-weight-line">
-                <span style="color: var(--tng-muted);">Total Load Mortar:</span>
-                <span id="tngTotalMortarBags" style="font-weight: bold;">0 Bags <small style="color:var(--tng-muted); font-weight:normal;">(0 kg)</small></span>
-            </div>
-            <div class="tng-gross-total">
-                <span>GROSS DESPATCH WEIGHT:</span>
-                <div>
-                    <span id="tngGrossTonnage">0.000</span> <small style="font-size: 13px; color: white;">Tonnes</small>
-                </div>
-            </div>
-        </div>
-
-        <button class="tng-btn-reset" onclick="tngResetCalculator()">Clear All Fields</button>
-    </div>
-</div>
-
-<div class="modal-overlay" id="tonnageSettingsModal" style="z-index:2100;">
-    <div class="tng-settings-modal">
-        <div class="tng-modal-header">
-            <span>⚙️ Unit Weights Matrix Setup</span>
-            <button class="tng-modal-close" onclick="closeTonnageSettings()">×</button>
-        </div>
-
-        <div class="tng-target-box" style="margin-bottom: 15px; border-color: var(--tng-success);">
-            <div class="tng-setting-field-row" style="margin-bottom:0;">
-                <label style="font-weight:bold; color:var(--tng-accent);">Weight Per Inch (kg):</label>
-                <input type="number" id="tngCfgWeightPerInch" value="2.25" step="0.01" min="0.1" style="width:100px;" oninput="tngApplyInchWeightMultiplication()">
-            </div>
-            <p style="margin:5px 0 0 0; font-size:10px; color:var(--tng-muted); text-align:right;">Updates all sizes automatically below</p>
-        </div>
-
-        <div class="tng-setting-field-row">
-            <label>4" Block Weight (kg):</label>
-            <input type="number" id="tngCfgW4" value="9.0" step="0.1" min="1" style="width:100px;">
-        </div>
-        <div class="tng-setting-field-row">
-            <label>6" Block Weight (kg):</label>
-            <input type="number" id="tngCfgW6" value="13.5" step="0.1" min="1" style="width:100px;">
-        </div>
-        <div class="tng-setting-field-row">
-            <label>8" Block Weight (kg):</label>
-            <input type="number" id="tngCfgW8" value="18.0" step="0.1" min="1" style="width:100px;">
-        </div>
-        <div class="tng-setting-field-row">
-            <label>9" Block Weight (kg):</label>
-            <input type="number" id="tngCfgW9" value="20.0" step="0.1" min="1" style="width:100px;">
-        </div>
-
-        <button class="tng-btn-save-settings" onclick="tngSaveSettingsParameters()">Apply & Update Master</button>
     </div>
 </div>
 
@@ -4292,6 +3847,35 @@
 </div>
 
 <!-- #2: cross-tool global search -->
+<!-- #7: Audit Lock standalone modal — also accessible from Reports & Tools -->
+
+<div id="auditLockModal" class="modal-overlay" onclick="if(event.target===this) closeAuditLockModal()">
+    <div class="modal-content" style="max-width:480px;">
+        <div class="modal-header">
+            <h2 style="font-size:16px;">🔒 Audit Lock</h2>
+            <button class="close-btn" onclick="closeAuditLockModal()">X</button>
+        </div>
+        <div style="font-size:12px; color:#555; margin-bottom:14px;">Documents of the selected types, dated before the lock date, require the master password to save, delete, or void — protects periods already filed with GST.</div>
+        <div id="auditLockModalStatus" style="background:#eaf2f8; border:1px solid #aed6f1; border-radius:6px; padding:10px; margin-bottom:14px; font-size:12px; color:#1b4f72;"></div>
+        <label style="color:#333; margin-top:0;">Lock these document types:</label>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin:6px 0 14px;">
+            <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="alm_INV" checked style="margin:0;"> Tax Invoice</label>
+            <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="alm_RCM" checked style="margin:0;"> RCM Voucher</label>
+            <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="alm_SAL" style="margin:0;"> Sales Invoice</label>
+            <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="alm_ADV" style="margin:0;"> Advance</label>
+            <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="alm_RCP" style="margin:0;"> Receipt</label>
+            <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="alm_CRN" style="margin:0;"> Credit Note</label>
+            <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="alm_EXP" style="margin:0;"> Expense</label>
+        </div>
+        <label style="color:#333;">Lock everything before</label>
+        <input type="date" id="almDate" style="background:#f4f6f7; color:#333; border:1px solid #bdc3c7;">
+        <div style="display:flex; gap:10px; margin-top:16px;">
+            <button onclick="setAuditLockFromModal()" style="margin:0; background:#1a5276; padding:10px; flex:2;">🔒 Set Lock</button>
+            <button onclick="clearAuditLockFromModal()" style="margin:0; background:#95a5a6; padding:10px; flex:1;">Clear</button>
+            <button onclick="closeAuditLockModal()" style="margin:0; background:#7f8c8d; padding:10px; flex:1;">Close</button>
+        </div>
+    </div>
+</div>
 
 <div id="globalSearchModal" class="modal-overlay" onclick="if(event.target===this) closeGlobalSearch()">
     <div class="modal-content" style="max-width:600px;">
@@ -4509,7 +4093,7 @@
             <button class="close-btn" onclick="closeProjectDocLinker()">X</button>
         </div>
         <div style="font-size:11px; color:#888; margin-bottom:8px;">Tick as many as you need, then link them all at once.</div>
-        <input type="text" id="projectDocLinkerSearch" placeholder="Search by client name or doc no..." oninput="renderProjectDocLinkerResults()" style="margin-bottom:10px; background:#fff; color:#333; border:1px solid #ccc;">
+        <input type="text" id="projectDocLinkerSearch" placeholder="Search by client name or doc no..." oninput="renderProjectDocLinkerResults()" style="margin-bottom:10px;">
         <div id="projectDocLinkerResults" style="max-height:400px; overflow-y:auto; border:1px solid #eee; border-radius:6px;"></div>
         <div id="projectDocLinkerSelectedBar" style="display:none; justify-content:space-between; align-items:center; margin-top:12px; background:#eaf2f8; border-radius:6px; padding:10px 14px;">
             <span id="projectDocLinkerSelectedCount" style="font-size:12px; font-weight:bold; color:#1a5276;">0 selected</span>
@@ -4799,7 +4383,7 @@
             <div style="font-size:12px; font-weight:bold; color:#7f8c8d; text-transform:uppercase; margin:18px 0 8px 0; border-top:1px solid #eee; padding-top:14px;">Detail by location &amp; landing cost</div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
                 <div style="font-size:12px; color:#7f8c8d;">Quantities shown are current stock remaining across all batches at each location.</div>
-                <select id="stockGridLocationFilter" onchange="renderStockGrid()" style="width:auto; margin:0; background:#fff; color:#333; border:1px solid #ccc;">
+                <select id="stockGridLocationFilter" onchange="renderStockGrid()" style="width:auto; margin:0;">
                     <option value="ALL">All Locations</option>
                 </select>
             </div>
@@ -4939,7 +4523,7 @@
              confirm to adjust live stock and record realized profit. -->
         <div class="engine-tab-content" id="stockTabLink">
             <div style="font-size:12px; color:#7f8c8d; margin-bottom:10px;">v78: New Tax Invoices now link automatically the moment they're saved — you shouldn't need this tab day to day. It's here to <b>backfill</b> Tax Invoices that were saved before auto-linking existed. Search below, choose a location, confirm.</div>
-            <input type="text" id="linkInvoiceSearch" style="background:#fff; color:#333; border:1px solid #ccc;" placeholder="Search by doc no or client..." oninput="searchLinkableInvoices()" autocomplete="off">
+            <input type="text" id="linkInvoiceSearch" placeholder="Search by doc no or client..." oninput="searchLinkableInvoices()" autocomplete="off">
             <div id="linkInvoiceResults" style="margin-top:8px;"></div>
             <div id="linkInvoiceDetail" style="margin-top:14px;"></div>
         </div>
@@ -5035,7 +4619,7 @@
         <div style="font-size:12px; color:#7f8c8d; margin-bottom:12px;">
             Every client is assigned a permanent ID the first time they appear on a saved document. Click a row to filter the Cloud Document Manager down to just their documents, or use Edit to update their details.
         </div>
-        <input type="text" id="clientListSearch" placeholder="Search by name, ID, or phone..." oninput="renderClientList()" style="margin-bottom:12px; background:#fff; color:#333; border:1px solid #ccc;">
+        <input type="text" id="clientListSearch" placeholder="Search by name, ID, or phone..." oninput="renderClientList()" style="margin-bottom:12px;">
         <table class="doc-list-table" style="table-layout:fixed; width:100%;">
             <thead><tr>
                 <th onclick="changeClientSort('id')" style="width:80px;">ID <span id="csort-id"></span></th>
@@ -5159,8 +4743,8 @@
             Look up anyone's advance balance without registering them as a repeat client — useful for a one-time or occasional customer. Matches by name AND phone number together, since two different people can share a name.
         </div>
         <div style="display:flex; gap:10px; margin-bottom:14px;">
-            <input type="text" id="unregAdvName" placeholder="Client name" style="flex:1; margin:0; background:#fff; color:#333; border:1px solid #ccc;">
-            <input type="text" id="unregAdvPhone" placeholder="Phone number" style="flex:1; margin:0; background:#fff; color:#333; border:1px solid #ccc;">
+            <input type="text" id="unregAdvName" placeholder="Client name" style="flex:1; margin:0;">
+            <input type="text" id="unregAdvPhone" placeholder="Phone number" style="flex:1; margin:0;">
             <button onclick="searchUnregisteredAdvancePool()" style="width:auto; margin:0; background:#d35400; padding:9px 16px;">Search</button>
         </div>
         <div id="unregAdvSearchResults"></div>
@@ -5438,7 +5022,7 @@
             <h2>✉️ Saved Letters</h2>
             <button class="close-btn" onclick="closeSavedLetters()">X</button>
         </div>
-        <input type="text" id="letterSearchInput" placeholder="Search by letter no., addressee, or content..." oninput="renderSavedLettersList()" style="margin-bottom:12px; background:#fff; color:#333; border:1px solid #ccc;">
+        <input type="text" id="letterSearchInput" placeholder="Search by letter no., addressee, or content..." oninput="renderSavedLettersList()" style="margin-bottom:12px;">
         <div id="savedLettersListBody"></div>
     </div>
 </div>
@@ -5449,7 +5033,7 @@
     // This is what the version badge displays and what checkForAppUpdate()
     // compares against. Keeping this in sync is what makes the badge
     // trustworthy — if forgotten, the badge silently shows a stale number.
-    const APP_VERSION = "v86";
+    const APP_VERSION = "v81";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -6538,13 +6122,24 @@
         });
     }
 
-    // v82: this used to open/close a standalone Audit Lock modal
-    // (openAuditLockModal/closeAuditLockModal) with its own init logic —
-    // that modal is gone, folded into the Audit modal's "🔒 Audit Lock" tab,
-    // and switchAuditTab('lock') now does the same mirroring inline.
+    // #7: standalone Audit Lock modal — also syncs state with the existing
+    // inline settings panel so both stay consistent.
     // #8: tracks and shows WHEN the lock was last set (timestamp) — since
     // this protects GST-filed periods, there should be a visible record
     // of the last change, not just what the current setting is.
+    function openAuditLockModal() {
+        // Mirror current lock state into the modal's controls
+        let types = ['INV','RCM','SAL','ADV','RCP','CRN','EXP'];
+        types.forEach(t => {
+            let cb = document.getElementById('alm_' + t);
+            if (cb) cb.checked = auditLockTypes.includes(t);
+        });
+        document.getElementById('almDate').value = auditLockDate || '';
+        updateAuditLockModalStatus();
+        document.getElementById('auditLockModal').style.display = 'flex';
+    }
+    function closeAuditLockModal() { document.getElementById('auditLockModal').style.display = 'none'; }
+
     function updateAuditLockModalStatus() {
         let el = document.getElementById('auditLockModalStatus');
         if (!el) return;
@@ -6837,10 +6432,7 @@
     // nothing. This makes the whole tile clickable, same as Boss Mode and Void.
     function openSignatureSelect(evt) {
         // If the click landed on the <select> itself, let it open natively —
-        // v82: the <select> is now pointer-events:none (see its CSS), so a
-        // real tap can never land on it directly — evt.target here is always
-        // the tile or one of its visible children. Kept as a harmless guard
-        // in case that ever changes.
+        // stopPropagation on the select's own onclick already prevents double-firing.
         let select = document.getElementById('signatorySelect');
         if (evt.target === select) return;
         if (typeof select.showPicker === 'function') {
@@ -6854,15 +6446,10 @@
     }
 
     function applySignature() {
-        let sigSelect = document.getElementById('signatorySelect');
-        let sigType = sigSelect.value;
+        let sigType = document.getElementById('signatorySelect').value;
         let sigImg = document.getElementById('sigImage');
         let sigDisc = document.getElementById('sigDisclaimer');
         let sigNameText = document.getElementById('sigNameText');
-        // v82: keeps the tile's visible <span> label (added because the
-        // <select> itself is no longer rendered — see the HTML/CSS comments
-        // by signatorySelect) in sync with whichever option is selected.
-        let sigTileLabel = document.getElementById('signatureLabel');
 
         if (sigType === "NONE") {
             sigImg.style.display = 'none';
@@ -6874,7 +6461,6 @@
             sigDisc.style.display = 'block';
             sigNameText.innerText = signatoryTitles[sigType] || "Authorized Signatory";
         }
-        if (sigTileLabel) sigTileLabel.innerText = sigSelect.options[sigSelect.selectedIndex].text;
     }
 
     // --- DYNAMIC PRICING ENGINE STATE ---
@@ -8611,19 +8197,8 @@
     // ================================================================
     function reverseStockMovementsForDoc(docNo) {
         if (!docNo) return;
-        // v84 CRITICAL FIX: movements are stamped with the document's CLEAN number,
-        // but voidDocument()/amendDocument() append " - VOID" to docNoIn BEFORE
-        // calling saveDocument(). By the time this ran, docNo was
-        // "KT/INV26-27/0042 - VOID", which matched no movement at all - so the
-        // filter came back empty, this returned early, and voiding an invoice left
-        // the stock deducted and its profit still booked forever. Normalise to the
-        // base number so a voided document unwinds the movements it actually made.
-        let baseNo = String(docNo).replace(/\s*-\s*VOID\s*$/i, '').trim();
         let moves = getStockMovements();
-        let toReverse = moves.filter(m => {
-            let mNo = String(m.docNo || '').replace(/\s*-\s*VOID\s*$/i, '').trim();
-            return mNo === baseNo && (m.type === 'SALE' || m.type === 'CRN_RETURN');
-        });
+        let toReverse = moves.filter(m => m.docNo === docNo && (m.type === 'SALE' || m.type === 'CRN_RETURN'));
         if (toReverse.length === 0) return;
 
         let batches = getStockBatches();
@@ -8648,19 +8223,8 @@
         });
         saveStockBatches(batches);
 
-        let remaining = moves.filter(m => {
-            let mNo = String(m.docNo || '').replace(/\s*-\s*VOID\s*$/i, '').trim();
-            return !(mNo === baseNo && (m.type === 'SALE' || m.type === 'CRN_RETURN'));
-        });
-        // v84 FIX: removing this document's own movements is the whole point of a
-        // reversal, and the user already authorised it (they typed "yes" to VOID,
-        // or re-saved the document). Without this wrapper the DataGuard treated a
-        // small movement list dropping to 0 as a suspected wipe and threw a
-        // "⚠️ DATA LOSS WARNING" at the user mid-void - and if they pressed Cancel
-        // (which the dialog recommends) the stale SALE rows survived while the
-        // batch quantities had already been restored, leaving stock double-counted.
-        // Scope is exactly one document's rows, so this is safe to pre-authorise.
-        guardRunDestructive(() => saveStockMovements(remaining));
+        let remaining = moves.filter(m => !(m.docNo === docNo && (m.type === 'SALE' || m.type === 'CRN_RETURN')));
+        saveStockMovements(remaining);
     }
 
     function autoLinkInvoiceStock(doc) {
@@ -9790,16 +9354,6 @@
 
         document.body.classList.toggle('preview-fit', fitActive);
 
-        // v86 FIX: this class is what decides whether the S.No column renders
-        // (`body:not(.preview-fit) #thSno { display:none !important }` on
-        // phones), so toggling it changes the table's column count WITHOUT
-        // going through renderTable(). Left un-synced, the summary rows kept
-        // the previous mode's colspans and the value cell collapsed - the
-        // vertical, one-digit-per-line tax figures. This runs on every resize,
-        // orientation change and mode switch, so it is the reliable place to
-        // keep the foot in step with the head.
-        try { syncSummaryColspans(); } catch (e) { /* table not built yet */ }
-
         if (!fitActive) {
             // Readable/reflow mode (and all desktop): clear everything the
             // fit path sets so the normal responsive CSS takes over cleanly.
@@ -9853,18 +9407,6 @@
             // Adds our strict A4 CSS overrides
             element.classList.add('pdf-export-mode');
 
-            // v86 CRITICAL FIX: both lines above change which COLUMNS render.
-            // Dropping preview-fit activates `body:not(.preview-fit) #thSno {
-            // display:none !important }` on phones, so the S.No column vanishes
-            // — after renderTable() already fixed the summary colspans for a
-            // table that still had it. The label then spanned every remaining
-            // column and squeezed the value cell to zero width, printing the
-            // tax figures one digit per line down the right edge of the PDF and
-            // pushing the GRAND TOTAL badge over its own label. Re-sync the
-            // spans now that the export-time column set is settled, while there
-            // is still time before the 150ms capture below.
-            syncSummaryColspans();
-
             // Setting PDF config to EXACT A4 pixel mapping with Scroll Lock Enabled
             const opt = {
                 margin:       0,
@@ -9884,9 +9426,6 @@
                         if (wrap) wrap.style.height = savedWrapHeight;
                         setTimeout(applyPreviewFit, 0);
                     }
-                    // v86: columns changed back too — re-sync so the on-screen
-                    // foot doesn't keep the export-time spans.
-                    setTimeout(syncSummaryColspans, 0);
                     window.scrollTo(0, currentScroll); // Seamlessly return user to where they were looking
                     resolve();
                 });
@@ -11982,6 +11521,11 @@
             else { rowCrnRef.style.display = 'none'; }
         }
 
+        // v80 (item 13): the sticky mobile total reads #dispGrand, so it has
+        // to update AFTER the totals have been written. updateInfo() is the
+        // last thing renderTable() does, which makes this the correct — and
+        // only — safe place for it.
+        try { updateStickyGrandTotal(); } catch (e) { /* non-fatal */ }
     }
 
     // ============================================================
@@ -12858,11 +12402,84 @@
     }
 
 
-    // v80 ITEM 13 — STICKY GRAND TOTAL ON MOBILE — removed in v81. It kept
-    // covering the Save/PDF/Print buttons at the bottom of the screen, and
-    // that got in the way more than the off-screen total it was solving for.
-    // The grand total is still always visible in the normal invoice preview
-    // (#dispGrand) — this only removed the extra floating badge.
+    // ================================================================
+    // v80 ITEM 13 — STICKY GRAND TOTAL ON MOBILE
+    // ----------------------------------------------------------------
+    // Building a multi-line invoice on a phone pushes the total off the
+    // bottom of the screen exactly when it matters — while adding the
+    // lines that change it.
+    //
+    // The bar is created and injected here rather than added to the
+    // static HTML: it must never appear on the printed document or in a
+    // PDF capture, and keeping it out of #billPage entirely is a
+    // stronger guarantee than relying on a print stylesheet. It is
+    // hidden during PDF export for the same reason.
+    // ================================================================
+    var STICKY_TOTAL_MAX_WIDTH = 700;   // matches the mobile card breakpoint
+
+    function ensureStickyTotalBar() {
+        var el = document.getElementById('stickyGrandTotalBar');
+        if (el) return el;
+        el = document.createElement('div');
+        el.id = 'stickyGrandTotalBar';
+        el.className = 'no-print';
+        el.style.cssText =
+            'position:fixed; left:0; right:0; bottom:0; z-index:4000; display:none; ' +
+            'background:#1e8449; color:#fff; padding:10px 16px; ' +
+            'box-shadow:0 -2px 10px rgba(0,0,0,0.3); ' +
+            'font-size:15px; font-weight:bold; ' +
+            'align-items:center; justify-content:space-between; gap:12px;';
+        document.body.appendChild(el);
+        return el;
+    }
+
+    function updateStickyGrandTotal() {
+        var el = ensureStickyTotalBar();
+
+        // Never over the printed page or a capture.
+        if (document.body.classList.contains('pdf-export-mode') ||
+            document.getElementById('billPage') === null) {
+            el.style.display = 'none';
+            return;
+        }
+        if (window.innerWidth > STICKY_TOTAL_MAX_WIDTH) { el.style.display = 'none'; return; }
+
+        var typeEl = document.getElementById('docType');
+        var grandEl = document.getElementById('dispGrand');
+        if (!typeEl || !grandEl) { el.style.display = 'none'; return; }
+        if (['INV', 'SAL', 'QUO', 'CRN'].indexOf(typeEl.value) === -1) { el.style.display = 'none'; return; }
+        if (!cart || !cart.length) { el.style.display = 'none'; return; }
+
+        // Any modal open means the editor isn't what's being looked at.
+        var modalOpen = Array.prototype.some.call(
+            document.querySelectorAll('.modal-overlay'),
+            function (m) { return m.style.display === 'flex'; }
+        );
+        if (modalOpen) { el.style.display = 'none'; return; }
+
+        var label = typeEl.value === 'CRN' ? 'TOTAL CREDIT' : 'GRAND TOTAL';
+        el.innerHTML =
+            '<span style="font-size:11px; font-weight:600; letter-spacing:0.5px; opacity:0.85;">' + label +
+            ' · ' + cart.length + ' item' + (cart.length === 1 ? '' : 's') + '</span>' +
+            '<span style="font-size:19px;">₹ ' + grandEl.innerText + '</span>';
+        el.style.display = 'flex';
+
+        // v81 FIX: .action-bar (Save/PDF/Print) is ALSO position:fixed at
+        // bottom:0 on mobile, with a lower z-index (1000) than this bar
+        // (4000) — so this total bar was drawn directly on top of it,
+        // hiding the Save button behind the total badge whenever both were
+        // visible at once. Stack this bar above the action bar instead of
+        // over it, using the action bar's real rendered height so it still
+        // lines up correctly across every breakpoint's different button
+        // sizing/padding.
+        var actionBar = document.querySelector('.action-bar');
+        var stackOffset = (actionBar && actionBar.offsetParent !== null)
+            ? actionBar.getBoundingClientRect().height
+            : 0;
+        el.style.bottom = stackOffset + 'px';
+    }
+
+    window.addEventListener('resize', function () { try { updateStickyGrandTotal(); } catch (e) {} });
 
 
     // ================================================================
@@ -13859,37 +13476,14 @@
         try { renderVehicleChips(); } catch (e) {}
         try { renderBundleChips(); } catch (e) {}
         try { refreshSiteSuggestions(); } catch (e) {}
+        // NOTE: updateStickyGrandTotal() is deliberately NOT called here.
+        // renderV80DocExtras() runs at the TOP of renderTable(), before
+        // #dispGrand has been rewritten for this render — reading it here
+        // would put the previous total on the sticky bar, one edit behind
+        // reality. It is called from the end of updateInfo() instead, which
+        // is the last thing renderTable() does.
     }
 
-
-    // ================================================================
-    // v86 — SUMMARY ROW COLUMN SPANS
-    // ----------------------------------------------------------------
-    // The invoice foot ("Total Taxable Value", each "CGST + SGST" line,
-    // discount, GRAND TOTAL, balance) is a label cell spanning every column
-    // except the last, plus a value cell in the last column. Get that span
-    // wrong by one and the value cell collapses to zero width, which makes
-    // the browser wrap the number one CHARACTER per line — the vertical
-    // "2 8 , 3 0 5 . 0 8" seen on exported invoices.
-    //
-    // The count MUST come from getComputedStyle, not element.style: S.No is
-    // toggled inline per document type, but also hidden by an !important CSS
-    // rule on phones outside fit mode. Only the computed value reflects both.
-    //
-    // Kept as its own function because it has to run again after ANY change
-    // to which columns are visible — in particular exportToPDF() drops the
-    // preview-fit class right before capture, which changes S.No's visibility
-    // after renderTable() has already run.
-    // ================================================================
-    function syncSummaryColspans() {
-        let ths = Array.from(document.querySelectorAll('#headerRow th'));
-        let dataCols = ths.filter(th => getComputedStyle(th).display !== 'none').length;
-        if (!dataCols) return { dataCols: 0, labelSpan: 1 };   // table not in the DOM yet
-        let labelSpan = Math.max(1, dataCols - 1);
-        document.querySelectorAll('.dynamic-colspan').forEach(td => td.colSpan = labelSpan);
-        document.querySelectorAll('.dynamic-colspan-full').forEach(td => td.colSpan = dataCols);
-        return { dataCols, labelSpan };
-    }
 
     function renderTable() {
         // v79: cart changes come from buttons, not input events, so markDirty's
@@ -13979,18 +13573,20 @@
         });
         tbody.innerHTML = rowsHTML;
 
-        // v86 FIX: this used to filter on `th.style.display !== 'none'`, which
-        // only sees INLINE styles. The S.No column is shown/hidden inline by
-        // this function (line ~13872), but a second, stronger rule hides it
-        // from CSS: `body:not(.preview-fit) #thSno { display:none !important }`
-        // in the <=600px block. On a phone in Readable mode that rule wins, so
-        // S.No was counted as visible while not being rendered - dataCols came
-        // out 7 against 6 real columns, the label spanned all 6, and the value
-        // cell was pushed into a phantom 7th column with ZERO width. That is
-        // why the tax figures printed one digit per line, stacked vertically.
-        // getComputedStyle sees both inline AND stylesheet rules, so the count
-        // now matches what actually renders.
-        let { dataCols, labelSpan } = syncSummaryColspans();
+        // BUG FIX: colSpan is a logical count that ignores display:none —
+        // a hidden <th> still occupies a column slot for colspan purposes.
+        // The old hardcoded dataCols (isInv?7:(isAdv?3:4)) didn't always
+        // match how many <th> elements were ACTUALLY visible for a given
+        // type, leaving summary rows like "GRAND TOTAL" spanning too few
+        // columns and wrapping onto multiple lines (seen on Quotations).
+        // Now counts the real number of visible header cells directly.
+        let visibleHeaderCount = Array.from(document.querySelectorAll('#headerRow th'))
+            .filter(th => th.style.display !== 'none').length;
+        let dataCols = visibleHeaderCount;
+        let labelSpan = Math.max(1, dataCols - 1);
+
+        document.querySelectorAll('.dynamic-colspan').forEach(td => td.colSpan = labelSpan);
+        document.querySelectorAll('.dynamic-colspan-full').forEach(td => td.colSpan = dataCols);
 
         // v64: DISCOUNT + GST now come straight from the shared engine.
         // Section 15(3) CGST Act: discounts shown on the invoice face reduce
@@ -14021,7 +13617,7 @@
                 let half = (g.rate / 2);
                 let halfLabel = Number.isInteger(half) ? half : half.toFixed(1);
                 return `<tr class="gst-rate-row">
-                    <td class="summary-label dynamic-colspan" colspan="${labelSpan}">CGST + SGST (${halfLabel}% + ${halfLabel}%):</td>
+                    <td class="summary-label" colspan="${labelSpan}">CGST + SGST (${halfLabel}% + ${halfLabel}%):</td>
                     <td class="summary-val">${g.tax.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                 </tr>`;
             }).join('');
@@ -14182,22 +13778,12 @@
         let max = (type === 'QUO') ? 200 : 0;
 
         docs.forEach(d => {
-            // v84 CRITICAL FIX: this used to be `!d.docNo.includes("VOID") && ...`,
-            // which excluded voided documents from the maximum. Voiding RENAMES a
-            // document to "<no> - VOID" rather than flagging it in place, so voiding
-            // the newest Tax Invoice pushed the running max back down and the next
-            // invoice was issued the SAME serial - two invoices sharing a number in
-            // one financial year, with checkDocNoCollision() unable to see it because
-            // it compares exact strings and the suffix differs. A serial that has been
-            // issued is spent, even if the document was later cancelled: strip the
-            // suffix and let voided documents count toward the maximum.
-            let baseDocNo = String(d.docNo || '').replace(/\s*-\s*VOID\s*$/i, '').trim();
-            if(baseDocNo.startsWith(prefix)) {
+            if(!d.docNo.includes("VOID") && d.docNo.startsWith(prefix)) {
                 // BUG FIX (code review): parseInt("001A") silently returns 1, ignoring the
                 // trailing "A" — a manually-edited doc number could collide with a future
                 // auto-generated one. A strict /^\d+$/ match rejects anything non-numeric
                 // instead of guessing, so malformed numbers are correctly skipped.
-                let suffix = baseDocNo.slice(prefix.length);
+                let suffix = d.docNo.slice(prefix.length);
                 if (/^\d+$/.test(suffix)) {
                     let numPart = parseInt(suffix, 10);
                     if (numPart > max) max = numPart;
@@ -14402,17 +13988,7 @@
         // with no localStorage write at all, so a save could vanish
         // completely if anything went wrong after this point.
         let idx = savedDocs.findIndex(d => d.id === docData.id);
-        // v84 CRITICAL FIX: this was a full REPLACE (savedDocs[idx] = docData).
-        // docData is rebuilt from the DOM each save, so every field that lives on
-        // the document but has no form control was destroyed on re-save - most
-        // importantly writeOffAmt/writeOffReason/writeOffDate, which only ever get
-        // attached by silentPatchDocument() from "Settle for Less". Editing a
-        // settled invoice for any unrelated reason (fixing a lorry number, say)
-        // silently resurrected the written-off balance in Outstanding. Merging the
-        // previous record underneath preserves those side-channel fields while
-        // every field docData does define still wins.
-        if (idx > -1) { docData = Object.assign({}, savedDocs[idx], docData); savedDocs[idx] = docData; }
-        else savedDocs.push(docData);
+        if (idx > -1) savedDocs[idx] = docData; else savedDocs.push(docData);
         persistSavedDocsCache();
         currentlyLoadedDocId = docData.id;
         hasUnsavedChanges = false;
@@ -16339,15 +15915,6 @@
             document.getElementById('watermark').style.display = 'none';
             isCurrentVoided = false;
             updateInfo();
-            // v84 CRITICAL FIX: saveDocument()'s save-as-new guard compares docNo
-            // against _loadedDocOriginalDocNo. Voiding/un-voiding REWRITES docNo
-            // internally, so that guard used to fire and offer to "save as a NEW
-            // document, keeping the original untouched" - and its own wording says
-            // that is almost always what you want. Accepting it minted a duplicate
-            // and left the original live and still counted in Summary, GSTR-1 and
-            // Outstanding. Re-baseline the marker first: this rename is ours, not
-            // the user renumbering a document.
-            _loadedDocOriginalDocNo = document.getElementById('docNoIn').value;
             saveDocument();
             showToast('✅ Document restored (un-voided)', 'success');
             return;
@@ -16358,9 +15925,7 @@
             let cur = document.getElementById('docNoIn').value;
             if(!cur.includes("VOID")) document.getElementById('docNoIn').value = cur + " - VOID";
             document.getElementById('watermark').style.display = 'block';
-            isCurrentVoided = true; updateInfo();
-            _loadedDocOriginalDocNo = document.getElementById('docNoIn').value; // v84: see un-void above
-            saveDocument();
+            isCurrentVoided = true; updateInfo(); saveDocument();
         }
     }
 
@@ -16616,11 +16181,6 @@
         document.getElementById('watermark').style.display = 'block';
         isCurrentVoided = true;
         updateInfo();
-        // v84 CRITICAL FIX: same as voidDocument() - this internal rename used to
-        // trip saveDocument()'s save-as-new guard, which would keep the ORIGINAL
-        // live and un-voided while writing the VOID copy as a separate document.
-        // An amendment then left three records and double-counted the sale.
-        _loadedDocOriginalDocNo = document.getElementById('docNoIn').value;
         saveDocument(); // save the voided original
 
         // Step 2: Snapshot everything
@@ -18266,347 +17826,6 @@
         renderAuditor();
     }
 
-    // ============================================================
-    // v82: TONNAGE & LOAD BALANCER
-    // ------------------------------------------------------------
-    // Ported from a standalone calculator page into this app's grid,
-    // in the slot Audit Lock used to occupy. Every name here is
-    // prefixed `tng` deliberately — this file already has thousands of
-    // globals, and generic names like calculateWeights/resetCalculator/
-    // unitWeights would be an easy silent collision waiting to happen.
-    // Logic is otherwise unchanged from the original page: target-tonnage
-    // mode balances whichever line(s) are left on AUTO to hit an exact
-    // dispatch weight, while LOCKed lines are treated as fixed.
-    // ============================================================
-    let tngUnitWeights = { tngQty4: 9.0, tngQty6: 13.5, tngQty8: 18.0, tngQty9: 20.0, tngQtyMortar: 40.0 };
-    const tngMortarCoverage = { tngQty4: 90, tngQty6: 60, tngQty8: 45, tngQty9: 42.5 };
-
-    let tngIsCalculating = false;
-    let tngLastEditedAutoInput = 'tngQty4';
-
-    function openTonnageCalc() {
-        document.getElementById('tonnageModal').style.display = 'flex';
-        tngCalculateWeights();
-    }
-    function closeTonnageCalc() { document.getElementById('tonnageModal').style.display = 'none'; }
-
-    function openTonnageSettings() { document.getElementById('tonnageSettingsModal').style.display = 'flex'; }
-    function closeTonnageSettings() { document.getElementById('tonnageSettingsModal').style.display = 'none'; }
-
-    function tngApplyInchWeightMultiplication() {
-        let perInchFactor = parseFloat(document.getElementById('tngCfgWeightPerInch').value) || 0;
-        if (perInchFactor <= 0) return;
-        document.getElementById('tngCfgW4').value = (4 * perInchFactor).toFixed(1);
-        document.getElementById('tngCfgW6').value = (6 * perInchFactor).toFixed(1);
-        document.getElementById('tngCfgW8').value = (8 * perInchFactor).toFixed(1);
-        document.getElementById('tngCfgW9').value = (9 * perInchFactor).toFixed(1);
-    }
-
-    function tngSaveSettingsParameters() {
-        tngUnitWeights.tngQty4 = parseFloat(document.getElementById('tngCfgW4').value) || 9.0;
-        tngUnitWeights.tngQty6 = parseFloat(document.getElementById('tngCfgW6').value) || 13.5;
-        tngUnitWeights.tngQty8 = parseFloat(document.getElementById('tngCfgW8').value) || 18.0;
-        tngUnitWeights.tngQty9 = parseFloat(document.getElementById('tngCfgW9').value) || 20.0;
-
-        document.getElementById('tngSpan4').innerText = `Weight: ${tngUnitWeights.tngQty4.toFixed(1)} kg | 1 Bag/90 Blks`;
-        document.getElementById('tngSpan6').innerText = `Weight: ${tngUnitWeights.tngQty6.toFixed(1)} kg | 1 Bag/60 Blks`;
-        document.getElementById('tngSpan8').innerText = `Weight: ${tngUnitWeights.tngQty8.toFixed(1)} kg | 1 Bag/45 Blks`;
-        document.getElementById('tngSpan9').innerText = `Weight: ${tngUnitWeights.tngQty9.toFixed(1)} kg | 1 Bag/42.5 Blks`;
-
-        closeTonnageSettings();
-        tngCalculateWeights();
-    }
-
-    function tngToggleTargetMode() {
-        const targetModeActive = document.getElementById('tngTargetModeToggle').checked;
-        const inputWrapper = document.getElementById('tngTargetInputWrapper');
-        const presetRow = document.getElementById('tngPresetRow'); // v83
-        const lockCheckboxes = document.querySelectorAll('#tonnageModal .tng-lock-btn');
-
-        if (targetModeActive) {
-            inputWrapper.style.opacity = "1";
-            inputWrapper.style.pointerEvents = "auto";
-            presetRow.style.opacity = "1";
-            presetRow.style.pointerEvents = "auto";
-            lockCheckboxes.forEach(cb => {
-                cb.removeAttribute('disabled');
-                cb.checked = true;
-            });
-            document.getElementById('tngLock4').checked = false;
-            tngLastEditedAutoInput = 'tngQty4';
-        } else {
-            inputWrapper.style.opacity = "0.4";
-            inputWrapper.style.pointerEvents = "none";
-            presetRow.style.opacity = "0.4";
-            presetRow.style.pointerEvents = "none";
-            lockCheckboxes.forEach(cb => {
-                cb.checked = false;
-                cb.setAttribute('disabled', 'true');
-            });
-        }
-        tngCalculateWeights();
-    }
-
-    // v83: quick presets for commonly-ordered tonnages — sets the target
-    // input directly instead of typing it, and visually marks which preset
-    // (if any) matches the current value.
-    function tngSetPreset(tonnes) {
-        // v84: plain number, not toFixed(3) - a field reading "12.000" looks
-        // like a formatted output rather than something you can edit.
-        document.getElementById('tngTargetTonnage').value = tonnes;
-        tngCalculateWeights();
-    }
-
-    // v84: half-tonne nudge from the -/+ buttons. Rounded to 3dp to kill
-    // floating-point dust (the 0.1+0.2 problem) before it reaches the field.
-    function tngNudgeTarget(delta) {
-        let el = document.getElementById('tngTargetTonnage');
-        let next = (parseFloat(el.value) || 0) + delta;
-        if (next < 0) next = 0;
-        el.value = parseFloat(next.toFixed(3));
-        tngCalculateWeights();
-    }
-
-    // v84: the segmented control's two buttons both write to the same hidden
-    // checkbox, then hand off to the existing tngHandleLockChange() so the
-    // "at least one line must stay AUTO" guard still runs unchanged.
-    function tngSetRowMode(lockId, manual) {
-        let cb = document.getElementById(lockId);
-        if (!cb || cb.disabled) return;
-        if (cb.checked === manual) return;   // already in that mode
-        cb.checked = manual;
-        tngHandleLockChange(cb);
-    }
-
-    // v84: paints the active segment on every row from the checkbox state,
-    // and dims the whole control when target mode is off (nothing to choose).
-    function tngSyncModeButtons() {
-        ['tngLock4', 'tngLock6', 'tngLock8', 'tngLock9', 'tngLockMortar'].forEach(id => {
-            let cb = document.getElementById(id);
-            if (!cb) return;
-            let seg = cb.closest('.tng-mode-seg');
-            if (!seg) return;
-            seg.classList.toggle('is-disabled', cb.disabled);
-            seg.querySelectorAll('.tng-seg-btn').forEach(btn => {
-                let wantsManual = btn.dataset.mode === 'manual';
-                btn.classList.toggle('active', !cb.disabled && cb.checked === wantsManual);
-            });
-        });
-    }
-
-    function tngSyncPresetActiveState() {
-        let current = parseFloat(document.getElementById('tngTargetTonnage').value) || 0;
-        document.querySelectorAll('#tonnageModal .tng-preset-btn').forEach(btn => {
-            btn.classList.toggle('active', Math.abs(parseFloat(btn.dataset.tonnes) - current) < 0.0005);
-        });
-    }
-
-    // v83: highlights whichever row is currently absorbing the target-mode
-    // adjustment (see .tng-active-row), and clears it entirely when target
-    // mode is off or nothing is being auto-filled.
-    function tngSetActiveRow(qtyId) {
-        let rowIds = { tngQty4: 'tngRow4', tngQty6: 'tngRow6', tngQty8: 'tngRow8', tngQty9: 'tngRow9', tngQtyMortar: 'tngRowMortar' };
-        Object.values(rowIds).forEach(rid => {
-            let row = document.getElementById(rid);
-            if (row) row.classList.remove('tng-active-row');
-        });
-        if (qtyId && rowIds[qtyId]) {
-            let row = document.getElementById(rowIds[qtyId]);
-            if (row) row.classList.add('tng-active-row');
-        }
-    }
-
-    // v83: live progress readout so target mode shows its work instead of
-    // silently rewriting a line's quantity. `residualWeightKg` here is
-    // whatever's LEFT after the auto-fill (so, near-zero rounding slack
-    // when a line was auto-filled — floor() can't always land exactly on
-    // the target — or the genuine shortfall/surplus when it couldn't be).
-    function tngUpdateTargetProgress(targetModeActive, residualWeightKg, activeRecipientLabel) {
-        let el = document.getElementById('tngTargetProgress');
-        if (!targetModeActive || residualWeightKg === null) { el.style.display = 'none'; return; }
-        el.style.display = 'block';
-
-        if (activeRecipientLabel) {
-            // A line successfully absorbed the target — residualWeightKg is
-            // just rounding slack (always small and non-negative here).
-            if (residualWeightKg < 0.5) {
-                el.innerText = `✅ Target reached exactly — auto-filled ${activeRecipientLabel}.`;
-            } else {
-                el.innerText = `✅ Auto-filled ${activeRecipientLabel} to hit target (${Math.round(residualWeightKg).toLocaleString()} kg short — rounds down to a whole unit).`;
-            }
-            el.style.color = 'var(--tng-success)';
-        } else if (residualWeightKg > 0) {
-            el.innerText = `${Math.round(residualWeightKg).toLocaleString()} kg still to allocate — tick at least one line to AUTO to fill it in.`;
-            el.style.color = 'var(--tng-muted)';
-        } else {
-            el.innerText = `⚠️ ${Math.round(Math.abs(residualWeightKg)).toLocaleString()} kg over target already from your MANUAL lines alone.`;
-            el.style.color = 'var(--tng-danger)';
-        }
-    }
-
-    function tngHandleLockChange(checkboxElement) {
-        const targetModeActive = document.getElementById('tngTargetModeToggle').checked;
-        if (!targetModeActive) return;
-
-        const locks = ['tngLock4', 'tngLock6', 'tngLock8', 'tngLock9', 'tngLockMortar'];
-        const checkedLocks = locks.filter(id => document.getElementById(id).checked);
-
-        if (checkedLocks.length === locks.length) {
-            alert("At least one option must be left on 'AUTO' to absorb weight adjustments!");
-            checkboxElement.checked = false;
-            return;
-        }
-
-        if (!checkboxElement.checked) {
-            tngLastEditedAutoInput = checkboxElement.id.replace('tngLock', 'tngQty');
-        } else if (tngLastEditedAutoInput === checkboxElement.id.replace('tngLock', 'tngQty')) {
-            for (let l of locks) {
-                if (!document.getElementById(l).checked) {
-                    tngLastEditedAutoInput = l.replace('tngLock', 'tngQty');
-                    break;
-                }
-            }
-        }
-        tngCalculateWeights();
-    }
-
-    // v83: display names for the "still to allocate → filling X" progress line.
-    const tngLineLabels = { tngQty4: '4" AAC Blocks', tngQty6: '6" AAC Blocks', tngQty8: '8" AAC Blocks', tngQty9: '9" AAC Blocks', tngQtyMortar: 'Mortar Bags' };
-
-    function tngCalculateWeights(triggerSource) {
-        if (tngIsCalculating) return;
-        tngIsCalculating = true;
-
-        const targetModeActive = document.getElementById('tngTargetModeToggle').checked;
-        let tngResidualForDisplay = null;    // v83
-        let tngActiveRecipientForDisplay = null; // v83
-
-        let q4 = Math.max(0, parseFloat(document.getElementById('tngQty4').value) || 0);
-        let q6 = Math.max(0, parseFloat(document.getElementById('tngQty6').value) || 0);
-        let q8 = Math.max(0, parseFloat(document.getElementById('tngQty8').value) || 0);
-        let q9 = Math.max(0, parseFloat(document.getElementById('tngQty9').value) || 0);
-        let mortarBags = Math.max(0, parseFloat(document.getElementById('tngQtyMortar').value) || 0);
-
-        if (triggerSource && triggerSource.id && !triggerSource.id.includes('tngTargetTonnage')) {
-            const potentialInputId = triggerSource.id;
-            const correspondingLock = document.getElementById(potentialInputId.replace('tngQty', 'tngLock'));
-            if (correspondingLock && !correspondingLock.checked && targetModeActive) {
-                tngLastEditedAutoInput = potentialInputId;
-            }
-        }
-
-        let exactRecommendedMortar = 0;
-        if (q4 > 0) exactRecommendedMortar += (q4 / tngMortarCoverage.tngQty4);
-        if (q6 > 0) exactRecommendedMortar += (q6 / tngMortarCoverage.tngQty6);
-        if (q8 > 0) exactRecommendedMortar += (q8 / tngMortarCoverage.tngQty8);
-        if (q9 > 0) exactRecommendedMortar += (q9 / tngMortarCoverage.tngQty9);
-
-        let roundedUpRecommended = Math.ceil(exactRecommendedMortar);
-        document.getElementById('tngRecommendedMortarDisplay').innerText = roundedUpRecommended + " Bags";
-
-        if (targetModeActive) {
-            let targetWeightKg = (parseFloat(document.getElementById('tngTargetTonnage').value) || 0) * 1000;
-            let fixedWeightKg = 0;
-            let openLines = [];
-
-            if (document.getElementById('tngLock4').checked) fixedWeightKg += q4 * tngUnitWeights.tngQty4;
-            else openLines.push('tngQty4');
-
-            if (document.getElementById('tngLock6').checked) fixedWeightKg += q6 * tngUnitWeights.tngQty6;
-            else openLines.push('tngQty6');
-
-            if (document.getElementById('tngLock8').checked) fixedWeightKg += q8 * tngUnitWeights.tngQty8;
-            else openLines.push('tngQty8');
-
-            if (document.getElementById('tngLock9').checked) fixedWeightKg += q9 * tngUnitWeights.tngQty9;
-            else openLines.push('tngQty9');
-
-            if (document.getElementById('tngLockMortar').checked) fixedWeightKg += mortarBags * tngUnitWeights.tngQtyMortar;
-            else openLines.push('tngQtyMortar');
-
-            let residualWeightKg = targetWeightKg - fixedWeightKg;
-            tngResidualForDisplay = residualWeightKg; // v83
-
-            if (residualWeightKg > 0 && openLines.length > 0) {
-                let activeRecipient = tngLastEditedAutoInput;
-                if (!openLines.includes(activeRecipient)) {
-                    activeRecipient = openLines[0];
-                }
-                tngActiveRecipientForDisplay = activeRecipient; // v83
-
-                openLines.forEach(line => {
-                    if (line !== activeRecipient) document.getElementById(line).value = 0;
-                });
-
-                if (activeRecipient === 'tngQtyMortar') {
-                    let calculatedBags = Math.floor(residualWeightKg / tngUnitWeights.tngQtyMortar);
-                    document.getElementById('tngQtyMortar').value = Math.max(0, calculatedBags);
-                    // v83: what's left over is rounding-only (floor() can't
-                    // land exactly on the target) — show THAT, not the full
-                    // pre-fill residual, since the residual itself just got
-                    // absorbed into this line.
-                    tngResidualForDisplay = residualWeightKg - (Math.max(0, calculatedBags) * tngUnitWeights.tngQtyMortar);
-                } else {
-                    let calculatedQty = Math.floor(residualWeightKg / tngUnitWeights[activeRecipient]);
-                    document.getElementById(activeRecipient).value = Math.max(0, calculatedQty);
-                    tngResidualForDisplay = residualWeightKg - (Math.max(0, calculatedQty) * tngUnitWeights[activeRecipient]);
-                }
-            } else {
-                openLines.forEach(line => {
-                    document.getElementById(line).value = 0;
-                });
-            }
-
-            q4 = Math.max(0, parseFloat(document.getElementById('tngQty4').value) || 0);
-            q6 = Math.max(0, parseFloat(document.getElementById('tngQty6').value) || 0);
-            q8 = Math.max(0, parseFloat(document.getElementById('tngQty8').value) || 0);
-            q9 = Math.max(0, parseFloat(document.getElementById('tngQty9').value) || 0);
-            mortarBags = Math.max(0, parseFloat(document.getElementById('tngQtyMortar').value) || 0);
-
-            exactRecommendedMortar = 0;
-            if (q4 > 0) exactRecommendedMortar += (q4 / tngMortarCoverage.tngQty4);
-            if (q6 > 0) exactRecommendedMortar += (q6 / tngMortarCoverage.tngQty6);
-            if (q8 > 0) exactRecommendedMortar += (q8 / tngMortarCoverage.tngQty8);
-            if (q9 > 0) exactRecommendedMortar += (q9 / tngMortarCoverage.tngQty9);
-            roundedUpRecommended = Math.ceil(exactRecommendedMortar);
-            document.getElementById('tngRecommendedMortarDisplay').innerText = roundedUpRecommended + " Bags";
-        }
-
-        let totalBlocksCount = Math.floor(q4 + q6 + q8 + q9);
-        let totalBlocksWeight = (q4 * tngUnitWeights.tngQty4) + (q6 * tngUnitWeights.tngQty6) + (q8 * tngUnitWeights.tngQty8) + (q9 * tngUnitWeights.tngQty9);
-        let totalMortarWeight = mortarBags * tngUnitWeights.tngQtyMortar;
-        let grossTonnageCalculated = (totalBlocksWeight + totalMortarWeight) / 1000;
-
-        document.getElementById('tngTotalBlocks').innerText = totalBlocksCount.toLocaleString() + " Blocks";
-        document.getElementById('tngTotalMortarBags').innerHTML = mortarBags + ` Bags <small style="color:var(--tng-muted); font-weight:normal;">(${Math.round(totalMortarWeight).toLocaleString()} kg)</small>`;
-        document.getElementById('tngGrossTonnage').innerText = grossTonnageCalculated.toFixed(3);
-
-        // v83/v84: presets, mode segments, active-row highlight, readout
-        tngSyncPresetActiveState();
-        tngSyncModeButtons();
-        tngSetActiveRow(targetModeActive ? tngActiveRecipientForDisplay : null);
-        tngUpdateTargetProgress(targetModeActive, tngResidualForDisplay, tngActiveRecipientForDisplay ? tngLineLabels[tngActiveRecipientForDisplay] : null);
-
-        tngIsCalculating = false;
-    }
-
-    function tngResetCalculator() {
-        document.getElementById('tngQty4').value = 0;
-        document.getElementById('tngQty6').value = 0;
-        document.getElementById('tngQty8').value = 0;
-        document.getElementById('tngQty9').value = 0;
-        document.getElementById('tngQtyMortar').value = 0;
-        document.getElementById('tngTargetModeToggle').checked = false;
-        tngToggleTargetMode();
-    }
-
-    // One-time init to match the original standalone page's behavior: lock
-    // checkboxes start disabled (target mode off) even before the modal is
-    // ever opened. openTonnageCalc() deliberately does NOT re-run this on
-    // every open, so a user's in-progress target-mode session survives
-    // closing and reopening the modal within the same visit.
-    try { tngToggleTargetMode(); } catch (e) { /* non-fatal */ }
-
     // #3: FY quick-select — offset 0 = current FY, -1 = previous FY.
     // #8a: set audit range to a specific calendar month
     function setAuditMonth(offset) {
@@ -18740,11 +17959,9 @@
         document.getElementById('auditTabBtnExport').classList.toggle('active', tab === 'export');
         document.getElementById('auditTabBtnGstr').classList.toggle('active', tab === 'gstr');
         document.getElementById('auditTabBtnPurchases').classList.toggle('active', tab === 'purchases');
-        document.getElementById('auditTabBtnLock').classList.toggle('active', tab === 'lock');
         document.getElementById('auditTabExport').classList.toggle('active', tab === 'export');
         document.getElementById('auditTabGstr').classList.toggle('active', tab === 'gstr');
         document.getElementById('auditTabPurchases').classList.toggle('active', tab === 'purchases');
-        document.getElementById('auditTabLock').classList.toggle('active', tab === 'lock');
         // The PDF export button only makes sense for the monthly export view
         document.getElementById('btnExportAuditPdf').style.display = tab === 'export' ? 'inline-block' : 'none';
         if (tab === 'purchases') {
@@ -18763,17 +17980,6 @@
                 document.getElementById('gstrTo').value = todayISO();
             }
             renderGstrSummary();
-        }
-        // v82: Audit Lock tab — was its own standalone modal (openAuditLockModal()),
-        // now just needs its status/date fields refreshed like any other tab.
-        if (tab === 'lock') {
-            let alTypes = ['INV','RCM','SAL','ADV','RCP','CRN','EXP'];
-            alTypes.forEach(t => {
-                let cb = document.getElementById('alm_' + t);
-                if (cb) cb.checked = auditLockTypes.includes(t);
-            });
-            document.getElementById('almDate').value = auditLockDate || '';
-            updateAuditLockModalStatus();
         }
     }
 
