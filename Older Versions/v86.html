@@ -326,14 +326,7 @@
         .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 140px; color: rgba(231, 76, 60, 0.15); font-weight: 900; z-index: 50; pointer-events: none; display: none; letter-spacing: 5px; text-transform: uppercase;}
 
         label { font-size: 11px; font-weight: bold; text-transform: uppercase; color: #bdc3c7; margin-top: 12px; display: block; }
-        /* v87 FIX: this rule used to match `input` of EVERY type, so checkboxes and
-           radios were given width:100% and 10px padding too. Any checkbox that did not
-           happen to override it inline rendered as a full-width block that pushed its own
-           caption onto the next line - "Rates INCLUDE GST" and Summary's "All Time" were
-           the visible cases, but it affected every un-overridden checkbox in the app.
-           Text inputs and selects still fill their container; toggles size to themselves. */
-        input:not([type="checkbox"]):not([type="radio"]), select { width: 100%; padding: 10px; margin-top: 5px; background: #34495e; border: 1px solid #465c71; color: white; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
-        input[type="checkbox"], input[type="radio"] { width: auto; margin-top: 0; padding: 0; vertical-align: middle; flex: none; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; background: #34495e; border: 1px solid #465c71; color: white; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
         
         button { cursor: pointer; border: none; padding: 12px; border-radius: 4px; font-weight: bold; width: 100%; margin-top: 15px; font-size: 15px; color: white; transition: transform 0.1s ease, background-color 0.2s ease; }
         button:active, .action-trio-btn:active, .pressed-state { /* v84: .action-trio-btn added - the signature tile is a <div>, so it never got press feedback */ transform: scale(0.95); opacity: 0.85; box-shadow: inset 0 3px 5px rgba(0,0,0,0.4)!important; }
@@ -408,18 +401,6 @@
            file-wide option rule kills that entire bug class (the same fix already existed, but
            scoped only to .action-trio-btn select.trio-select option). */
         select option { color: #222; background: #fff; }
-        /* v87 FIX: `.modal-content` is white, but the global `input, select` rule paints
-           every control with the dark editor theme (#34495e on white text). Controls that
-           remembered to set light colours inline were fine; the ones that did not rendered
-           as dark navy boxes inside white dialogs - the Stock "Actual count at site" fields
-           being the most visible, since they are generated in JS with no style at all.
-           This gives modal controls a light default; every inline style still wins over it,
-           so nothing that already styles itself changes. Excludes checkbox/radio (sized by
-           the rule above) and file inputs (native chrome). */
-        .modal-content input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
-        .modal-content select,
-        .modal-content textarea { background: #fff; color: #333; border: 1px solid #ccc; }
-
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; }
 
         /* BUG FIX (issue 7): the Advance Pool can be opened FROM the
@@ -1358,7 +1339,7 @@
         body.force-mobile-main .analytics-table thead, body.force-mobile-main .analytics-table tbody { display: table; width: max-content; min-width: 100%; table-layout: auto; }
         body.force-mobile-main .analytics-table tr { display: table-row; }
         body.force-mobile-main .analytics-table th, body.force-mobile-main .analytics-table td { white-space: nowrap; }
-        body.force-mobile-main .modal-content [style*="grid-template-columns"]:not(.keep-grid) { grid-template-columns: 1fr 1fr !important;
+        body.force-mobile-main .modal-content [style*="grid-template-columns"] { grid-template-columns: 1fr 1fr !important;
                 gap: 8px !important; }
         body.force-mobile-main .cash-book-summary, body.force-mobile-main #advPoolSummary { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
         body.force-mobile-main .modal-content [style*="display:flex"], body.force-mobile-main .modal-content [style*="display: flex"] { flex-wrap: wrap; }
@@ -1488,7 +1469,7 @@
         body.force-mobile-main .engine-tab-bar { flex-wrap: wrap; gap: 4px; }
         body.force-mobile-main .engine-tab-btn { font-size: 11px; padding: 6px 10px; }
         body.force-mobile-main #advPrintAmt { font-size: 32px !important; }
-        body.force-mobile-main .modal-content [style*="grid-template-columns"]:not(.keep-grid) { grid-template-columns: 1fr !important; }
+        body.force-mobile-main .modal-content [style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
         body.force-mobile-main .cash-book-summary, body.force-mobile-main #advPoolSummary, body.force-mobile-main .stat-grid { grid-template-columns: 1fr 1fr !important; }
         body.force-mobile-main .modal-content { padding: 10px; }
         body.force-mobile-main .modal-header h2, body.force-mobile-main .modal-header h3 { font-size: 15px; }
@@ -1546,9 +1527,7 @@
                six fields jammed on one phone line. A floor of min(100%,140px) still prevents
                a single wide child overflowing, but lets crowded rows break. */
         body.force-mobile-main .modal-content [style*="display:flex"] > *,
-        body.force-mobile-main .modal-content [style*="display: flex"] > * { min-width: 0 !important; }
-        body.force-mobile-main .modal-content [style*="display:flex"] > div:has(input, select, textarea),
-        body.force-mobile-main .modal-content [style*="display: flex"] > div:has(input, select, textarea) { min-width: min(100%, 140px) !important; }
+        body.force-mobile-main .modal-content [style*="display: flex"] > * { min-width: min(100%, 140px) !important; }
 
         /* Once children can shrink, let a crowded row wrap onto a second
            line rather than squashing everything to unreadable widths. */
@@ -1578,19 +1557,8 @@
            narrow width, so behaviour matches whether or not force-mobile
            is active. */
         @media (max-width: 700px) {
-            /* v87 FIX: v85 replaced `min-width:0` with a blanket `min-width:min(100%,140px)`
-               to make crowded field rows wrap. It did fix those rows, but it applied to
-               EVERY direct flex child inside a modal - so close buttons rendered 140px
-               wide in nine modals, and checkboxes inside inline-flex <label>s became
-               140px boxes floating away from their own text ("All Time", "Rates INCLUDE
-               GST"). The floor is only ever wanted on the field-group WRAPPERS that the
-               markup gives min-width:140-180px; controls themselves must still shrink.
-               Base rule restores shrinking; the :has() rule re-applies the floor to just
-               those wrappers. */
             .modal-content [style*="display:flex"] > *,
-            .modal-content [style*="display: flex"] > * { min-width: 0 !important; }
-            .modal-content [style*="display:flex"] > div:has(input, select, textarea),
-            .modal-content [style*="display: flex"] > div:has(input, select, textarea) { min-width: min(100%, 140px) !important; }
+            .modal-content [style*="display: flex"] > * { min-width: min(100%, 140px) !important; }
 
             .modal-content [style*="display:flex"],
             .modal-content [style*="display: flex"] { flex-wrap: wrap; }
@@ -1833,7 +1801,7 @@
                (repeat(5,1fr), 2fr 1fr 1fr 1fr, etc.) that each individually
                overflow a phone. One rule covers all of them, present and
                future. */
-            .modal-content [style*="grid-template-columns"]:not(.keep-grid) {
+            .modal-content [style*="grid-template-columns"] {
                 grid-template-columns: 1fr 1fr !important;
                 gap: 8px !important;
             }
@@ -1870,21 +1838,7 @@
 
         @media (max-width: 480px) {
             /* Single column for anything still cramped at 2. */
-            /* v87: `.keep-grid` opts a grid out of the mobile 1-column collapse.
-               The blanket rule is right for wide data grids but wrong for small
-               button clusters - it was stacking the Letterpad B / I / U / List
-               toolbar into six full-width buttons down the page. */
-            .modal-content [style*="grid-template-columns"]:not(.keep-grid) { grid-template-columns: 1fr !important; }
-            /* v87: Letterpad kept its desktop split on phones - a fixed 220px
-               control strip beside a flex:1 preview, which left the preview about
-               110px wide. updateLetterheadScale() then scaled the A4 sheet to fit
-               THAT, rendering the letter at roughly 14% with ~2px text in an area
-               you are meant to type into. The wrap safety-net could never fire
-               because 220 + 0 fits in 390. Stack them instead. */
-            #calTabLetterpad > div[style*="display:flex"] { flex-direction: column !important; }
-            #letterpadControlsColumn { flex: 1 1 auto !important; width: 100% !important; }
-            #letterheadPreviewWrapper { width: 100% !important; padding: 10px !important; }
-
+            .modal-content [style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
             /* v84 FIX: .cash-book-summary is display:flex, so grid-template-columns was
                inert on it and the four cards laid out 3-across + 1. Promote it to a real
                grid here so the 2x2 actually happens. #advPoolSummary/.stat-grid are
@@ -2005,7 +1959,7 @@
              Tap to force-check for updates. Update this string (and the
              matching APP_VERSION const in the script block) on every release. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:rgba(255,255,255,0.35); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">v87</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">v86</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- v73a: passive unsynced warning. Hidden by default and only
@@ -5388,7 +5342,7 @@
                     <!-- Rich text toolbar -->
                     <div style="margin-top:16px; background:#f4f6f7; border:1px solid #ccc; border-radius:6px; padding:8px;">
                         <div style="font-size:10px; font-weight:bold; color:#7f8c8d; text-transform:uppercase; margin-bottom:6px;">Formatting</div>
-                        <div class="keep-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:4px;">
+                        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:4px;">
                             <button onclick="letCmd('bold')" style="width:auto; margin:0; padding:7px; background:#fff; border:1px solid #ccc; color:#333; font-weight:bold;">B</button>
                             <button onclick="letCmd('italic')" style="width:auto; margin:0; padding:7px; background:#fff; border:1px solid #ccc; color:#333; font-style:italic;">I</button>
                             <button onclick="letCmd('underline')" style="width:auto; margin:0; padding:7px; background:#fff; border:1px solid #ccc; color:#333; text-decoration:underline;">U</button>
@@ -5495,7 +5449,7 @@
     // This is what the version badge displays and what checkForAppUpdate()
     // compares against. Keeping this in sync is what makes the badge
     // trustworthy — if forgotten, the badge silently shows a stale number.
-    const APP_VERSION = "v87";
+    const APP_VERSION = "v86";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
