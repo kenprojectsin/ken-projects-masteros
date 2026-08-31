@@ -1938,42 +1938,33 @@
         #tonnageModal input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         #tonnageModal input[type="number"]:focus { outline: none; border-color: var(--tng-accent); background: rgba(255,255,255,0.11); box-shadow: 0 0 0 3px var(--tng-accent-bg); }
         #tonnageModal .tng-radio-group { display: flex; justify-content: center; align-items: center; }
-        /* v92: single "AUTO" radio per row (replacing the v91 two-button
-           AUTO/MANUAL segmented control). Only one row can ever be AUTO at
-           a time, so this is really a five-way radio-group choice, not five
-           independent on/off switches — "MANUAL" was never a real state a
-           row could be in on its own, just "not currently the chosen one",
-           so the word is dropped entirely. The underlying #tngLock4-style
-           checkbox stays in the DOM as the single source of truth — visually
-           hidden, still driving tngHandleLockChange()'s guard logic and
-           tngToggleTargetMode()'s disabled state exactly as before. The
-           visible radio calls the pre-existing tngSetRowMode(lockId, false)
-           helper (false = "make this row AUTO"), which flips the hidden
-           checkbox and re-runs tngHandleLockChange() — the exclusivity
-           logic that forces every other row back to MANUAL is unchanged
-           from v91. tngSyncModeButtons() (already called at the end of
-           every tngCalculateWeights() run) now syncs the visible radio's
-           checked/disabled state from that hidden checkbox instead of
-           painting two buttons. */
+        /* Two-button segmented AUTO/MANUAL control (replacing the v90.0
+           single sliding switch, which read as one long ambiguous pill).
+           The underlying #tngLock4-style checkbox stays in the DOM as the
+           single source of truth — visually hidden, still driving
+           tngHandleLockChange()'s guard logic and tngToggleTargetMode()'s
+           disabled/"Fixed" state exactly as before. Each visible button
+           calls the pre-existing tngSetRowMode(lockId, manual) helper,
+           which flips that checkbox and re-runs tngHandleLockChange(); the
+           active/disabled paint on the two buttons is then driven by
+           tngSyncModeButtons() (already called at the end of every
+           tngCalculateWeights() run) via .tng-mode-seg / .tng-seg-btn. */
         #tonnageModal .tng-lock-btn { display: none; }
-        #tonnageModal .tng-auto-radio {
-            display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;
-            font-size: 11px; font-weight: 800; letter-spacing: 0.4px; color: var(--tng-muted);
-            padding: 7px 14px; border-radius: 999px; background: var(--tng-input-bg); border: 1px solid var(--tng-border);
-            transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, opacity 0.2s ease;
+        #tonnageModal .tng-mode-seg {
+            display: flex; width: 100%; height: 34px; border-radius: 999px; overflow: hidden;
+            background: var(--tng-input-bg); border: 1px solid var(--tng-border);
+            transition: opacity 0.2s ease;
         }
-        #tonnageModal .tng-auto-radio.is-auto { background: rgba(48,209,88,0.20); border-color: rgba(48,209,88,0.5); color: var(--tng-ink); }
-        #tonnageModal .tng-auto-radio.is-disabled { opacity: 0.45; pointer-events: none; }
-        #tonnageModal .tng-auto-radio-input {
-            appearance: none; -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
-            margin: 0; border: 2px solid var(--tng-border); background: transparent; cursor: pointer;
-            transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+        #tonnageModal .tng-mode-seg.is-disabled { opacity: 0.45; pointer-events: none; }
+        #tonnageModal .tng-seg-btn {
+            flex: 1; margin: 0; padding: 0; border: none; background: transparent; color: var(--tng-muted);
+            font-size: 11px; font-weight: 800; letter-spacing: 0.4px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.18s ease, color 0.18s ease;
         }
-        #tonnageModal .tng-auto-radio-input:checked {
-            border-color: var(--tng-success); background: var(--tng-success);
-            box-shadow: 0 0 0 3px rgba(48,209,88,0.22);
-        }
-        #tonnageModal .tng-auto-radio-input:disabled { cursor: not-allowed; }
+        #tonnageModal .tng-seg-btn:hover:not(.active) { background: rgba(255,255,255,0.08); }
+        #tonnageModal .tng-seg-btn.active[data-mode="auto"] { background: var(--tng-success); color: #06240f; }
+        #tonnageModal .tng-seg-btn.active[data-mode="manual"] { background: var(--tng-warn); color: #3a1e00; }
         #tonnageModal .tng-stepper { display: flex; align-items: stretch; gap: 0; border: 1px solid var(--tng-border); border-radius: var(--tng-radius-sm); overflow: hidden; background: var(--tng-input-bg); }
         #tonnageModal .tng-step-btn {
             width: 38px; margin: 0; padding: 0; border: none; background: transparent; color: var(--tng-accent);
@@ -2059,8 +2050,8 @@
             #tonnageModal input[type="number"] { padding: 8px; font-size: 14px; }
             #tonnageModal .tng-stepper input[type="number"] { width: 70px; font-size: 16px; }
             #tonnageModal .tng-step-btn { width: 34px; font-size: 18px; }
-            #tonnageModal .tng-auto-radio { padding: 6px 10px; font-size: 10px; }
-            #tonnageModal .tng-auto-radio-input { width: 16px; height: 16px; }
+            #tonnageModal .tng-mode-seg { height: 30px; }
+            #tonnageModal .tng-seg-btn { font-size: 10px; }
             #tonnageModal .tng-preset-btn { padding: 6px 10px; font-size: 11px; }
             #tonnageModal .tng-preset-label { width: 100%; margin-bottom: 2px; }
             /* Keep the headline figure and its label on one line each. */
@@ -2315,7 +2306,7 @@
              Tap to force-check for updates. Update this string (and the
              matching APP_VERSION const in the script block) on every release. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:rgba(255,255,255,0.35); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">v92</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">v91</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- v73a: passive unsynced warning. Hidden by default and only
@@ -4217,25 +4208,22 @@
             <div>Fill Mode</div>
         </div>
 
-        <!-- v92: single AUTO radio per row (see .tng-auto-radio /
-             .tng-auto-radio-input). Only one row is ever AUTO, so this is a
-             5-way radio choice, not 5 independent switches — picking a
-             radio calls the existing tngSetRowMode(lockId, false) helper,
-             which flips the hidden #tngLock* checkbox (still the real
-             source of truth) and re-runs tngHandleLockChange(), whose
-             exclusivity logic forces every other row's checkbox back to
-             MANUAL exactly as in v91; tngSyncModeButtons() (already run at
-             the end of every tngCalculateWeights()) keeps the visible radio
-             in sync with that checkbox. -->
+        <!-- v90: two-button AUTO/MANUAL segmented control (see .tng-mode-seg
+             / .tng-seg-btn). Each row's real state is still the hidden
+             #tngLock* checkbox — the two buttons just call the existing
+             tngSetRowMode(lockId, manual) helper, which flips that checkbox
+             and re-runs tngHandleLockChange()/tngToggleTargetMode() exactly
+             as before; tngSyncModeButtons() (already run at the end of every
+             tngCalculateWeights()) paints whichever button is active. -->
         <div class="tng-item-row" id="tngRow4">
             <label id="tngLbl4">4" AAC Blocks <span id="tngSpan4">Weight: 9.0 kg | 1 Bag/90 Blks</span></label>
             <input type="number" id="tngQty4" value="0" min="0" oninput="tngCalculateWeights(this)">
             <div class="tng-radio-group">
-                <label class="tng-auto-radio">
+                <div class="tng-mode-seg" aria-label="Quantity mode: Auto or Manual">
                     <input type="checkbox" class="tng-lock-btn" id="tngLock4" onchange="tngHandleLockChange(this)">
-                    <input type="radio" class="tng-auto-radio-input" id="tngAutoRadio4" name="tngAutoGroup" onchange="tngSetRowMode('tngLock4', false)">
-                    <span>AUTO</span>
-                </label>
+                    <button type="button" class="tng-seg-btn" data-mode="auto" onclick="tngSetRowMode('tngLock4', false)">AUTO</button>
+                    <button type="button" class="tng-seg-btn" data-mode="manual" onclick="tngSetRowMode('tngLock4', true)">MANUAL</button>
+                </div>
             </div>
         </div>
 
@@ -4243,11 +4231,11 @@
             <label id="tngLbl6">6" AAC Blocks <span id="tngSpan6">Weight: 13.5 kg | 1 Bag/60 Blks</span></label>
             <input type="number" id="tngQty6" value="0" min="0" oninput="tngCalculateWeights(this)">
             <div class="tng-radio-group">
-                <label class="tng-auto-radio">
+                <div class="tng-mode-seg" aria-label="Quantity mode: Auto or Manual">
                     <input type="checkbox" class="tng-lock-btn" id="tngLock6" onchange="tngHandleLockChange(this)">
-                    <input type="radio" class="tng-auto-radio-input" id="tngAutoRadio6" name="tngAutoGroup" onchange="tngSetRowMode('tngLock6', false)">
-                    <span>AUTO</span>
-                </label>
+                    <button type="button" class="tng-seg-btn" data-mode="auto" onclick="tngSetRowMode('tngLock6', false)">AUTO</button>
+                    <button type="button" class="tng-seg-btn" data-mode="manual" onclick="tngSetRowMode('tngLock6', true)">MANUAL</button>
+                </div>
             </div>
         </div>
 
@@ -4255,11 +4243,11 @@
             <label id="tngLbl8">8" AAC Blocks <span id="tngSpan8">Weight: 18.0 kg | 1 Bag/45 Blks</span></label>
             <input type="number" id="tngQty8" value="0" min="0" oninput="tngCalculateWeights(this)">
             <div class="tng-radio-group">
-                <label class="tng-auto-radio">
+                <div class="tng-mode-seg" aria-label="Quantity mode: Auto or Manual">
                     <input type="checkbox" class="tng-lock-btn" id="tngLock8" onchange="tngHandleLockChange(this)">
-                    <input type="radio" class="tng-auto-radio-input" id="tngAutoRadio8" name="tngAutoGroup" onchange="tngSetRowMode('tngLock8', false)">
-                    <span>AUTO</span>
-                </label>
+                    <button type="button" class="tng-seg-btn" data-mode="auto" onclick="tngSetRowMode('tngLock8', false)">AUTO</button>
+                    <button type="button" class="tng-seg-btn" data-mode="manual" onclick="tngSetRowMode('tngLock8', true)">MANUAL</button>
+                </div>
             </div>
         </div>
 
@@ -4267,11 +4255,11 @@
             <label id="tngLbl9">9" AAC Blocks <span id="tngSpan9">Weight: 20.0 kg | 1 Bag/42.5 Blks</span></label>
             <input type="number" id="tngQty9" value="0" min="0" oninput="tngCalculateWeights(this)">
             <div class="tng-radio-group">
-                <label class="tng-auto-radio">
+                <div class="tng-mode-seg" aria-label="Quantity mode: Auto or Manual">
                     <input type="checkbox" class="tng-lock-btn" id="tngLock9" onchange="tngHandleLockChange(this)">
-                    <input type="radio" class="tng-auto-radio-input" id="tngAutoRadio9" name="tngAutoGroup" onchange="tngSetRowMode('tngLock9', false)">
-                    <span>AUTO</span>
-                </label>
+                    <button type="button" class="tng-seg-btn" data-mode="auto" onclick="tngSetRowMode('tngLock9', false)">AUTO</button>
+                    <button type="button" class="tng-seg-btn" data-mode="manual" onclick="tngSetRowMode('tngLock9', true)">MANUAL</button>
+                </div>
             </div>
         </div>
 
@@ -4288,11 +4276,11 @@
             <label>Actual Mortar Bags <span>Weight: 40.0 kg</span></label>
             <input type="number" id="tngQtyMortar" value="0" min="0" oninput="tngCalculateWeights(this)">
             <div class="tng-radio-group">
-                <label class="tng-auto-radio">
+                <div class="tng-mode-seg" aria-label="Quantity mode: Auto or Manual">
                     <input type="checkbox" class="tng-lock-btn" id="tngLockMortar" onchange="tngHandleLockChange(this)">
-                    <input type="radio" class="tng-auto-radio-input" id="tngAutoRadioMortar" name="tngAutoGroup" onchange="tngSetRowMode('tngLockMortar', false)">
-                    <span>AUTO</span>
-                </label>
+                    <button type="button" class="tng-seg-btn" data-mode="auto" onclick="tngSetRowMode('tngLockMortar', false)">AUTO</button>
+                    <button type="button" class="tng-seg-btn" data-mode="manual" onclick="tngSetRowMode('tngLockMortar', true)">MANUAL</button>
+                </div>
             </div>
         </div>
 
@@ -5855,7 +5843,7 @@
     // This is what the version badge displays and what checkForAppUpdate()
     // compares against. Keeping this in sync is what makes the badge
     // trustworthy — if forgotten, the badge silently shows a stale number.
-    const APP_VERSION = "v92";
+    const APP_VERSION = "v91";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -18917,26 +18905,19 @@
         tngHandleLockChange(cb);
     }
 
-    // v92: syncs the visible AUTO radio from the hidden checkbox's state
-    // (checked = MANUAL, so the radio is checked only when NOT checked and
-    // NOT disabled), and dims the whole control when target mode is off
-    // (nothing to choose). Native radio-group semantics (shared `name`)
-    // already guarantee at most one radio is checked at a time — this just
-    // keeps the radios' rendered state truthful to the checkboxes, which
-    // remain the actual source of truth for tngCalculateWeights().
+    // v84: paints the active segment on every row from the checkbox state,
+    // and dims the whole control when target mode is off (nothing to choose).
     function tngSyncModeButtons() {
         ['tngLock4', 'tngLock6', 'tngLock8', 'tngLock9', 'tngLockMortar'].forEach(id => {
             let cb = document.getElementById(id);
             if (!cb) return;
-            let radio = document.getElementById(id.replace('tngLock', 'tngAutoRadio'));
-            if (!radio) return;
-            radio.disabled = cb.disabled;
-            radio.checked = !cb.disabled && !cb.checked;
-            let wrap = radio.closest('.tng-auto-radio');
-            if (wrap) {
-                wrap.classList.toggle('is-disabled', cb.disabled);
-                wrap.classList.toggle('is-auto', radio.checked);
-            }
+            let seg = cb.closest('.tng-mode-seg');
+            if (!seg) return;
+            seg.classList.toggle('is-disabled', cb.disabled);
+            seg.querySelectorAll('.tng-seg-btn').forEach(btn => {
+                let wantsManual = btn.dataset.mode === 'manual';
+                btn.classList.toggle('active', !cb.disabled && cb.checked === wantsManual);
+            });
         });
     }
 
