@@ -8,11 +8,6 @@
     <!-- Letterpad feature: Lato font for letterhead correspondence -->
     <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 
-    <!-- Vista design system font (beta) — used only within screens migrated
-         to Vista (Tonnage Calculator first). Never applied to the
-         print/PDF output, which keeps its own existing fonts untouched. -->
-    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
     <!-- Improvement #6: PWA basics — installable on phone/desktop home
          screens. Requires manifest.json + the icons/ folder to be hosted
          in the SAME location as this HTML file (relative paths below).
@@ -28,9 +23,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="KEN Traders (BETA)">
-    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png">
+    <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="../icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="../icons/icon-512.png">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
@@ -1854,218 +1849,243 @@
          treatment of those same elements changed. */ -->
     <style>
         /* ══════════════════════════════════════════════════════════════════
-           VISTA DESIGN SYSTEM (beta v2) — replaces the exploratory dark
-           "Liquid Glass" direction as the app's committed visual language,
-           named and approved 2026-09-01. Modeled directly on a reference
-           SaaS dashboard: Onest font, a 4-color brand palette (purple/
-           blue/mint plus near-black ink), white opaque cards with soft
-           shadows instead of frosted dark glass, sentence-case labels,
-           pill badges, and solid "hero" black tiles for headline figures.
+           LIQUID GLASS DESIGN SYSTEM (beta v1, extracted from Tonnage
+           Calculator v90-v93) — decided 2026-09-01 as the app's target
+           universal visual direction going forward, replacing the older
+           "v89 Design System Foundation" flat/light tokens below over time.
 
-           These --vista-* tokens are separate from the old --glass-*
-           tokens (still defined further down, still driving Cash Book's
-           existing dark-glass look) so this migration cannot affect any
-           screen other than the one being actively rebuilt. Tonnage
-           Calculator is Vista's first real consumer; Cash Book gets its
-           own dedicated Vista pass next, at which point --glass-* can
-           eventually retire.
+           These are pure additions at :root — nothing existing references
+           them yet, so defining them here changes nothing on its own. The
+           Tonnage Calculator's #tonnageModal / #tonnageSettingsModal blocks
+           now alias their local --tng-* names to these shared tokens
+           instead of hardcoding values, so it becomes this system's first
+           (and so far only) real consumer. Rollout to other screens will
+           happen one at a time from the beta channel, each verified with
+           screenshots + the regression suite before promotion — v89's flat
+           tokens stay fully in place and untouched (Doc Manager still uses
+           them) until each screen is actually migrated.
 
-           Never applied to the print/PDF output path — unchanged as ever. */
+           This system is NEVER applied to the print/PDF output path — that
+           stays exactly as it always has been. */
         :root {
-            --vista-ink: #1C1C27;
-            --vista-ink-muted: #8B8A9B;
-            --vista-surface: #FFFFFF;
-            --vista-surface-alt: #F5F4FA;
-            --vista-surface-alt-strong: #ECE9F7;
-            --vista-border: rgba(28,28,39,0.07);
-            --vista-purple: #C38CFA;
-            --vista-purple-tint: #F1E7FE;
-            --vista-blue: #2AA7FF;
-            --vista-blue-tint: #E8F5FF;
-            --vista-mint: #B4F9B7;
-            --vista-mint-text: #1C7A3E;
-            --vista-mint-tint: #EBFCEC;
-            /* Semantic-only, not part of the 4-color brand set — needed
-               wherever a screen has a genuine negative/danger concept the
-               reference dashboard never had to represent. */
-            --vista-danger: #E5484D;
-            --vista-danger-tint: #FDECEC;
-            --vista-radius-lg: 22px;
-            --vista-radius-sm: 16px;
-            --vista-shadow: 0 1px 2px rgba(28,28,39,0.03), 0 16px 34px -18px rgba(28,28,39,0.18);
-            --vista-font: 'Onest', -apple-system, 'Segoe UI', sans-serif;
+            --glass-bg: rgba(255,255,255,0.09);
+            --glass-bg-strong: rgba(255,255,255,0.16);
+            --glass-border: rgba(255,255,255,0.16);
+            --glass-ink: #F5F7FA;
+            --glass-muted: rgba(245,247,250,0.62);
+            --glass-input-bg: rgba(255,255,255,0.07);
+            --glass-accent: #0A84FF;
+            --glass-accent-bg: rgba(10,132,255,0.16);
+            /* Text-on-glass needs more contrast/separation than a filled
+               button does. This was light blue (#5AC8FA) through v93 but
+               still read as low-contrast on brighter screens since it's
+               too close in hue to the blue-tinted glass behind it. Gold
+               sits opposite blue on the color wheel, so it separates from
+               the backdrop instantly regardless of screen conditions — and
+               is kept a clear hue apart from --glass-warn (orange) so the
+               two are never confused. Chosen 2026-09-01 from live A/B/C
+               screenshot candidates. */
+            --glass-accent-text: #D4A72C;
+            --glass-success: #30D158;
+            --glass-danger: #FF453A;
+            --glass-warn: #FF9F0A;
+            --glass-radius-lg: 28px;
+            --glass-radius-sm: 16px;
         }
         #tonnageModal {
-            --tng-glass: var(--vista-surface-alt);
-            --tng-glass-strong: var(--vista-surface-alt-strong);
-            --tng-border: var(--vista-border);
-            --tng-ink: var(--vista-ink);
-            --tng-muted: var(--vista-ink-muted);
-            --tng-input-bg: var(--vista-surface);
-            --tng-accent: var(--vista-purple);
-            --tng-accent-bg: var(--vista-purple-tint);
-            --tng-accent-text: var(--vista-ink);
-            --tng-success: var(--vista-mint-text);
-            --tng-danger: var(--vista-danger);
-            --tng-warn: #E8930C;
-            --tng-radius: var(--vista-radius-lg);
-            --tng-radius-sm: var(--vista-radius-sm);
+            --tng-glass: var(--glass-bg);
+            --tng-glass-strong: var(--glass-bg-strong);
+            --tng-border: var(--glass-border);
+            --tng-ink: var(--glass-ink);
+            --tng-muted: var(--glass-muted);
+            --tng-input-bg: var(--glass-input-bg);
+            --tng-accent: var(--glass-accent);
+            --tng-accent-bg: var(--glass-accent-bg);
+            --tng-accent-text: var(--glass-accent-text);
+            --tng-success: var(--glass-success);
+            --tng-danger: var(--glass-danger);
+            --tng-warn: var(--glass-warn);
+            --tng-radius: var(--glass-radius-lg);
+            --tng-radius-sm: var(--glass-radius-sm);
         }
         #tonnageModal.modal-overlay {
             align-items: center;
-            background: rgba(28,28,39,0.4);
+            background:
+                radial-gradient(at 18% 8%, rgba(10,132,255,0.30) 0%, transparent 55%),
+                radial-gradient(at 88% 92%, rgba(191,90,242,0.24) 0%, transparent 55%),
+                rgba(5,8,16,0.90);
         }
         #tonnageModal .tng-container {
             width: 100%; max-width: 550px; color: var(--tng-ink);
-            background: var(--vista-surface);
-            border: none; border-radius: var(--tng-radius);
-            box-shadow: var(--vista-shadow);
-            padding: 24px; box-sizing: border-box; position: relative;
+            background: linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.05));
+            backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border: 1px solid var(--tng-border); border-radius: var(--tng-radius);
+            box-shadow: 0 1px 1px rgba(255,255,255,0.16) inset, 0 24px 60px -20px rgba(0,0,0,0.65);
+            padding: 22px; box-sizing: border-box; position: relative;
             max-height: 90vh; overflow-y: auto;
-            font-family: var(--vista-font);
+            font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
         }
         #tonnageModal .tng-header-wrapper { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--tng-border); padding-bottom: 16px; margin-bottom: 20px; }
-        #tonnageModal .tng-header h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.01em; color: var(--tng-ink); text-transform: none; display: flex; align-items: center; gap: 8px; }
+        #tonnageModal .tng-header h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.01em; color: var(--tng-ink); text-transform: none; display: flex; align-items: center; gap: 8px; }
         #tonnageModal .tng-header h1 svg { stroke: var(--tng-accent); flex-shrink: 0; }
-        #tonnageModal .tng-header p { margin: 4px 0 0 28px; font-size: 12.5px; color: var(--tng-muted); text-transform: none; letter-spacing: normal; font-weight: 500; }
+        #tonnageModal .tng-header p { margin: 4px 0 0 28px; font-size: 11px; color: var(--tng-muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
         #tonnageModal .tng-btn-settings, #tonnageModal .tng-btn-close {
-            border: none; border-radius: 999px; font-weight: 700; font-size: 12.5px; cursor: pointer;
+            border: 1px solid var(--tng-border); border-radius: 999px; font-weight: 700; font-size: 12px; cursor: pointer;
             text-transform: none; display: flex; align-items: center; gap: 6px; padding: 9px 15px; margin: 0; width: auto;
-            background: var(--tng-glass); transition: background 0.15s ease, transform 0.05s ease;
+            background: var(--tng-glass); backdrop-filter: blur(16px); transition: background 0.15s ease, transform 0.05s ease;
         }
         #tonnageModal .tng-btn-settings { color: var(--tng-ink); }
         #tonnageModal .tng-btn-settings svg { stroke: var(--tng-accent); }
         #tonnageModal .tng-btn-settings:hover { background: var(--tng-glass-strong); }
         #tonnageModal .tng-btn-close { color: var(--tng-danger); font-weight: 800; padding: 9px 13px; }
-        #tonnageModal .tng-btn-close:hover { background: var(--vista-danger-tint); }
+        #tonnageModal .tng-btn-close:hover { background: rgba(255,69,58,0.18); border-color: rgba(255,69,58,0.4); }
         #tonnageModal .tng-btn-settings:active, #tonnageModal .tng-btn-close:active { transform: scale(0.96); }
         #tonnageModal .tng-target-box {
-            background: var(--tng-glass); border: none; border-radius: var(--tng-radius-sm);
-            padding: 18px; margin-bottom: 20px;
+            background: var(--tng-glass); border: 1px solid var(--tng-border); border-radius: var(--tng-radius-sm);
+            padding: 16px; margin-bottom: 20px; backdrop-filter: blur(16px);
         }
         #tonnageModal .tng-flex-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        #tonnageModal .tng-toggle-container { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 700; font-size: 13.5px; letter-spacing: normal; color: var(--tng-ink); }
-        /* Native checkbox → Vista switch. Pure CSS on the existing
+        #tonnageModal .tng-toggle-container { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 700; font-size: 13px; letter-spacing: 0.2px; color: var(--tng-ink); }
+        /* Native checkbox → Liquid Glass switch. Pure CSS on the existing
            #tngTargetModeToggle checkbox — id, onchange, and DOM position are
            all unchanged, so tngToggleTargetMode() keeps working untouched. */
         #tonnageModal .tng-toggle-container input#tngTargetModeToggle {
             appearance: none; -webkit-appearance: none; position: relative; flex-shrink: 0;
             width: 42px; height: 25px; border-radius: 999px; margin: 0;
-            background: #DEDCEC; border: none;
+            background: rgba(255,255,255,0.16); border: 1px solid var(--tng-border);
             cursor: pointer; transition: background 0.2s ease;
         }
         #tonnageModal .tng-toggle-container input#tngTargetModeToggle::before {
-            content: ''; position: absolute; top: 2.5px; left: 2.5px; width: 20px; height: 20px; border-radius: 50%;
-            background: #fff; box-shadow: 0 1px 3px rgba(28,28,39,0.25); transition: left 0.2s ease;
+            content: ''; position: absolute; top: 2px; left: 2px; width: 19px; height: 19px; border-radius: 50%;
+            background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.4); transition: left 0.2s ease;
         }
         #tonnageModal .tng-toggle-container input#tngTargetModeToggle:checked { background: var(--tng-accent); }
-        #tonnageModal .tng-toggle-container input#tngTargetModeToggle:checked::before { left: 19.5px; }
-        #tonnageModal .tng-grid-header { display: grid; grid-template-columns: 1.9fr 1.05fr 1.35fr; gap: 8px; font-size: 11.5px; font-weight: 600; text-transform: none; letter-spacing: normal; color: var(--tng-muted); padding-bottom: 8px; border-bottom: 1px solid var(--tng-border); margin-bottom: 12px; text-align: center; }
+        #tonnageModal .tng-toggle-container input#tngTargetModeToggle:checked::before { left: 19px; }
+        #tonnageModal .tng-grid-header { display: grid; grid-template-columns: 1.9fr 1.05fr 1.35fr; gap: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--tng-muted); padding-bottom: 8px; border-bottom: 1px solid var(--tng-border); margin-bottom: 12px; text-align: center; }
         #tonnageModal .tng-grid-header div:first-child { text-align: left; }
-        #tonnageModal .tng-item-row { display: grid; grid-template-columns: 1.9fr 1.05fr 1.35fr; gap: 8px; align-items: center; margin-bottom: 10px; background: var(--vista-surface-alt); border-radius: var(--tng-radius-sm); padding: 10px 12px; }
-        #tonnageModal .tng-item-row label { font-size: 14px; font-weight: 700; color: var(--tng-ink); }
-        #tonnageModal .tng-item-row label span { display: block; font-size: 11.5px; color: var(--tng-muted); font-weight: 500; }
+        #tonnageModal .tng-item-row { display: grid; grid-template-columns: 1.9fr 1.05fr 1.35fr; gap: 8px; align-items: center; margin-bottom: 12px; }
+        #tonnageModal .tng-item-row label { font-size: 14px; font-weight: 600; color: var(--tng-ink); }
+        #tonnageModal .tng-item-row label span { display: block; font-size: 11px; color: var(--tng-muted); font-weight: 400; }
         #tonnageModal input[type="number"] {
-            width: 100%; padding: 11px; background: var(--tng-input-bg); border: none; box-shadow: inset 0 0 0 1.5px rgba(28,28,39,0.06);
-            color: var(--tng-ink); border-radius: 14px; box-sizing: border-box; font-size: 15px; text-align: center; font-weight: 800;
-            -moz-appearance: textfield; transition: box-shadow 0.15s ease;
+            width: 100%; padding: 11px; background: var(--tng-input-bg); border: 1px solid var(--tng-border);
+            color: var(--tng-ink); border-radius: 14px; box-sizing: border-box; font-size: 15px; text-align: center; font-weight: 700;
+            -moz-appearance: textfield; transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
         }
         #tonnageModal input[type="number"]::-webkit-outer-spin-button,
         #tonnageModal input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        #tonnageModal input[type="number"]:focus { outline: none; box-shadow: 0 0 0 2.5px var(--tng-accent); }
-        /* Bare switch per row (unchanged mechanism from v93 — see the JS
-           functions this markup calls). Vista just recolors the track. */
+        #tonnageModal input[type="number"]:focus { outline: none; border-color: var(--tng-accent); background: rgba(255,255,255,0.11); box-shadow: 0 0 0 3px var(--tng-accent-bg); }
+        /* v93: bare iOS-style switch per row (replacing the v92 "AUTO" +
+           radio pill, which didn't line up with the quantity box and
+           repeated the word "AUTO" five times). The grid header now reads
+           "Auto" once, so nothing needs to say it again inline. Same
+           mechanism underneath: the hidden #tngLock4-style checkbox stays
+           the single source of truth for tngHandleLockChange()'s guard and
+           tngToggleTargetMode()'s disabled state; the visible switch calls
+           the pre-existing tngSetRowMode(lockId, manual) helper on toggle,
+           and tngSyncModeButtons() (already run at the end of every
+           tngCalculateWeights()) keeps the switch's on/off + disabled state
+           truthful to that checkbox. Unlike the v92 radio group, a plain
+           checkbox switch CAN be clicked off directly by the user even when
+           it's the sole AUTO row — that path still hits the "at least one
+           must stay AUTO" guard and reverts the hidden checkbox, so the
+           guard now also re-syncs the visible switch on that revert (see
+           tngHandleLockChange) instead of leaving it visually stuck off. */
         #tonnageModal .tng-lock-btn { display: none; }
         #tonnageModal .tng-radio-group { display: flex; justify-content: center; align-items: center; height: 44px; }
         #tonnageModal input[type="number"] { height: 44px; }
+        /* !important on display/margin: the app has a global bare `label {
+           display:block; margin-top:12px; }` rule, and this element is a
+           <label>. This pins the switch's own box model regardless of that
+           (or any other future generic label rule) rather than relying on
+           a specificity race. */
         #tonnageModal .ios-switch { position: relative; display: inline-block !important; margin: 0 !important; width: 46px; height: 27px; flex-shrink: 0; }
         #tonnageModal .ios-switch.is-disabled { opacity: 0.4; }
         #tonnageModal .ios-switch input.tng-auto-switch { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; z-index: 2; }
         #tonnageModal .ios-switch input.tng-auto-switch:disabled { cursor: not-allowed; }
         #tonnageModal .ios-track {
-            position: absolute; inset: 0; background: #DEDCEC; border: none;
-            border-radius: 999px; transition: background 0.2s ease;
+            position: absolute; inset: 0; background: rgba(255,255,255,0.16); border: 1px solid var(--tng-border);
+            border-radius: 999px; transition: background 0.2s ease, border-color 0.2s ease;
         }
-        #tonnageModal .ios-switch input.tng-auto-switch:checked ~ .ios-track { background: var(--vista-purple); }
+        #tonnageModal .ios-switch input.tng-auto-switch:checked ~ .ios-track { background: var(--tng-success); border-color: var(--tng-success); }
         #tonnageModal .ios-thumb {
-            position: absolute; top: 2.5px; left: 2.5px; width: 21px; height: 21px; background: #fff; border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(28,28,39,0.25); transition: left 0.2s ease; pointer-events: none;
+            position: absolute; top: 2px; left: 2px; width: 21px; height: 21px; background: #fff; border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.35); transition: left 0.2s ease; pointer-events: none;
         }
         #tonnageModal .ios-switch input.tng-auto-switch:checked ~ .ios-thumb { left: 21px; }
-        #tonnageModal .tng-stepper { display: flex; align-items: stretch; gap: 0; border: none; border-radius: var(--tng-radius-sm); overflow: hidden; background: var(--tng-input-bg); box-shadow: inset 0 0 0 1.5px rgba(28,28,39,0.06); }
+        #tonnageModal .tng-stepper { display: flex; align-items: stretch; gap: 0; border: 1px solid var(--tng-border); border-radius: var(--tng-radius-sm); overflow: hidden; background: var(--tng-input-bg); }
         #tonnageModal .tng-step-btn {
             width: 38px; margin: 0; padding: 0; border: none; background: transparent; color: var(--tng-accent);
-            font-size: 20px; font-weight: 800; line-height: 1; cursor: pointer; flex-shrink: 0; transition: background 0.15s ease;
+            font-size: 20px; font-weight: 700; line-height: 1; cursor: pointer; flex-shrink: 0; transition: background 0.15s ease;
         }
-        #tonnageModal .tng-step-btn:hover { background: var(--vista-purple-tint); }
+        #tonnageModal .tng-step-btn:hover { background: rgba(255,255,255,0.08); }
         #tonnageModal .tng-step-btn:active { background: var(--tng-accent); color: #fff; }
         #tonnageModal .tng-stepper input[type="number"] {
-            width: 92px; border: none; border-radius: 0; text-align: center; font-size: 18px; padding: 10px 4px; background: transparent; box-shadow: none;
+            width: 92px; border: none; border-radius: 0; text-align: center; font-size: 17px; padding: 10px 4px; background: transparent;
         }
-        #tonnageModal .tng-stepper input[type="number"]:focus { outline: none; background: var(--vista-surface-alt); box-shadow: none; }
+        #tonnageModal .tng-stepper input[type="number"]:focus { outline: none; background: rgba(255,255,255,0.08); box-shadow: none; }
         #tonnageModal .tng-preset-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
-        #tonnageModal .tng-preset-label { font-size: 11px; font-weight: 600; color: var(--tng-muted); letter-spacing: normal; margin-right: 2px; text-transform: none; }
+        #tonnageModal .tng-preset-label { font-size: 10px; font-weight: 700; color: var(--tng-muted); letter-spacing: 0.5px; margin-right: 2px; text-transform: uppercase; }
         #tonnageModal .tng-preset-btn {
-            width: auto; margin: 0; background: var(--vista-surface); color: var(--tng-muted); border: none; box-shadow: inset 0 0 0 1.5px rgba(28,28,39,0.06);
+            width: auto; margin: 0; background: var(--tng-glass); color: var(--tng-ink); border: 1px solid var(--tng-border);
             border-radius: 999px; padding: 7px 15px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s ease;
         }
-        #tonnageModal .tng-preset-btn:hover { background: var(--vista-purple-tint); }
-        #tonnageModal .tng-preset-btn.active { background: var(--vista-ink); color: #fff; box-shadow: none; }
+        #tonnageModal .tng-preset-btn:hover { background: var(--tng-glass-strong); }
+        #tonnageModal .tng-preset-btn.active { background: var(--tng-accent); color: #fff; border-color: var(--tng-accent); box-shadow: 0 4px 14px -4px rgba(10,132,255,0.7); }
         #tonnageModal .tng-item-row.tng-active-row {
-            background: var(--vista-purple-tint); border-radius: var(--tng-radius-sm); box-shadow: none;
-            padding: 10px 12px; margin-left: 0; margin-right: 0;
+            background: var(--tng-accent-bg); border-radius: var(--tng-radius-sm); box-shadow: inset 0 0 0 1px rgba(10,132,255,0.45);
+            padding: 4px 6px; margin-left: -6px; margin-right: -6px;
         }
-        #tonnageModal .tng-readonly-banner { background: var(--vista-mint-tint); padding: 11px 13px; border-radius: 12px; border-left: 3px solid var(--vista-mint-text); margin-bottom: 8px; font-size: 13px; }
-        /* Headline summary becomes a solid "hero" tile — Vista's signature
-           pattern for the one number that matters most on a screen. */
+        #tonnageModal .tng-readonly-banner { background: var(--tng-glass); backdrop-filter: blur(12px); padding: 11px 13px; border-radius: 12px; border-left: 3px solid var(--tng-success); margin-bottom: 8px; font-size: 13px; }
         #tonnageModal .tng-summary-card {
-            background: var(--vista-ink); color: #fff;
-            border: none; border-radius: var(--tng-radius-sm); padding: 18px; margin-top: 24px;
-            box-shadow: none;
+            background: var(--tng-glass-strong); backdrop-filter: blur(20px) saturate(160%);
+            border: 1px solid var(--tng-border); border-radius: var(--tng-radius-sm); padding: 16px; margin-top: 24px;
+            box-shadow: 0 1px 1px rgba(255,255,255,0.18) inset, 0 12px 30px -16px rgba(0,0,0,0.55);
         }
-        #tonnageModal .tng-weight-line { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: rgba(255,255,255,0.8); }
-        #tonnageModal .tng-weight-line span:last-child { color: #fff; }
-        #tonnageModal .tng-gross-total { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.14); font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.75); }
-        #tonnageModal .tng-gross-total #tngGrossTonnage { font-size: 24px; font-weight: 800; color: #fff; }
+        #tonnageModal .tng-weight-line { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: var(--tng-ink); }
+        #tonnageModal .tng-gross-total { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--tng-border); font-size: 20px; font-weight: 900; color: var(--tng-accent-text); }
         #tonnageModal .tng-btn-reset {
-            background: var(--vista-surface-alt); color: var(--tng-muted); border: none; padding: 13px; border-radius: 999px; font-weight: 700;
-            width: 100%; margin-top: 16px; font-size: 14px; cursor: pointer; text-transform: none; transition: background 0.2s ease, color 0.2s ease;
+            background: var(--tng-glass); color: var(--tng-ink); border: 1px solid var(--tng-border); padding: 13px; border-radius: 999px; font-weight: 700;
+            width: 100%; margin-top: 16px; font-size: 14px; cursor: pointer; text-transform: none; transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
         }
-        #tonnageModal .tng-btn-reset:hover { background: var(--vista-danger-tint); color: var(--vista-danger); }
+        #tonnageModal .tng-btn-reset:hover { background: rgba(255,69,58,0.16); color: var(--tng-danger); border-color: rgba(255,69,58,0.4); }
 
         /* Settings sub-modal — nested above #tonnageModal (z-index set inline) */
         #tonnageSettingsModal {
-            --tng-glass: var(--vista-surface-alt); --tng-border: var(--vista-border); --tng-ink: var(--vista-ink);
-            --tng-muted: var(--vista-ink-muted); --tng-accent: var(--vista-purple); --tng-accent-text: var(--vista-ink); --tng-success: var(--vista-mint-text);
-            background: rgba(28,28,39,0.4);
+            --tng-glass: var(--glass-bg); --tng-border: var(--glass-border); --tng-ink: var(--glass-ink);
+            --tng-muted: var(--glass-muted); --tng-accent: var(--glass-accent); --tng-accent-text: var(--glass-accent-text); --tng-success: var(--glass-success);
+            background:
+                radial-gradient(at 18% 8%, rgba(10,132,255,0.28) 0%, transparent 55%),
+                radial-gradient(at 88% 92%, rgba(191,90,242,0.22) 0%, transparent 55%),
+                rgba(5,8,16,0.90);
         }
         #tonnageSettingsModal .tng-settings-modal {
-            background: var(--vista-surface);
-            color: var(--tng-ink); width: 90%; max-width: 420px; border-radius: 22px; padding: 22px;
-            box-shadow: var(--vista-shadow);
-            border: none; font-family: var(--vista-font);
+            background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+            backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
+            color: var(--tng-ink); width: 90%; max-width: 420px; border-radius: 24px; padding: 22px;
+            box-shadow: 0 1px 1px rgba(255,255,255,0.16) inset, 0 24px 60px -20px rgba(0,0,0,0.65);
+            border: 1px solid var(--tng-border); font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
         }
-        #tonnageSettingsModal .tng-modal-header { font-size: 18px; font-weight: 800; color: var(--tng-ink); margin-bottom: 16px; border-bottom: 1px solid var(--tng-border); padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        #tonnageSettingsModal .tng-modal-header { font-size: 17px; font-weight: 800; color: var(--tng-ink); margin-bottom: 16px; border-bottom: 1px solid var(--tng-border); padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
         #tonnageSettingsModal .tng-modal-header span { display: flex; align-items: center; gap: 8px; }
         #tonnageSettingsModal .tng-modal-header svg { stroke: var(--tng-accent); flex-shrink: 0; }
         #tonnageSettingsModal .tng-modal-close { background: transparent; border: none; color: var(--tng-muted); font-size: 20px; cursor: pointer; width: auto; margin: 0; }
-        #tonnageSettingsModal .tng-target-box { background: var(--tng-glass); border: none; border-radius: 16px; padding: 15px; }
+        #tonnageSettingsModal .tng-target-box { background: var(--tng-glass); border: 1px solid var(--tng-border); border-radius: 16px; padding: 15px; backdrop-filter: blur(16px); }
         #tonnageSettingsModal .tng-setting-field-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 15px; }
-        #tonnageSettingsModal .tng-setting-field-row label { font-size: 13.5px; color: var(--tng-ink); font-weight: 600; }
+        #tonnageSettingsModal .tng-setting-field-row label { font-size: 13px; color: var(--tng-ink); }
         #tonnageSettingsModal input[type="number"] {
-            padding: 9px 10px; background: var(--vista-surface); border: none; box-shadow: inset 0 0 0 1.5px rgba(28,28,39,0.06); color: var(--tng-ink);
+            padding: 9px 10px; background: rgba(255,255,255,0.07); border: 1px solid var(--tng-border); color: var(--tng-ink);
             border-radius: 12px; box-sizing: border-box; font-size: 14px; text-align: center; font-weight: 700; -moz-appearance: textfield;
-            transition: box-shadow 0.15s ease;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
-        #tonnageSettingsModal input[type="number"]:focus { outline: none; box-shadow: 0 0 0 2.5px var(--tng-accent); }
+        #tonnageSettingsModal input[type="number"]:focus { outline: none; border-color: var(--tng-accent); box-shadow: 0 0 0 3px rgba(10,132,255,0.18); }
         #tonnageSettingsModal input[type="number"]::-webkit-outer-spin-button,
         #tonnageSettingsModal input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         #tonnageSettingsModal .tng-btn-save-settings {
-            background: var(--vista-ink); color: #fff; border: none; padding: 12px; border-radius: 999px; width: 100%;
-            font-weight: 700; cursor: pointer; margin-top: 16px; text-transform: none; box-shadow: none;
+            background: var(--tng-accent); color: #fff; border: none; padding: 12px; border-radius: 999px; width: 100%;
+            font-weight: 700; cursor: pointer; margin-top: 16px; text-transform: none; box-shadow: 0 8px 20px -8px rgba(10,132,255,0.6);
             transition: filter 0.15s ease, transform 0.05s ease;
         }
-        #tonnageSettingsModal .tng-btn-save-settings:hover { filter: brightness(1.3); }
+        #tonnageSettingsModal .tng-btn-save-settings:hover { filter: brightness(1.08); }
         #tonnageSettingsModal .tng-btn-save-settings:active { transform: scale(0.98); }
         @media (max-width: 480px) {
             #tonnageModal .tng-container { padding: 14px; }
@@ -2457,7 +2477,7 @@
              Tap to force-check for updates. Update this string (and the
              matching APP_VERSION const in the script block) on every release. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:rgba(255,255,255,0.35); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">v95-beta2</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">v94-beta2</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- v73a: passive unsynced warning. Hidden by default and only
@@ -6002,7 +6022,7 @@
     // This is what the version badge displays and what checkForAppUpdate()
     // compares against. Keeping this in sync is what makes the badge
     // trustworthy — if forgotten, the badge silently shows a stale number.
-    const APP_VERSION = "v95-beta2";
+    const APP_VERSION = "v94-beta2";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
