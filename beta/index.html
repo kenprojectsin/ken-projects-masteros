@@ -5,13 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KEN Traders - Master OS (BETA)</title>
 
-    <!-- Letterpad feature: Lato font for letterhead correspondence -->
-    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Lato: originally the Letterpad feature's letterhead font, now also
+         the live Vista design system font (locked 2026-09-03, replacing
+         Onest) — used only within screens migrated to Vista (Tonnage
+         Calculator first). Never applied to the print/PDF output, which
+         keeps its own existing fonts untouched. Weight 900 added for
+         Vista's heavier headings/labels. -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
 
-    <!-- Vista design system font (beta) — used only within screens migrated
-         to Vista (Tonnage Calculator first). Never applied to the
-         print/PDF output, which keeps its own existing fonts untouched. -->
-    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Onest is no longer loaded live (Vista switched to Lato), but stays
+         available for a future switch back: swap --vista-font below and
+         re-add "family=Onest:wght@400;500;600;700;800;900" to a link here. -->
 
     <!-- Improvement #6: PWA basics — installable on phone/desktop home
          screens. Requires manifest.json + the icons/ folder to be hosted
@@ -114,7 +118,28 @@
         /* --- RESPONSIVE LAYOUT ENGINE (DESKTOP OPTIMIZED) --- */
         .container { display: flex; align-items: flex-start; gap: 20px; width: 98%; max-width: 1900px; margin: 20px auto; }
         
-        .editor-box { flex: 0 0 700px; background: #2c3e50; color: white; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: sticky; top: 20px; max-height: 94vh; overflow-y: auto; z-index: 10; border-bottom: 4px solid #e67e22; border-radius: 6px; box-sizing: border-box; }
+        /* ============================================================
+           VISTA 4 — Document Editor (homepage) local token aliases.
+           Same pattern as #tonnageModal's --tng-* aliases: references the
+           shared --vista-* tokens so this screen and Tonnage stay in sync
+           if the palette ever changes, without touching any selector that
+           isn't a descendant of .editor-box. Locked 2026-09-03.
+        ============================================================ */
+        .editor-box {
+            --hp-ink: var(--vista-ink); --hp-ink-muted: var(--vista-ink-muted);
+            --hp-surface: var(--vista-surface); --hp-surface-alt: var(--vista-surface-alt);
+            --hp-surface-alt-strong: var(--vista-surface-alt-strong); --hp-border: var(--vista-border);
+            --hp-purple: var(--vista-purple); --hp-purple-tint: var(--vista-purple-tint); --hp-purple-ink: var(--vista-purple-ink);
+            --hp-blue: var(--vista-blue); --hp-blue-tint: var(--vista-blue-tint); --hp-blue-ink: var(--vista-blue-ink);
+            --hp-mint: var(--vista-mint); --hp-mint-tint: var(--vista-mint-tint); --hp-mint-ink: var(--vista-mint-text);
+            --hp-danger: var(--vista-danger); --hp-danger-tint: var(--vista-danger-tint); --hp-danger-ink: var(--vista-danger-ink);
+            --hp-amber: var(--vista-amber); --hp-amber-tint: var(--vista-amber-tint); --hp-amber-ink: var(--vista-amber-ink);
+            --hp-radius-lg: var(--vista-radius-lg); --hp-radius-sm: var(--vista-radius-sm);
+            --hp-shadow: var(--vista-shadow); --hp-font: var(--vista-font);
+            flex: 0 0 700px; background: var(--hp-surface); color: var(--hp-ink); font-family: var(--hp-font);
+            padding: 20px; box-shadow: var(--hp-shadow); position: sticky; top: 20px; max-height: 94vh;
+            overflow-y: auto; z-index: 10; border-radius: var(--hp-radius-lg); box-sizing: border-box;
+        }
         .preview-box { flex: 1; background: transparent; padding: 0; width: 100%; display: block; box-sizing: border-box; }
         
         @media (max-width: 1100px) {
@@ -183,11 +208,11 @@
         
         .footer-flex { display: flex; justify-content: flex-end; align-items: center; gap: 15px; width: 100%; margin-right: -10px; }
         .grand-badge { display: inline-block; background: #21b860; color: white; padding: 4px 6px; border-radius: 4px; margin-right: -10px}
-        .master-bar { background: #1a252f; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; box-sizing: border-box; }
+        .master-bar { background: transparent; padding: 0; border-radius: 0; margin-bottom: 10px; margin-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; box-sizing: border-box; }
         .master-bar > div { display: flex; flex: 1; min-width: 140px; }
-        .master-bar select, .master-bar button { width: 100%; font-size: 13px; font-weight: bold; padding: 10px 8px; background: #e67e22; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 0; height: 100%; }
-        .master-bar .btn-engine { background: #34495e; border: 1px solid #7f8c8d; }
-        .master-bar .btn-void { background: #c0392b; }
+        .master-bar select, .master-bar button { width: 100%; font-size: 13px; font-weight: 700; padding: 11px 8px; background: var(--hp-blue-tint); color: var(--hp-blue-ink); border: none; border-radius: var(--hp-radius-sm); cursor: pointer; margin: 0; height: 100%; box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35); }
+        .master-bar .btn-engine { background: var(--hp-blue-tint); border: none; }
+        .master-bar .btn-void { background: var(--hp-danger-tint); color: var(--hp-danger-ink); }
 
         /* v70: Size Grid + Brand Picker, Pricing Tier Bar — base styling.
            Active/inactive colors are still set inline by selectBlockSize()/
@@ -201,15 +226,15 @@
         /* ============================================================
            U5: DOC TYPE — its own dedicated, visually prominent block
         ============================================================ */
-        .doctype-spotlight { background: linear-gradient(135deg, #e67e22, #d35400); padding: 4px; border-radius: 8px; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(230,126,34,0.35); }
-        .doctype-spotlight label { color: #fff8f0; font-size: 10px; margin: 6px 0 2px 10px; opacity: 0.9; }
-        .doctype-spotlight select { background: #1a252f; color: #fff; font-size: 16px; font-weight: 800; padding: 14px 12px; border-radius: 6px; border: none; margin-top: 0; }
+        .doctype-spotlight { background: var(--hp-surface-alt); padding: 12px 14px; border-radius: var(--hp-radius-md, 16px); margin-bottom: 10px; box-shadow: none; }
+        .doctype-spotlight label { color: var(--hp-ink-muted); font-size: 10px; margin: 0 0 6px 0; opacity: 1; }
+        .doctype-spotlight select { background: var(--hp-ink); color: #fff; font-size: 15px; font-weight: 800; padding: 12px 14px; border-radius: var(--hp-radius-sm); border: none; margin-top: 0; box-shadow: none; }
 
         /* ============================================================
            U7: Signature / Boss Mode / Void — uniform grouped row
         ============================================================ */
-        .action-trio-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
-        .action-trio-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 6px; border-radius: 6px; border: none; cursor: pointer; font-size: 11px; font-weight: bold; color: #fff; text-align: center; min-height: 64px; width: 100%; margin: 0; box-sizing: border-box; }
+        .action-trio-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; margin-bottom: 4px; }
+        .action-trio-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 6px; border-radius: var(--hp-radius-sm, 6px); border: none; cursor: pointer; font-size: 11px; font-weight: 700; text-align: center; min-height: 58px; width: 100%; margin: 0; box-sizing: border-box; }
         .action-trio-btn .trio-icon { font-size: 20px; line-height: 1; }
         /* v82: the <select> is no longer this tile's visible label (see the
            HTML comment above signatorySelect for why) — it's now a fully
@@ -226,33 +251,36 @@
            background (white), so they need an explicit dark color — without this
            they inherit the closed-select's white text and become invisible. */
         .action-trio-btn select.trio-select option { color: #222; background: #fff; }
-        .trio-signature { background: #8e44ad; position: relative; }
-        .trio-bossmode { background: #2e7d32; }
-        .trio-bossmode.is-on { background: #1b5e20; box-shadow: inset 0 0 0 2px #a5d6a7; }
-        .trio-void { background: #c0392b; }
+        .trio-signature { background: var(--hp-purple-tint); color: var(--hp-purple-ink); position: relative; }
+        .trio-bossmode { background: var(--hp-mint-tint); color: var(--hp-mint-ink); }
+        .trio-bossmode.is-on { background: var(--hp-mint); color: var(--hp-mint-ink); box-shadow: inset 0 0 0 2px var(--hp-mint-ink); }
+        .trio-void { background: var(--hp-danger-tint); color: var(--hp-danger-ink); }
 
         /* ============================================================
            U4: Analytics buttons — dedicated 2x3 grid section
         ============================================================ */
-        .analytics-section { background: #16212c; border-radius: 8px; padding: 12px; margin-bottom: 16px; border: 1px solid #2c3e50; }
-        .analytics-section-title { font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #7f8c8d; margin-bottom: 8px; padding-left: 2px; }
-        .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        /* VISTA 4: Reports & Tools is now collapsible (see #analyticsSectionBody /
+           toggleAnalyticsSection() in JS) — same chevron-header mechanic as the
+           Blocks Calculator below it. Defaults to OPEN (these 15 buttons are
+           core daily navigation, unlike the Blocks Calculator trial feature),
+           but remembers the user's last choice via localStorage. */
+        .analytics-section { background: var(--hp-surface-alt); border-radius: var(--hp-radius-md, 16px); padding: 12px 14px; margin-bottom: 10px; border: none; }
+        .analytics-section-title { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 800; text-transform: none; letter-spacing: 0; color: var(--hp-ink); margin-bottom: 0; padding-left: 2px; cursor: pointer; }
+        .analytics-section-chevron { color: var(--hp-ink-muted); font-size: 15px; transition: transform 0.18s ease; }
+        .analytics-section.open .analytics-section-chevron { transform: rotate(90deg); }
+        #analyticsSectionBody { display: none; margin-top: 10px; }
+        .analytics-section.open #analyticsSectionBody { display: block; }
+        .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
         .analytics-grid-btn {
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
-            background: var(--analytics-btn-color, #2c3e50);
-            color: #fff; border: none; border-radius: 6px; cursor: pointer;
-            padding: 12px 4px; font-size: 11px; font-weight: bold; min-height: 64px;
+            background: var(--hp-surface);
+            color: var(--hp-ink); border: none; border-radius: var(--hp-radius-sm, 12px); cursor: pointer;
+            padding: 11px 4px; font-size: 10.5px; font-weight: 700; min-height: 58px;
             width: 100%; margin: 0; box-sizing: border-box; text-align: center;
+            box-shadow: 0 1px 2px rgba(28,28,39,0.05);
         }
-        .analytics-grid-btn .ag-icon { font-size: 20px; line-height: 1; }
-        /* Change any button's color later by editing the --analytics-btn-color custom
-           property on its specific id below — see comment block right above this rule. */
-        #btnAnalyticsLedger      { --analytics-btn-color: #2c3e50; }
-        #btnAnalyticsOutstanding { --analytics-btn-color: #2c3e50; }
-        #btnAnalyticsSummary     { --analytics-btn-color: #2c3e50; }
-        #btnAnalyticsAudit       { --analytics-btn-color: #2c3e50; }
-        #btnAnalyticsCashBook    { --analytics-btn-color: #2c3e50; }
-        #btnAnalyticsStock       { --analytics-btn-color: #2c3e50; }
+        .analytics-grid-btn:hover { background: var(--hp-surface-alt-strong); filter: none; }
+        .analytics-grid-btn .ag-icon { font-size: 18px; line-height: 1; }
 
         /* ============================================================
            v73a/v74c TRIAL — Blocks Calculator
@@ -370,7 +398,7 @@
         /* ============================================================
            U8: Doc number live-collision warning
         ============================================================ */
-        .docno-warning { display: none; background: #c0392b; color: #fff; font-size: 11px; padding: 6px 10px; border-radius: 4px; margin-top: 4px; font-weight: bold; }
+        .docno-warning { display: none; background: var(--vista-danger-tint, #c0392b); color: var(--vista-danger-ink, #fff); font-size: 11px; padding: 8px 10px; border-radius: var(--vista-radius-sm, 4px); margin-top: 6px; font-weight: 700; border-left: 3px solid var(--vista-danger, transparent); }
 
         /* ============================================================
            U3: Cloud Manager multi-select
@@ -404,25 +432,27 @@
 
         .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 140px; color: rgba(231, 76, 60, 0.15); font-weight: 900; z-index: 50; pointer-events: none; display: none; letter-spacing: 5px; text-transform: uppercase;}
 
-        label { font-size: 11px; font-weight: bold; text-transform: uppercase; color: #bdc3c7; margin-top: 12px; display: block; }
+        label { font-size: 11px; font-weight: bold; text-transform: uppercase; color: var(--hp-ink-muted, #bdc3c7); margin-top: 12px; display: block; }
         /* v87 FIX: this rule used to match `input` of EVERY type, so checkboxes and
            radios were given width:100% and 10px padding too. Any checkbox that did not
            happen to override it inline rendered as a full-width block that pushed its own
            caption onto the next line - "Rates INCLUDE GST" and Summary's "All Time" were
            the visible cases, but it affected every un-overridden checkbox in the app.
            Text inputs and selects still fill their container; toggles size to themselves. */
-        input:not([type="checkbox"]):not([type="radio"]), select { width: 100%; padding: 10px; margin-top: 5px; background: #34495e; border: 1px solid #465c71; color: white; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        input:not([type="checkbox"]):not([type="radio"]), select { width: 100%; padding: 10px; margin-top: 5px; background: var(--hp-surface, #34495e); border: none; box-shadow: inset 0 0 0 1.5px var(--hp-border, #465c71); color: var(--hp-ink, white); border-radius: var(--hp-radius-sm, 4px); box-sizing: border-box; font-size: 14px; font-weight: 600; }
+        .editor-box input:not([type="checkbox"]):not([type="radio"]):focus, .editor-box select:focus { outline: none; box-shadow: inset 0 0 0 2.5px var(--hp-purple); }
         input[type="checkbox"], input[type="radio"] { width: auto; margin-top: 0; padding: 0; vertical-align: middle; flex: none; }
         
-        button { cursor: pointer; border: none; padding: 12px; border-radius: 4px; font-weight: bold; width: 100%; margin-top: 15px; font-size: 15px; color: white; transition: transform 0.1s ease, background-color 0.2s ease; }
+        button { cursor: pointer; border: none; padding: 12px; border-radius: var(--hp-radius-sm, 4px); font-weight: bold; width: 100%; margin-top: 15px; font-size: 15px; color: white; transition: transform 0.1s ease, background-color 0.2s ease, filter 0.15s ease; }
+        .editor-box button:hover { filter: brightness(1.08); }
         button:active, .action-trio-btn:active, .pressed-state { /* v84: .action-trio-btn added - the signature tile is a <div>, so it never got press feedback */ transform: scale(0.95); opacity: 0.85; box-shadow: inset 0 3px 5px rgba(0,0,0,0.4)!important; }
         .btn-add { background: #3498db; }
         .btn-mortar { background: #9b59b6; margin-top: 8px; }
         
-        .action-bar { position: fixed; bottom: 20px; left: 5%; width: 90%; display: flex; gap: 10px; z-index: 1000; }
-        .btn-print { flex: 1; background: #27ae60; color: white; font-size: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; margin: 0;}
-        .btn-pdf { flex: 1; background: #e74c3c; color: white; font-size: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; margin: 0;}
-        .btn-save { flex: 1; background: #2980b9; color: white; font-size: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; margin: 0;}
+        .action-bar { position: fixed; bottom: 20px; left: 5%; width: 90%; display: flex; gap: 10px; z-index: 1000; font-family: var(--vista-font, inherit); }
+        .btn-print { flex: 1; background: var(--vista-surface-alt, #27ae60); color: var(--vista-ink, white); font-size: 16px; box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35); padding: 15px; border-radius: 16px; margin: 0;}
+        .btn-pdf { flex: 1; background: var(--vista-surface-alt, #e74c3c); color: var(--vista-ink, white); font-size: 16px; box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35); padding: 15px; border-radius: 16px; margin: 0;}
+        .btn-save { flex: 1; background: var(--vista-ink, #2980b9); color: white; font-size: 16px; box-shadow: 0 4px 14px -6px rgba(28,28,39,0.5); padding: 15px; border-radius: 16px; margin: 0;}
 
         /* --- INVOICE AESTHETICS --- */
         .header { display: flex; justify-content: space-between; align-items: stretch; min-height: 160px; height: auto; padding-bottom: 15px; z-index: 1;}
@@ -815,23 +845,23 @@
         /* F17: Item notes */
         .item-notes-print { font-size: 11px; color: #777; font-style: italic; margin-top: 3px; }
         /* F16: Client autofill suggestion pill */
-        .client-autofill-banner { background:#1a6e3c; color:#fff; font-size:12px; padding:7px 12px; border-radius:4px; margin-top:6px; display:none; cursor:pointer; }
-        .client-autofill-banner:hover { background:#1e8449; }
+        .client-autofill-banner { background:var(--vista-mint-tint,#1a6e3c); color:var(--vista-mint-text,#fff); font-size:12px; font-weight:600; padding:9px 13px; border-radius:var(--vista-radius-sm,4px); border-left:3px solid var(--vista-mint-text,transparent); margin-top:8px; display:none; cursor:pointer; }
+        .client-autofill-banner:hover { filter: brightness(0.97); }
         /* A7: custom client suggestions dropdown — no native <select>/<datalist>
            arrow, scales cleanly past hundreds of clients since it's just a
            filtered, scrollable list. */
-        .client-suggestions-box { display:none; position:absolute; top:100%; left:0; right:0; z-index:50; background:#1a252f; border:1px solid #465c71; border-radius:0 0 6px 6px; max-height:220px; overflow-y:auto; box-shadow:0 6px 16px rgba(0,0,0,0.4); margin-top:-2px; }
-        .client-suggestion-row { padding:9px 12px; cursor:pointer; font-size:13px; color:#ecf0f1; border-bottom:1px solid #2c3e50; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+        .client-suggestions-box { display:none; position:absolute; top:100%; left:0; right:0; z-index:50; background:var(--vista-surface,#1a252f); border:none; box-shadow: inset 0 0 0 1.5px var(--vista-border,#465c71), 0 12px 24px -10px rgba(28,28,39,0.25); border-radius:0 0 var(--vista-radius-sm,6px) var(--vista-radius-sm,6px); max-height:220px; overflow-y:auto; margin-top:-2px; }
+        .client-suggestion-row { padding:10px 13px; cursor:pointer; font-size:13px; font-weight:600; color:var(--vista-ink,#ecf0f1); border-bottom:1px solid var(--vista-border,#2c3e50); display:flex; justify-content:space-between; align-items:center; gap:8px; }
         .client-suggestion-row:last-child { border-bottom:none; }
-        .client-suggestion-row:hover, .client-suggestion-row.active-suggestion { background:#2c3e50; }
-        .client-suggestion-id { background:#8e44ad; color:#fff; padding:2px 7px; border-radius:9px; font-size:11px; font-weight:bold; flex-shrink:0; }
-        .client-suggestion-meta { font-size:11px; color:#7f8c8d; }
+        .client-suggestion-row:hover, .client-suggestion-row.active-suggestion { background:var(--vista-surface-alt,#2c3e50); }
+        .client-suggestion-id { background:var(--vista-purple-tint,#8e44ad); color:var(--vista-purple-ink,#fff); padding:2px 7px; border-radius:9px; font-size:11px; font-weight:bold; flex-shrink:0; }
+        .client-suggestion-meta { font-size:11px; color:var(--vista-ink-muted,#7f8c8d); }
         /* F2: Duplicate guard banner */
-        .duplicate-warn-banner { background:#922b21; color:#fff; font-size:12px; padding:7px 12px; border-radius:4px; margin-top:6px; display:none; }
+        .duplicate-warn-banner { background:var(--vista-danger-tint,#922b21); color:var(--vista-danger-ink,#fff); font-size:12px; font-weight:600; padding:9px 13px; border-radius:var(--vista-radius-sm,4px); border-left:3px solid var(--vista-danger,transparent); margin-top:8px; display:none; }
         /* v80 (item 20): credit-period warning. Deliberately amber, not the
            red of the stock/below-cost banners — being past terms is a
            judgement call about a customer, not an error in the document. */
-        .credit-warn-banner { background:#b9770e; color:#fff; font-size:12px; padding:7px 12px; border-radius:4px; margin-top:6px; display:none; }
+        .credit-warn-banner { background:var(--vista-amber-tint,#b9770e); color:var(--vista-amber-ink,#fff); font-size:12px; font-weight:600; padding:9px 13px; border-radius:var(--vista-radius-sm,4px); border-left:3px solid var(--vista-amber,transparent); margin-top:8px; display:none; }
         /* F12: Custom GST row in edit modal */
         .gst-custom-row { display:flex; gap:8px; margin-top:8px; align-items:center; }
         /* Batch 4 analytics modals */
@@ -940,15 +970,15 @@
         /* --- BATCH 5 STYLES --- */
         /* F22: Multi-advance table */
         .adv-link-table { width:100%; border-collapse:collapse; margin-top:8px; font-size:12px; }
-        .adv-link-table th { background:#c0392b; color:#fff; padding:6px 8px; text-align:left; font-weight:600; }
-        .adv-link-table td { padding:5px 8px; border-bottom:1px solid rgba(255,255,255,0.15); color:#fff; vertical-align:middle; }
-        .adv-link-table input { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:#fff; padding:5px 7px; font-size:12px; margin:0; }
-        .adv-link-table input::placeholder { color:rgba(255,255,255,0.5); }
-        .btn-adv-add-row { background:rgba(255,255,255,0.2); color:#fff; border:none; padding:4px 10px; border-radius:3px; cursor:pointer; font-size:12px; font-weight:bold; width:auto; margin:0; }
+        .adv-link-table th { background:transparent; color:var(--hp-danger-ink); padding:6px 8px; text-align:left; font-weight:700; }
+        .adv-link-table td { padding:5px 8px; border-bottom:1px solid rgba(163,42,46,0.15); color:var(--hp-ink); vertical-align:middle; }
+        .adv-link-table input { background:var(--hp-surface); border:1px solid rgba(163,42,46,0.25); color:var(--hp-ink); padding:5px 7px; font-size:12px; margin:0; border-radius:6px; }
+        .adv-link-table input::placeholder { color:var(--hp-ink-muted); }
+        .btn-adv-add-row { background:var(--hp-surface); color:var(--hp-danger-ink); border:none; padding:4px 10px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold; width:auto; margin:0; }
         .btn-adv-del-row { background:rgba(231,76,60,0.7); color:#fff; border:none; padding:3px 7px; border-radius:3px; cursor:pointer; font-size:11px; width:auto; margin:0; }
         /* ADV: direct amount box */
-        .adv-amount-box { background:#1a252f; border:2px solid #f39c12; border-radius:6px; padding:12px 15px; margin-top:10px; }
-        .adv-amount-box label { color:#f39c12; margin-top:0; }
+        .adv-amount-box { background:var(--hp-amber-tint); border:none; border-radius:var(--hp-radius-sm); padding:12px 15px; margin-top:10px; }
+        .adv-amount-box label { color:var(--hp-amber-ink); margin-top:0; }
         /* F23: Cash Book */
         .cash-entry-row { display:flex; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid #eee; font-size:13px; }
         .cash-in-row { background:#f0fff4; }
@@ -1128,7 +1158,7 @@
                 position: relative; top: 0; max-height: none;
                 overflow-y: visible; border-radius: 0;
                 padding: 14px 12px;
-                border-bottom: 3px solid #e67e22;
+                border-bottom: none;
             }
             .preview-box { padding: 12px 8px 8px 8px; }
 
@@ -1243,14 +1273,14 @@
                 border-radius: 0;
                 padding: 8px 10px;
                 gap: 8px;
-                background: rgba(26,37,47,0.97);
-                box-shadow: 0 -2px 12px rgba(0,0,0,0.3);
+                background: var(--vista-surface, rgba(26,37,47,0.97));
+                box-shadow: 0 -2px 16px rgba(28,28,39,0.12);
                 box-sizing: border-box;
             }
             .btn-print, .btn-pdf, .btn-save {
                 font-size: 13px !important;
                 padding: 12px 6px !important;
-                border-radius: 8px !important;
+                border-radius: 12px !important;
             }
 
             /* --- CART ITEM ACTION BUTTONS (▲▼ Edit X) ---
@@ -1593,7 +1623,7 @@
                 position: relative; top: 0; max-height: none;
                 overflow-y: visible; border-radius: 0;
                 padding: 14px 12px;
-                border-bottom: 3px solid #e67e22; }
+                border-bottom: none; }
         body.force-mobile-main .preview-box { padding: 12px 8px 8px 8px; }
         body.force-mobile-main .doctype-spotlight select { font-size: 15px; padding: 12px 10px; }
         body.force-mobile-main .doctype-spotlight label { font-size: 9px; }
@@ -1635,8 +1665,8 @@
                 border-radius: 0;
                 padding: 8px 10px;
                 gap: 8px;
-                background: rgba(26,37,47,0.97);
-                box-shadow: 0 -2px 12px rgba(0,0,0,0.3);
+                background: var(--vista-surface, rgba(26,37,47,0.97));
+                box-shadow: 0 -2px 16px rgba(28,28,39,0.12);
                 box-sizing: border-box; }
         body.force-mobile-main .btn-print, body.force-mobile-main .btn-pdf, body.force-mobile-main .btn-save { font-size: 13px !important;
                 padding: 12px 6px !important;
@@ -1873,10 +1903,18 @@
            Never applied to the print/PDF output path — unchanged as ever. */
         :root {
             --vista-ink: #1C1C27;
-            --vista-ink-muted: #8B8A9B;
+            /* Contrast fix (2026-09-01): #8B8A9B measured ~3.4:1 on white —
+               fails WCAG AA for the small bold labels it's used on (grid
+               headers, sub-labels, quick-pick text). Darkened to ~5.1:1. */
+            --vista-ink-muted: #6E6C80;
             --vista-surface: #FFFFFF;
-            --vista-surface-alt: #F5F4FA;
-            --vista-surface-alt-strong: #ECE9F7;
+            /* Contrast fix: row/box backgrounds read as barely-tinted white.
+               Deepened both steps of the purple-gray surface a notch so the
+               "light purple" panels are visibly distinct from white cards.
+               Updated 2026-09-03: switched from a lavender tint to a neutral
+               muted gray per explicit hex request (#EDEDF1). */
+            --vista-surface-alt: #EDEDF1;
+            --vista-surface-alt-strong: #E1E1E6;
             --vista-border: rgba(28,28,39,0.07);
             --vista-purple: #C38CFA;
             --vista-purple-tint: #F1E7FE;
@@ -1890,10 +1928,24 @@
                reference dashboard never had to represent. */
             --vista-danger: #E5484D;
             --vista-danger-tint: #FDECEC;
+            /* Added for Vista 4 (Document Editor homepage pass, 2026-09-03):
+               ink/tint pairs so tinted backgrounds can carry readable
+               colored text (buttons, banners), plus an amber warning tier
+               the Tonnage-only palette never needed. Purely additive —
+               nothing already shipped references these, so Tonnage is
+               unaffected. */
+            --vista-purple-ink: #6B3FA0;
+            --vista-blue-ink: #0B5A94;
+            --vista-danger-ink: #A32A2E;
+            --vista-amber: #F5A524;
+            --vista-amber-ink: #92400E;
+            --vista-amber-tint: #FEF3E0;
             --vista-radius-lg: 22px;
             --vista-radius-sm: 16px;
             --vista-shadow: 0 1px 2px rgba(28,28,39,0.03), 0 16px 34px -18px rgba(28,28,39,0.18);
-            --vista-font: 'Onest', -apple-system, 'Segoe UI', sans-serif;
+            /* Locked 2026-09-03: Vista font switched from Onest to Lato.
+               See head comment above for how to switch back later. */
+            --vista-font: 'Lato', -apple-system, 'Segoe UI', sans-serif;
         }
         #tonnageModal {
             --tng-glass: var(--vista-surface-alt);
@@ -2027,11 +2079,17 @@
         #tonnageModal .tng-weight-line span:last-child { color: #fff; }
         #tonnageModal .tng-gross-total { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.14); font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.75); }
         #tonnageModal .tng-gross-total #tngGrossTonnage { font-size: 24px; font-weight: 800; color: #fff; }
+        /* Vista 2 (locked 2026-09-01): button SHAPE takes the "lifted
+           shadow" treatment (rounded-rect + soft drop shadow instead of a
+           flat pill) while keeping Vista 1's exact colors (ink/tint) —
+           the one deliberate change out of the "Pick your Vista 2" pass. */
         #tonnageModal .tng-btn-reset {
-            background: var(--vista-surface-alt); color: var(--tng-muted); border: none; padding: 13px; border-radius: 999px; font-weight: 700;
-            width: 100%; margin-top: 16px; font-size: 14px; cursor: pointer; text-transform: none; transition: background 0.2s ease, color 0.2s ease;
+            background: var(--vista-surface-alt); color: var(--tng-muted); border: none; padding: 13px; border-radius: 12px; font-weight: 700;
+            width: 100%; margin-top: 16px; font-size: 14px; cursor: pointer; text-transform: none;
+            box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35);
+            transition: background 0.2s ease, color 0.2s ease, box-shadow 0.15s ease;
         }
-        #tonnageModal .tng-btn-reset:hover { background: var(--vista-danger-tint); color: var(--vista-danger); }
+        #tonnageModal .tng-btn-reset:hover { background: var(--vista-danger-tint); color: var(--vista-danger); box-shadow: 0 1px 2px rgba(229,72,77,0.08), 0 6px 16px -8px rgba(229,72,77,0.35); }
 
         /* Settings sub-modal — nested above #tonnageModal (z-index set inline) */
         #tonnageSettingsModal {
@@ -2060,12 +2118,15 @@
         #tonnageSettingsModal input[type="number"]:focus { outline: none; box-shadow: 0 0 0 2.5px var(--tng-accent); }
         #tonnageSettingsModal input[type="number"]::-webkit-outer-spin-button,
         #tonnageSettingsModal input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        /* Vista 2: same lifted-shadow shape as .tng-btn-reset above, ink
+           fill kept exactly as Vista 1 — see note there. */
         #tonnageSettingsModal .tng-btn-save-settings {
-            background: var(--vista-ink); color: #fff; border: none; padding: 12px; border-radius: 999px; width: 100%;
-            font-weight: 700; cursor: pointer; margin-top: 16px; text-transform: none; box-shadow: none;
-            transition: filter 0.15s ease, transform 0.05s ease;
+            background: var(--vista-ink); color: #fff; border: none; padding: 12px; border-radius: 12px; width: 100%;
+            font-weight: 700; cursor: pointer; margin-top: 16px; text-transform: none;
+            box-shadow: 0 4px 14px -6px rgba(28,28,39,0.5);
+            transition: filter 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
         }
-        #tonnageSettingsModal .tng-btn-save-settings:hover { filter: brightness(1.3); }
+        #tonnageSettingsModal .tng-btn-save-settings:hover { filter: brightness(1.3); box-shadow: 0 6px 18px -6px rgba(28,28,39,0.6); }
         #tonnageSettingsModal .tng-btn-save-settings:active { transform: scale(0.98); }
         @media (max-width: 480px) {
             #tonnageModal .tng-container { padding: 14px; }
@@ -2457,13 +2518,13 @@
              Tap to force-check for updates. Update this string (and the
              matching APP_VERSION const in the script block) on every release. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:rgba(255,255,255,0.35); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">v95-beta2</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta4</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- v73a: passive unsynced warning. Hidden by default and only
              shown when something actually hasn't reached the cloud —
              no per-save toast, no interruption when things are fine. -->
-        <div id="unsyncedIndicator" onclick="handleUnsyncedIndicatorTap()" style="display:none; background:#c0392b; color:#fff; text-align:center; font-size:11px; font-weight:bold; padding:7px 10px; border-radius:5px; margin-bottom:8px; cursor:pointer;"></div>
+        <div id="unsyncedIndicator" onclick="handleUnsyncedIndicatorTap()" style="display:none; background:var(--hp-danger-tint); color:var(--hp-danger-ink); text-align:center; font-size:11px; font-weight:bold; padding:8px 10px; border-radius:var(--hp-radius-sm); margin-bottom:8px; cursor:pointer;"></div>
 
         <!-- v73: FORCE MOBILE LAYOUT toggle — some installed-as-Android-app
              (PWA) shells report a wider viewport than the same page gets in
@@ -2479,36 +2540,38 @@
              remembered (localStorage) so it doesn't need to be set again
              next time the app opens. -->
         <div style="text-align:center; margin-bottom:10px;">
-            <button type="button" id="btnForceMobileToggle" onclick="toggleForceMobileMain()" style="width:auto; margin:0; background:#34495e; color:#bdc3c7; border:1px solid #465c71; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:bold; cursor:pointer;">📱 Force Mobile Layout: OFF</button>
+            <button type="button" id="btnForceMobileToggle" onclick="toggleForceMobileMain()" style="width:auto; margin:0; background:var(--hp-surface-alt); color:var(--hp-ink-muted); border:none; box-shadow:inset 0 0 0 1.5px var(--hp-border); padding:6px 12px; border-radius:20px; font-size:11px; font-weight:bold; cursor:pointer;">📱 Force Mobile Layout: OFF</button>
         </div>
 
-        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
-            <button onclick="createNewDocSafe()" style="flex: 1; margin: 0; background: #2ecc71; font-size: 16px; padding: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">✨ NEW DOC</button>
-            <button class="btn-list" onclick="openSavedDocs()" style="flex: 1; margin: 0; background: #8e44ad; font-size: 16px; padding: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">📂 VIEW LIST</button>
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <button onclick="createNewDocSafe()" style="flex: 1; margin: 0; background: var(--hp-ink); font-size: 15px; padding: 12px; box-shadow: 0 4px 14px -6px rgba(28,28,39,0.5);">✨ New Doc</button>
+            <button class="btn-list" onclick="openSavedDocs()" style="flex: 1; margin: 0; background: var(--hp-purple-tint); color: var(--hp-purple-ink); font-size: 15px; padding: 12px; box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35);">📂 View List</button>
         </div>
         <!-- v80 (item 21): every invoice currently starts from an empty cart,
              even for a regular who orders close to the same thing each time.
              Uses this client's last invoice when a name is typed, otherwise the
              most recent one. Block rates are recalculated at current tier and
-             tonnage rather than frozen from the old document. -->
-        <div style="margin-bottom: 15px;">
-            <button onclick="repeatLastInvoice()" style="width:100%; margin:0; background:#d35400; font-size:14px; padding:10px; box-shadow:0 4px 10px rgba(0,0,0,0.2);">🔁 REPEAT LAST INVOICE</button>
+             tonnage rather than frozen from the old document.
+             VISTA 4: Repeat Last Invoice + Project Manager combined into one
+             2-column row (previously two stacked full-width buttons) — same
+             actions, less vertical space. -->
+        <div style="display:flex; gap:8px; margin-bottom: 10px;">
+            <button onclick="repeatLastInvoice()" style="flex:1; margin:0; background:var(--hp-surface-alt); color:var(--hp-ink); font-size:13px; padding:11px 6px; box-shadow:0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35);">🔁 Repeat Last Invoice</button>
+            <button onclick="openProjectManager()" style="flex:1; margin:0; background:var(--hp-surface-alt); color:var(--hp-ink); font-size:13px; padding:11px 6px; box-shadow:0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35);">🏗️ Project Manager</button>
         </div>
-        <!-- Site Manager (renamed from "Sites") promoted to a standalone,
-             full-width section. Stock lives only in the Reports & Tools grid
-             below — having a second Stock button here was redundant. -->
-        <div style="margin-bottom: 15px;">
-            <button onclick="openProjectManager()" style="width: 100%; margin: 0; background: #1a3c5e; font-size: 15px; padding: 11px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">🏗️ PROJECT MANAGER</button>
+        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+            <button id="btnConvertToInv" onclick="convertDocument('INV')" style="flex:1; margin:0; background:var(--hp-mint-tint); color:var(--hp-mint-ink); font-size:12.5px; padding:9px 4px; box-shadow:none; display:none;">⚡ → Tax Invoice</button>
+            <button id="btnConvertToSal" onclick="convertDocument('SAL')" style="flex:1; margin:0; background:var(--hp-mint-tint); color:var(--hp-mint-ink); font-size:12.5px; padding:9px 4px; box-shadow:none; display:none;">⚡ → Sales Invoice</button>
+            <button id="btnAmendDoc" onclick="amendDocument()" style="flex:1; margin:0; background:var(--hp-amber-tint); color:var(--hp-amber-ink); font-size:12.5px; padding:9px 4px; box-shadow:none; display:none;">✏️ Amend (Supersede)</button>
+            <button id="btnWhatsApp" onclick="shareOnWhatsApp()" style="flex:1; margin:0; background:#25D366; font-size:12.5px; padding:9px 4px; box-shadow:none;">📲 WhatsApp</button>
         </div>
-        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <button id="btnConvertToInv" onclick="convertDocument('INV')" style="flex:1; margin:0; background:#16a085; font-size:13px; padding:9px; display:none;">⚡ → Tax Invoice</button>
-            <button id="btnConvertToSal" onclick="convertDocument('SAL')" style="flex:1; margin:0; background:#1abc9c; font-size:13px; padding:9px; display:none;">⚡ → Sales Invoice</button>
-            <button id="btnAmendDoc" onclick="amendDocument()" style="flex:1; margin:0; background:#d35400; font-size:13px; padding:9px; display:none;">✏️ Amend (Supersede)</button>
-            <button id="btnWhatsApp" onclick="shareOnWhatsApp()" style="flex:1; margin:0; background:#25D366; font-size:13px; padding:9px;">📲 WhatsApp</button>
-        </div>
-        <!-- U4: Analytics — dedicated section, 2 rows x 3 columns, icon above label -->
-        <div class="analytics-section">
-            <div class="analytics-section-title">📊 Reports & Tools</div>
+        <!-- U4: Analytics — dedicated section, 2 rows x 3 columns, icon above label.
+             VISTA 4: now collapsible, same chevron-header mechanic as Blocks
+             Calculator (toggleAnalyticsSection() below) — defaults OPEN since
+             this is core daily navigation, remembers the user's choice. -->
+        <div class="analytics-section open" id="analyticsSection">
+            <div class="analytics-section-title" onclick="toggleAnalyticsSection()"><span>📊 Reports &amp; Tools</span><span class="analytics-section-chevron" id="analyticsSectionChevron">›</span></div>
+            <div id="analyticsSectionBody">
             <div class="analytics-grid">
                 <button id="btnAnalyticsLedger" class="analytics-grid-btn" onclick="openLedger()"><span class="ag-icon">👤</span><span>Ledger</span></button>
                 <button id="btnAnalyticsOutstanding" class="analytics-grid-btn" onclick="openOutstanding()"><span class="ag-icon">⏰</span><span>Outstanding</span></button>
@@ -2545,13 +2608,14 @@
                  (text link, not a button) since this is a safety-net action rather
                  than a daily workflow step. -->
             <div style="text-align:center; margin-top:10px;">
-                <button onclick="downloadFullBackup()" style="width:auto; margin:0; background:none; border:none; color:#7f8c8d; font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">💾 Download full data backup (.json)</button>
-                <span style="color:#ccc; font-size:11px;"> · </span>
-                <!-- G1: Restore from backup. A different (warmer/orange) color
+                <button onclick="downloadFullBackup()" style="width:auto; margin:0; background:none; border:none; color:var(--hp-ink-muted); font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">💾 Download full data backup (.json)</button>
+                <span style="color:var(--hp-ink-muted); font-size:11px;"> · </span>
+                <!-- G1: Restore from backup. A different (warmer/amber) color
                      than the export link, signaling this is a different KIND
                      of action — destructive, not just informational — even
                      though both sit in the same understated row. -->
-                <button onclick="openRestoreModal()" style="width:auto; margin:0; background:none; border:none; color:#d35400; font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">📥 Restore from backup</button>
+                <button onclick="openRestoreModal()" style="width:auto; margin:0; background:none; border:none; color:var(--hp-amber-ink); font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">📥 Restore from backup</button>
+            </div>
             </div>
         </div>
 
@@ -2570,13 +2634,13 @@
              selectBlockSize()/qtyInput path a human tap would use. Deleting
              this whole block (HTML here + the paired JS block + CSS block)
              fully removes the feature with zero side effects on v73. -->
-        <div id="blocksCalcSection" style="background:#1a2f42; border:2px solid #3498db; border-radius:8px; padding:14px; margin-bottom:20px;">
+        <div id="blocksCalcSection" style="background:var(--hp-surface-alt); border:none; border-radius:var(--hp-radius-md,16px); padding:13px 15px; margin-bottom:10px;">
             <!-- v74c: the ENTIRE header row is now the tap target (not just
                  the small chevron) — tap anywhere across the title/badge/
                  chevron to expand or collapse. -->
             <div onclick="toggleBlocksCalcCollapse()" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; cursor:pointer;">
-                <div style="font-weight:bold; color:#3498db; font-size:14px; letter-spacing:0.5px;">🧱 BLOCKS CALCULATOR</div>
-                <span id="btnBlocksCalcCollapse" style="color:#7f8c8d; font-size:18px; padding:2px 8px;">▸</span>
+                <div style="font-weight:800; color:var(--hp-ink); font-size:13px; letter-spacing:0.02em;">🧱 Blocks Calculator</div>
+                <span id="btnBlocksCalcCollapse" style="color:var(--hp-ink-muted); font-size:18px; padding:2px 8px;">▸</span>
             </div>
             <div id="blocksCalcBody" style="display:none;">
                 <div style="font-size:11px; color:#7f8c8d; margin-bottom:10px;">Quick rough estimate.</div>
@@ -2650,7 +2714,7 @@
              in the app now look and behave the same way. Customer is the
              default tier, matching the confirmed design. -->
         <div style="margin-bottom:10px;">
-            <label style="margin-top:0; margin-bottom:6px; color:#3498db;">💰 Pricing Tier</label>
+            <label style="margin-top:0; margin-bottom:6px; color:var(--hp-blue-ink);">💰 Pricing Tier</label>
             <div id="tierBar" style="display:flex; gap:6px;">
                 <button type="button" class="tier-bar-btn" data-tier="Customer" onclick="selectTier('Customer')" style="flex:1; margin:0; padding:10px 4px; font-size:12px; font-weight:bold; border-radius:5px;">Customer</button>
                 <button type="button" class="tier-bar-btn" data-tier="Engineer" onclick="selectTier('Engineer')" style="flex:1; margin:0; padding:10px 4px; font-size:12px; font-weight:bold; border-radius:5px;">Engineer</button>
@@ -2750,7 +2814,7 @@
             <div style="flex:1.6;">
                 <label style="margin-top:0; display:flex; justify-content:space-between; align-items:center;">
                     <span>Document No.</span>
-                    <span onclick="useNextDocNo()" style="cursor:pointer; text-transform:none; font-weight:normal; color:#3498db; text-decoration:underline; font-size:11px;" title="Fill in the next available number for this document type">🔢 Use Next</span>
+                    <span onclick="useNextDocNo()" style="cursor:pointer; text-transform:none; font-weight:normal; color:var(--hp-blue-ink); text-decoration:underline; font-size:11px;" title="Fill in the next available number for this document type">🔢 Use Next</span>
                 </label>
                 <input type="text" id="docNoIn" onkeyup="updateInfo(); checkDocNoCollision();" style="margin-top:5px; font-size:15px; font-weight:bold; letter-spacing:0.3px;">
                 <div id="docNoWarning" class="docno-warning">⚠️ This document number already exists — saving may overwrite it.</div>
@@ -2791,7 +2855,7 @@
                          assigns the next C-number AND retroactively tags
                          every past document with this exact name, so their
                          whole history becomes visible under one ID at once. -->
-                    <button id="btnMakeRepeatClient" onclick="makeRepeatClient()" style="display:none; margin-top:4px; background:#f39c12; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold; width:auto;">⭐ Make Repeat Client</button>
+                    <button id="btnMakeRepeatClient" onclick="makeRepeatClient()" style="display:none; margin-top:4px; background:var(--hp-amber); color:#fff; border:none; padding:6px 10px; border-radius:var(--hp-radius-sm); cursor:pointer; font-size:11px; font-weight:bold; width:auto;">⭐ Make Repeat Client</button>
                 </div>
                 <div style="flex:1.5;"><label>Billing Location</label><input type="text" id="locIn" value="Udumalpet" placeholder="e.g. Udumalpet" onkeyup="updateInfo()"></div>
                 <div style="flex:1;"><label>Contact No.</label><input type="text" id="phoneIn" onkeyup="updateInfo()"></div>
@@ -2801,7 +2865,7 @@
                 💡 Returning client detected — tap to auto-fill GSTIN, location & tier
             </div>
             <!-- v79: In-progress document draft restore -->
-            <div id="docDraftRestoreBanner" class="client-autofill-banner" style="display:none; background:#1a5276; border-color:#2980b9; color:#eaf2f8;">
+            <div id="docDraftRestoreBanner" class="client-autofill-banner" style="display:none; background:var(--hp-blue-tint); border-left:3px solid var(--hp-blue-ink); color:var(--hp-blue-ink);">
                 <span id="docDraftRestoreText"></span>
                 <span onclick="dismissDocDraftBanner(event)" style="float:right; font-weight:bold; padding:0 4px; cursor:pointer;">✕</span>
             </div>
@@ -2855,16 +2919,16 @@
                     </div>
                 </div>
             </div>
-            <div id="taxToggleDiv" style="background: #34495e; padding: 10px; border-radius: 4px; margin-top: 15px; border: 1px solid #f1c40f;">
-                <label style="color: #f1c40f; margin-top: 0; cursor: pointer; text-transform: none;">
+            <div id="taxToggleDiv" style="background: var(--hp-amber-tint); padding: 10px 13px; border-radius: var(--hp-radius-sm); margin-top: 12px; border: none;">
+                <label style="color: var(--hp-amber-ink); margin-top: 0; cursor: pointer; text-transform: none;">
                     <input type="checkbox" id="inclusiveTax" onchange="renderTable()" checked style="vertical-align: middle;"> <b style="vertical-align: middle;">Rates INCLUDE GST</b>
                 </label>
             </div>
-            <hr style="border-color:#465c71; margin: 15px 0;">
+            <hr style="border-color:var(--hp-border); margin: 14px 0;">
             
-            <label style="color:#3498db; display:flex; justify-content: space-between; margin-top:0; margin-bottom: 8px;">
+            <label style="color:var(--hp-blue-ink); display:flex; justify-content: space-between; margin-top:0; margin-bottom: 8px;">
                 <span>Add Product / Advance</span>
-                <span id="liveTonnageTracker" style="color:#f1c40f; font-weight:normal;">Cart Tonnage: 0.00 T</span>
+                <span id="liveTonnageTracker" style="color:var(--hp-amber-ink); font-weight:normal;">Cart Tonnage: 0.00 T</span>
             </label>
 
             <!-- Retail vs Full Load — manual choice, no dropdown, defaults
@@ -2876,8 +2940,8 @@
                  price in cart" is explicitly turned on in Pricing settings
                  (off by default). -->
             <div style="display:flex; gap:8px; margin-bottom:10px;">
-                <button type="button" id="btnDeliveryRetail" onclick="setDeliveryMode('Retail')" style="flex:1; margin:0; padding:9px; font-size:13px; background:#3498db; border:2px solid #3498db; color:#fff; font-weight:bold; border-radius:5px;">🏬 Retail</button>
-                <button type="button" id="btnDeliveryLoad" onclick="setDeliveryMode('Wholesale')" style="flex:1; margin:0; padding:9px; font-size:13px; background:#2c3e50; border:2px solid #465c71; color:#aaa; font-weight:bold; border-radius:5px;">🚛 Full Load</button>
+                <button type="button" id="btnDeliveryRetail" onclick="setDeliveryMode('Retail')" style="flex:1; margin:0; padding:9px; font-size:13px; background:var(--hp-blue); border:2px solid var(--hp-blue); color:#fff; font-weight:bold; border-radius:var(--hp-radius-sm);">🏬 Retail</button>
+                <button type="button" id="btnDeliveryLoad" onclick="setDeliveryMode('Wholesale')" style="flex:1; margin:0; padding:9px; font-size:13px; background:var(--hp-surface-alt-strong); border:2px solid transparent; color:var(--hp-ink-muted); font-weight:bold; border-radius:var(--hp-radius-sm);">🚛 Full Load</button>
             </div>
             
             <!-- v70: SIZE GRID + BRAND PICKER — replaces scrolling through
@@ -2898,21 +2962,21 @@
                  deleted — see "Use old dropdown instead" — hidden by
                  default, one click to bring back for a full, instant
                  rollback. -->
-            <div id="blockPickerBox" style="background:#243342; border:1px solid #34495e; border-radius:6px; padding:10px; margin-bottom:10px;">
+            <div id="blockPickerBox" style="background:var(--hp-surface-alt); border:none; border-radius:var(--hp-radius-md,16px); padding:12px 14px; margin-bottom:10px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <label style="margin:0; color:#3498db;">🧱 AAC Block — Size &amp; Brand</label>
-                    <a href="javascript:void(0)" onclick="toggleLegacyProductUI(true)" style="font-size:10px; color:#7f8c8d; text-decoration:underline;">Use old dropdown instead</a>
+                    <label style="margin:0; color:var(--hp-ink-muted);">🧱 AAC Block — Size &amp; Brand</label>
+                    <a href="javascript:void(0)" onclick="toggleLegacyProductUI(true)" style="font-size:10px; color:var(--hp-ink-muted); text-decoration:underline;">Use old dropdown instead</a>
                 </div>
                 <div id="blockSizeGrid" style="display:flex; gap:6px; margin-bottom:8px;">
-                    <button type="button" class="size-grid-btn" data-size="4" onclick="selectBlockSize(4)" style="flex:1; margin:0; padding:10px 4px; font-size:14px; font-weight:bold; border-radius:5px; background:#2c3e50; border:2px solid #465c71; color:#aaa;">4"</button>
-                    <button type="button" class="size-grid-btn" data-size="6" onclick="selectBlockSize(6)" style="flex:1; margin:0; padding:10px 4px; font-size:14px; font-weight:bold; border-radius:5px; background:#2c3e50; border:2px solid #465c71; color:#aaa;">6"</button>
-                    <button type="button" class="size-grid-btn" data-size="8" onclick="selectBlockSize(8)" style="flex:1; margin:0; padding:10px 4px; font-size:14px; font-weight:bold; border-radius:5px; background:#2c3e50; border:2px solid #465c71; color:#aaa;">8"</button>
-                    <button type="button" class="size-grid-btn" data-size="9" onclick="selectBlockSize(9)" style="flex:1; margin:0; padding:10px 4px; font-size:14px; font-weight:bold; border-radius:5px; background:#2c3e50; border:2px solid #465c71; color:#aaa;">9"</button>
+                    <button type="button" class="size-grid-btn" data-size="4" onclick="selectBlockSize(4)" style="flex:1; margin:0; padding:10px 4px; font-size:14px; font-weight:bold; border-radius:var(--hp-radius-sm); background:var(--hp-surface); border:2px solid var(--hp-border); color:var(--hp-ink-muted);">4"</button>
+                    <button type="button" class="size-grid-btn" data-size="6" onclick="selectBlockSize(6)" style="flex:1; margin:0; padding:10px 4px; font-size:14px; font-weight:bold; border-radius:var(--hp-radius-sm); background:var(--hp-surface); border:2px solid var(--hp-border); color:var(--hp-ink-muted);">6"</button>
+                    <button type="button" class="size-grid-btn" data-size="8" onclick="selectBlockSize(8)" style="flex:1; margin:0; padding:10px 4px; font-size:14px; font-weight:bold; border-radius:var(--hp-radius-sm); background:var(--hp-surface); border:2px solid var(--hp-border); color:var(--hp-ink-muted);">8"</button>
+                    <button type="button" class="size-grid-btn" data-size="9" onclick="selectBlockSize(9)" style="flex:1; margin:0; padding:10px 4px; font-size:14px; font-weight:bold; border-radius:var(--hp-radius-sm); background:var(--hp-surface); border:2px solid var(--hp-border); color:var(--hp-ink-muted);">9"</button>
                 </div>
                 <select id="blockBrandSelect" onchange="handleBlockBrandChange()" style="margin-top:0;">
                     <option value="">(No Brand)</option>
                 </select>
-                <div id="blockPickerPreview" style="font-size:11px; color:#7f8c8d; margin-top:6px; min-height:14px;"></div>
+                <div id="blockPickerPreview" style="font-size:11px; color:var(--hp-ink-muted); margin-top:6px; min-height:14px;"></div>
             </div>
 
                         <!-- LEGACY PRODUCT DROPDOWN — v70: hidden by default (the Size+Brand
@@ -2967,8 +3031,8 @@
             </div>
 
             <!-- F9: Supersedes reference — shown on INV and SAL when amending -->
-            <div id="supersedesBox" style="display:none; background:#34495e; padding:10px; border-radius:4px; margin-top:10px; border:1px solid #d35400;">
-                <label style="color:#e67e22; margin-top:0; text-transform:none;">✏️ This document supersedes (amends):</label>
+            <div id="supersedesBox" style="display:none; background:var(--hp-amber-tint); padding:10px 13px; border-radius:var(--hp-radius-sm); margin-top:10px; border:none;">
+                <label style="color:var(--hp-amber-ink); margin-top:0; text-transform:none;">✏️ This document supersedes (amends):</label>
                 <div style="display:flex; gap:8px; align-items:center;">
                     <div style="flex:1; position:relative;">
                         <input type="text" id="supersedesRef" placeholder="Search doc no. or client..." autocomplete="off"
@@ -2977,13 +3041,13 @@
                             style="margin-top:5px; width:100%;">
                         <div id="supersedesRefSuggestBox" class="client-suggestions-box" style="top:100%;"></div>
                     </div>
-                    <button onclick="openAmendmentDiff()" style="width:auto; margin:5px 0 0 0; background:#e67e22; padding:8px 12px; font-size:11px;">🔍 View Changes</button>
+                    <button onclick="openAmendmentDiff()" style="width:auto; margin:5px 0 0 0; background:var(--hp-amber); color:#fff; padding:8px 12px; font-size:11px; border-radius:var(--hp-radius-sm);">🔍 View Changes</button>
                 </div>
             </div>
 
             <!-- F17: Item notes field — prints under item name on document -->
             <div style="margin-top:8px;">
-                <input type="text" id="itemNotesIn" placeholder="📝 Optional note for this item (prints on document)..." style="font-size:12px; padding:7px 10px; background:#1a252f; border:1px dashed #465c71; color:#bdc3c7;">
+                <input type="text" id="itemNotesIn" placeholder="📝 Optional note for this item (prints on document)..." style="font-size:12px; padding:8px 11px; background:var(--hp-surface-alt); border:1px dashed var(--hp-border); color:var(--hp-ink-muted); box-shadow:none;">
             </div>
             <!-- v79: live cart-wide stock shortfall warning -->
             <div id="cartStockWarning" class="duplicate-warn-banner" style="display:none;"></div>
@@ -3005,8 +3069,8 @@
                  directly so the balance genuinely goes to zero, rather than
                  a payment receipt trick that would leave the amount showing
                  as outstanding in every report. Leave blank for no discount. -->
-            <div id="discountBox" style="background:#f9ebea; border:1px solid #e74c3c; padding:12px 15px; border-radius:6px; margin-top:12px; display:none;">
-                <label style="color:#c0392b; margin-top:0; font-size:11px;">✂️ Discount / Round-Off (₹)</label>
+            <div id="discountBox" style="background:var(--hp-danger-tint); border:none; padding:12px 15px; border-radius:var(--hp-radius-sm); margin-top:12px; display:none;">
+                <label style="color:var(--hp-danger-ink); margin-top:0; font-size:11px;">✂️ Discount / Round-Off (₹)</label>
                 <div style="display:flex; gap:10px; align-items:center; margin-top:4px;">
                     <input type="number" id="discountAmt" placeholder="e.g. 30 or 130" min="0" onkeyup="renderTable()" style="flex:1;">
                     <input type="text" id="discountLabel_in" placeholder="Label (optional)" onkeyup="renderTable()" style="flex:2; font-size:13px;">
@@ -3014,14 +3078,14 @@
                 <div style="font-size:10px; color:#888; margin-top:4px;">Leave blank = no discount. Subtracted from grand total before amount-in-words.</div>
             </div>
 
-            <div id="advAdjustBox" style="background:#c0392b; padding:15px; border-radius:6px; margin-top:15px; display:none;">
-                <label style="color:#fff; margin-top:0;">🔗 Link Advance Receipts</label>
+            <div id="advAdjustBox" style="background:var(--hp-danger-tint); padding:15px; border-radius:var(--hp-radius-sm); margin-top:12px; display:none;">
+                <label style="color:var(--hp-danger-ink); margin-top:0;">🔗 Link Advance Receipts</label>
                 <table class="adv-link-table" id="advLinkTable">
                     <thead><tr><th style="width:45%">Receipt No.</th><th style="width:35%">Amount (₹)</th><th style="width:20%"></th></tr></thead>
                     <tbody id="advLinkBody"></tbody>
                 </table>
                 <button class="btn-adv-add-row" onclick="addAdvLinkRow()" style="margin-top:8px;">+ Add Another Receipt</button>
-                <div style="margin-top:8px; padding:8px 10px; background:rgba(0,0,0,0.2); border-radius:4px; font-size:13px; color:#fff;">
+                <div style="margin-top:8px; padding:8px 10px; background:var(--hp-surface); border-radius:6px; font-size:13px; color:var(--hp-danger-ink); font-weight:700;">
                     Total Linked: <b id="advLinkTotal">₹0</b> &nbsp;|&nbsp; Balance: <b id="advLinkBalance">₹0</b>
                 </div>
             </div>
@@ -3035,13 +3099,13 @@
             <div id="advDirectBox" style="display:none;">
                 <div class="adv-amount-box">
                     <label id="advAmtLabel">💰 Advance Amount Received (₹)</label>
-                    <input type="number" id="advDirectAmt" placeholder="e.g. 14000" onkeyup="renderTable(); updateAdvPrint();" style="font-size:18px; font-weight:bold; color:#f39c12; background:#1a252f; border:2px solid #f39c12; margin-top:6px;">
+                    <input type="number" id="advDirectAmt" placeholder="e.g. 14000" onkeyup="renderTable(); updateAdvPrint();" style="font-size:18px; font-weight:bold; color:var(--hp-amber-ink); background:var(--hp-surface); border:none; box-shadow:inset 0 0 0 2px var(--hp-amber); margin-top:6px;">
                 </div>
-                <div style="background:#1a252f; padding:12px 15px; border-radius:6px; margin-top:10px; border:1px solid #465c71;">
-                    <label style="color:#3498db; margin-top:0;">📝 Purpose / Description</label>
+                <div style="background:var(--hp-surface-alt); padding:12px 15px; border-radius:var(--hp-radius-sm); margin-top:10px; border:none;">
+                    <label style="color:var(--hp-blue-ink); margin-top:0;">📝 Purpose / Description</label>
                     <input type="text" id="advDirectDesc" placeholder="e.g. Advance for Block Supply — Mani Site" onkeyup="updateAdvPrint()" style="margin-top:5px;">
                     <div id="advQuoLinkSection">
-                        <label style="color:#8e44ad; margin-top:10px;">🔗 Link to Quotation (Optional)</label>
+                        <label style="color:var(--hp-purple-ink); margin-top:10px;">🔗 Link to Quotation (Optional)</label>
                         <div style="display:flex; gap:8px; margin-top:5px; position:relative;">
                             <div style="flex:1.5; position:relative;">
                                 <input type="text" id="advQuoRef" placeholder="Search quotation no..." autocomplete="off"
@@ -3053,7 +3117,7 @@
                         </div>
                     </div>
                     <div id="rcpInvoiceRefSection" style="display:none;">
-                        <label style="color:#1a5276; margin-top:10px;">🧾 Against Invoice (Optional — for your reference only, not linked)</label>
+                        <label style="color:var(--hp-blue-ink); margin-top:10px;">🧾 Against Invoice (Optional — for your reference only, not linked)</label>
                         <div style="position:relative;">
                             <input type="text" id="rcpInvoiceRef" placeholder="Search invoice no. or client..." autocomplete="off"
                                 oninput="handleRcpInvoiceRefSearch(); updateAdvPrint();" onfocus="handleRcpInvoiceRefSearch()"
@@ -3063,8 +3127,8 @@
                         </div>
                     </div>
                 </div>
-                <div style="background:#1abc9c; padding:15px; border-radius:6px; margin-top:10px;">
-                    <label style="color:#fff; margin-top:0;">💳 Payment Method</label>
+                <div style="background:var(--hp-mint-tint); padding:15px; border-radius:var(--hp-radius-sm); margin-top:10px;">
+                    <label style="color:var(--hp-mint-ink); margin-top:0;">💳 Payment Method</label>
                     <select id="advPayMode" onchange="toggleAdvPayFields(); updateAdvPrint();" style="margin-top:5px;">
                         <option value="">Select Method...</option>
                         <option value="Cash">Cash</option>
@@ -3078,8 +3142,8 @@
                 </div>
             </div>
 
-            <div id="paymentLogBox" style="background: #1abc9c; padding: 15px; border-radius: 6px; margin-top: 20px;">
-                <label style="color: #fff; margin-top: 0;">Log Payment (Internal Record)</label>
+            <div id="paymentLogBox" style="background: var(--hp-mint-tint); padding: 15px; border-radius: var(--hp-radius-sm); margin-top: 16px;">
+                <label style="color: var(--hp-mint-ink); margin-top: 0;">Log Payment (Internal Record)</label>
                 <select id="salesPayMode" onchange="toggleSalesPayFields(); renderTable();">
                     <option value="">Select Method...</option>
                     <option value="Cash">Cash</option>
@@ -3099,8 +3163,8 @@
             </div>
             <label>Towards (Description)</label><input type="text" id="vDesc" onkeyup="updateInfo()">
             <!-- F4-fix: RCM GST Rate Selector -->
-            <div id="rcmGstBox" style="display:none; background:#34495e; padding:10px; border-radius:4px; margin-top:10px; border:1px solid #e67e22;">
-                <label style="color:#e67e22; margin-top:0; text-transform:none;">RCM Tax Liability</label>
+            <div id="rcmGstBox" style="display:none; background:var(--hp-amber-tint); padding:10px 13px; border-radius:var(--hp-radius-sm); margin-top:10px; border:none;">
+                <label style="color:var(--hp-amber-ink); margin-top:0; text-transform:none;">RCM Tax Liability</label>
                 <div style="display:flex; gap:10px; margin-top:5px;">
                     <div style="flex:1;">
                         <select id="rcmGstRate" onchange="updateInfo()" style="margin-top:0;">
@@ -3110,12 +3174,12 @@
                             <option value="18">18% GST (Services)</option>
                         </select>
                     </div>
-                    <div style="flex:1; display:flex; align-items:center; padding:10px; background:#1a252f; border-radius:4px; font-size:13px; color:#f1c40f; font-weight:bold;" id="rcmTaxDisplay">RCM Tax: ₹0.00</div>
+                    <div style="flex:1; display:flex; align-items:center; padding:10px; background:var(--hp-surface); border-radius:var(--hp-radius-sm); font-size:13px; color:var(--hp-amber-ink); font-weight:bold;" id="rcmTaxDisplay">RCM Tax: ₹0.00</div>
                 </div>
             </div>
             <!-- F7: Credit Note reference field -->
-            <div id="crnRefBox" style="display:none; background:#34495e; padding:10px; border-radius:4px; margin-top:10px; border:1px solid #e74c3c;">
-                <label style="color:#e74c3c; margin-top:0; text-transform:none;">↩️ Credit Note — Original Invoice Reference</label>
+            <div id="crnRefBox" style="display:none; background:var(--hp-danger-tint); padding:10px 13px; border-radius:var(--hp-radius-sm); margin-top:10px; border:none;">
+                <label style="color:var(--hp-danger-ink); margin-top:0; text-transform:none;">↩️ Credit Note — Original Invoice Reference</label>
                 <div style="position:relative;">
                     <input type="text" id="crnOrigRef" placeholder="Search invoice no. or client..." autocomplete="off"
                         oninput="handleCrnOrigRefSearch(); updateInfo();" onfocus="handleCrnOrigRefSearch()"
@@ -6002,7 +6066,12 @@
     // This is what the version badge displays and what checkForAppUpdate()
     // compares against. Keeping this in sync is what makes the badge
     // trustworthy — if forgotten, the badge silently shows a stale number.
-    const APP_VERSION = "v95-beta2";
+    // Naming convention changed 2026-09-03: beta builds are now numbered on
+    // their own independent counter (vBeta1, vBeta2, ...) instead of being
+    // prefixed with a guessed future production version number (the old
+    // "v96-beta*" scheme) — that guess was never meaningful since beta
+    // doesn't necessarily become that exact production version.
+    const APP_VERSION = "vBeta4";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -7801,11 +7870,11 @@
         let retailBtn = document.getElementById('btnDeliveryRetail');
         let loadBtn = document.getElementById('btnDeliveryLoad');
         if (mode === 'Retail') {
-            retailBtn.style.background = '#3498db'; retailBtn.style.borderColor = '#3498db'; retailBtn.style.color = '#fff';
-            loadBtn.style.background = '#2c3e50'; loadBtn.style.borderColor = '#465c71'; loadBtn.style.color = '#aaa';
+            retailBtn.style.background = 'var(--hp-blue)'; retailBtn.style.borderColor = 'var(--hp-blue)'; retailBtn.style.color = '#fff';
+            loadBtn.style.background = 'var(--hp-surface-alt-strong)'; loadBtn.style.borderColor = 'transparent'; loadBtn.style.color = 'var(--hp-ink-muted)';
         } else {
-            loadBtn.style.background = '#e67e22'; loadBtn.style.borderColor = '#e67e22'; loadBtn.style.color = '#fff';
-            retailBtn.style.background = '#2c3e50'; retailBtn.style.borderColor = '#465c71'; retailBtn.style.color = '#aaa';
+            loadBtn.style.background = 'var(--hp-blue)'; loadBtn.style.borderColor = 'var(--hp-blue)'; loadBtn.style.color = '#fff';
+            retailBtn.style.background = 'var(--hp-surface-alt-strong)'; retailBtn.style.borderColor = 'transparent'; retailBtn.style.color = 'var(--hp-ink-muted)';
         }
         triggerRateAutoFill(); // refresh the suggested rate immediately for whatever's currently selected
     }
@@ -7830,9 +7899,9 @@
         currentBlockSize = size;
         document.querySelectorAll('.size-grid-btn').forEach(btn => {
             let isActive = parseInt(btn.dataset.size, 10) === size;
-            btn.style.background = isActive ? '#3498db' : '#2c3e50';
-            btn.style.borderColor = isActive ? '#3498db' : '#465c71';
-            btn.style.color = isActive ? '#fff' : '#aaa';
+            btn.style.background = isActive ? 'var(--hp-purple)' : 'var(--hp-surface)';
+            btn.style.borderColor = isActive ? 'var(--hp-purple)' : 'var(--hp-border)';
+            btn.style.color = isActive ? '#fff' : 'var(--hp-ink-muted)';
         });
         applyBlockPickerSelection();
     }
@@ -8195,6 +8264,29 @@
         body.style.display = collapsed ? 'block' : 'none';
         btn.innerText = collapsed ? '▾' : '▸';
     }
+
+    // VISTA 4 (2026-09-03): Reports & Tools collapse — same mechanic as
+    // toggleBlocksCalcCollapse() above, but this one defaults OPEN (these 15
+    // buttons are core daily navigation) and remembers the user's last choice
+    // via localStorage, since forcing an extra tap on every page load would
+    // cost more than the scroll space it saves for a section people open
+    // constantly. restoreAnalyticsSectionState() runs once on page load.
+    function toggleAnalyticsSection() {
+        let section = document.getElementById('analyticsSection');
+        let isOpen = section.classList.toggle('open');
+        try { localStorage.setItem('ken_analyticsSectionOpen', isOpen ? '1' : '0'); } catch(e) {}
+    }
+    function restoreAnalyticsSectionState() {
+        let section = document.getElementById('analyticsSection');
+        if (!section) return;
+        let saved = null;
+        try { saved = localStorage.getItem('ken_analyticsSectionOpen'); } catch(e) {}
+        if (saved === '0') section.classList.remove('open');
+        else section.classList.add('open'); // default OPEN — includes saved === '1' and first-ever load
+    }
+    // Script sits at the very end of <body>, so the DOM (including
+    // #analyticsSection) already exists — no need to wait for an onload event.
+    restoreAnalyticsSectionState();
 
     // ---------- DRAFT PERSISTENCE ----------
     // Deliberately a plain localStorage read/write, NOT routed through
@@ -8640,9 +8732,9 @@
     function selectTier(tier) {
         document.querySelectorAll('.tier-bar-btn').forEach(btn => {
             let isActive = btn.dataset.tier === tier;
-            btn.style.background = isActive ? '#e67e22' : '#2c3e50';
-            btn.style.border = isActive ? '2px solid #e67e22' : '2px solid #465c71';
-            btn.style.color = isActive ? '#fff' : '#aaa';
+            btn.style.background = isActive ? 'var(--hp-ink)' : 'var(--hp-surface)';
+            btn.style.border = isActive ? '2px solid var(--hp-ink)' : '2px solid var(--hp-border)';
+            btn.style.color = isActive ? '#fff' : 'var(--hp-ink-muted)';
         });
         document.getElementById('tierBarActive').value = tier;
         let legacySel = document.getElementById('globalTierSelect');
