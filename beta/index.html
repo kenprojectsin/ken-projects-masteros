@@ -264,12 +264,21 @@
            Blocks Calculator below it. Defaults to OPEN (these 15 buttons are
            core daily navigation, unlike the Blocks Calculator trial feature),
            but remembers the user's last choice via localStorage. */
+        /* vBeta5 F2: generalized from analytics-only selectors so any
+           collapsible section (Reports & Tools, Blocks Calculator, and
+           any future one) shares one visual/behavioral treatment instead
+           of each hand-rolling its own header, chevron and show/hide
+           logic — which is what produced the mismatched heights, fonts
+           and arrow glyphs between Reports & Tools and Blocks Calculator
+           in vBeta4. #analyticsSectionBody kept as an alias of the new
+           .analytics-section-body class so nothing else that may
+           reference that ID elsewhere breaks. */
         .analytics-section { background: var(--hp-surface-alt); border-radius: var(--hp-radius-md, 16px); padding: 12px 14px; margin-bottom: 10px; border: none; }
         .analytics-section-title { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 800; text-transform: none; letter-spacing: 0; color: var(--hp-ink); margin-bottom: 0; padding-left: 2px; cursor: pointer; }
         .analytics-section-chevron { color: var(--hp-ink-muted); font-size: 15px; transition: transform 0.18s ease; }
         .analytics-section.open .analytics-section-chevron { transform: rotate(90deg); }
-        #analyticsSectionBody { display: none; margin-top: 10px; }
-        .analytics-section.open #analyticsSectionBody { display: block; }
+        .analytics-section-body, #analyticsSectionBody { display: none; margin-top: 10px; }
+        .analytics-section.open .analytics-section-body, .analytics-section.open #analyticsSectionBody { display: block; }
         .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
         .analytics-grid-btn {
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
@@ -280,7 +289,16 @@
             box-shadow: 0 1px 2px rgba(28,28,39,0.05);
         }
         .analytics-grid-btn:hover { background: var(--hp-surface-alt-strong); filter: none; }
-        .analytics-grid-btn .ag-icon { font-size: 18px; line-height: 1; }
+        /* vBeta5 F1: was font-size:18px on a raw emoji glyph. Now a small
+           tinted circle (one shared color for every icon, per request)
+           with an inline-SVG line icon inside, set via data-vicon + JS —
+           see VISTA_GRID_ICONS / renderVistaGridIcons(). */
+        .analytics-grid-btn .ag-icon {
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--hp-blue-tint); flex-shrink: 0;
+        }
+        .analytics-grid-btn .ag-icon svg { width: 17px; height: 17px; color: var(--hp-blue-ink); }
 
         /* ============================================================
            v73a/v74c TRIAL — Blocks Calculator
@@ -817,9 +835,62 @@
 
         .inline-ux-modal { max-width: 450px; background: #fff; padding: 20px; border-radius: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
 
-        .engine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; align-items: end; }
+        /* vBeta5 F4 FIX: was align-items:end. That aligns each grid CELL
+           (label+input+any helper text) to the row's bottom edge as one
+           block. Once v72 moved the "Unused unless..." caveat out of the
+           Wholesale label into a helper line under its input, that cell
+           became taller than the Retail Premium cell next to it — so
+           align-items:end pushed the whole shorter cell (label included)
+           down to match, misaligning the LABELS instead of fixing the
+           inputs (visible in the vBeta4 screenshot: Retail Premium's
+           label sits lower than Wholesale's). Both labels are one line
+           each now, so align-items:start (top-align) naturally lines up
+           both inputs at the same baseline, and the Wholesale helper
+           text just extends harmlessly below without affecting Retail
+           Premium's column at all. */
+        .engine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; align-items: start; }
         .engine-grid label { color: #333; font-size: 12px; margin-top: 0; }
         .engine-grid input { background: #f4f6f7; color: #2c3e50; border: 1px solid #bdc3c7; margin-top: 5px; font-weight: bold; }
+
+        /* vBeta5 F3: Pricing & Item Manager modal wasn't part of the Vista
+           token migration yet (still plain hardcoded colors throughout).
+           Scoped local alias, same pattern as .editor-box/#tonnageModal,
+           applied only to the pieces of this modal being touched in this
+           pass (the brand chip row + compact tier table, and the
+           engine-grid boxes right above) — not a full modal reskin, so
+           the Brands/Item Defaults/Add New Product tabs are untouched and
+           carry zero risk from this change. */
+        #pricingModal {
+            --pm-ink: var(--vista-ink); --pm-ink-muted: var(--vista-ink-muted);
+            --pm-surface: var(--vista-surface); --pm-surface-alt: var(--vista-surface-alt);
+            --pm-border: var(--vista-border);
+            --pm-blue: var(--vista-blue); --pm-blue-tint: var(--vista-blue-tint); --pm-blue-ink: var(--vista-blue-ink);
+            --pm-radius-sm: var(--vista-radius-sm);
+        }
+        .brand-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+        .brand-chip {
+            padding: 7px 14px; border-radius: 999px; margin: 0; width: auto;
+            border: 1.5px solid var(--pm-border, #ddd); background: var(--pm-surface, #fff);
+            color: var(--pm-ink, #333); font-size: 12px; font-weight: 700; cursor: pointer;
+        }
+        .brand-chip.active { background: var(--pm-ink, #1C1C27); border-color: var(--pm-ink, #1C1C27); color: #fff; }
+        .btg-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        /* explicit background needed: a global bare "th { background:
+           #2c3e50; color: white; }" rule (for the invoice/quotation
+           preview table) otherwise wins on this property alone, since
+           this class rule never contested it — table headers were
+           rendering with a dark navy background here even though the
+           (higher-specificity, correctly-overridden) text color was
+           already the intended muted gray. */
+        .btg-table th { text-align: left; padding: 6px 8px; border-bottom: 2px solid var(--pm-border, #ddd); border-left: none; border-right: none; font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--pm-ink-muted, #7f8c8d); background: var(--pm-surface, #fff); }
+        .btg-table th:last-child, .btg-table td:last-child { text-align: right; }
+        .btg-tier-cell { padding: 10px 8px; font-weight: 700; font-size: 13px; border-bottom: 1px solid var(--pm-border, #eee); color: var(--pm-ink, #2c3e50); }
+        .btg-rate-cell { padding: 6px 8px; border-bottom: 1px solid var(--pm-border, #eee); text-align: right; }
+        .btg-rate-cell input {
+            width: 96px; text-align: center; padding: 9px 4px; font-size: 14px; font-weight: bold;
+            border-radius: var(--pm-radius-sm, 6px); border: 1px solid var(--pm-border, #bdc3c7);
+            background: var(--pm-surface-alt, #f4f6f7); color: var(--pm-ink, #2c3e50);
+        }
 
         /* --- PDF GENERATION ENGINE OVERRIDES --- */
         /* Locks the container to exactly A4 dimensions for perfect scaling */
@@ -1213,7 +1284,14 @@
                continuing to rely on fragile positional selectors, which
                is what produced this bug and the one just below it in the
                first place. */
-            #docNoDateRow { flex-direction: column !important; gap: 8px !important; }
+            /* vBeta5 F5: was flex-direction:column (force full stack).
+               Doc No. and Date now pair on one line per request — their
+               inline flex ratio (1.6/1) plus flex-wrap on the row (added
+               directly on #docNoDateRow below) already handles an
+               unusually narrow screen gracefully, so no forced stacking
+               is needed here any more. */
+            #docNoDateRow { flex-wrap: wrap !important; gap: 8px !important; }
+            #docNoDateRow > div { min-width: 130px; }
 
             /* v71 CRITICAL FIX: this said "Client Name / Location / Phone —
                3 columns stacks to 1" but targeted nth-child(2), which is
@@ -1231,7 +1309,11 @@
                the Doc No/Date row fix right above this one had to be
                reasoned through independently since #salesInputs' child
                order isn't obvious from the CSS alone. */
-            #salesInputs > div:first-child { flex-direction: column !important; gap: 8px !important; }
+            /* vBeta5 F5: this used to hit a single 4-column row (Title/
+               Client Name/Billing Location/Contact No.) — now split into
+               #titleClientRow + #billingContactRow (see markup), each
+               already a 2-up row with its own flex-wrap safety net, so
+               the old forced full-stack override is no longer needed. */
 
             /* GSTIN / Vehicle / E-Way — 3 columns stacks to 1 */
             #dispatchSettingsBox > div:first-child { flex-direction: column !important; gap: 8px !important; }
@@ -1264,7 +1346,7 @@
             /* --- ANALYTICS GRID --- */
             .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
             .analytics-grid-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
-            .analytics-grid-btn .ag-icon { font-size: 18px; }
+            .analytics-grid-btn .ag-icon { width: 28px; height: 28px; } .analytics-grid-btn .ag-icon svg { width: 15px; height: 15px; }
             .analytics-section { padding: 10px; }
 
             /* --- BOTTOM ACTION BAR --- */
@@ -1464,8 +1546,9 @@
         }
         body.force-mobile-main .editor-box input::placeholder { font-size: 14px; }
 
-        body.force-mobile-main #docNoDateRow { flex-direction: column !important; gap: 8px !important; }
-        body.force-mobile-main #salesInputs > div:first-child { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #docNoDateRow { flex-wrap: wrap !important; gap: 8px !important; }
+        body.force-mobile-main #docNoDateRow > div { min-width: 130px; }
+        /* vBeta5 F5: superseded by #titleClientRow/#billingContactRow's own inline flex-wrap — see the non-force-mobile block above for the full explanation. */
         body.force-mobile-main #dispatchSettingsBox > div:first-child { flex-direction: column !important; gap: 8px !important; }
         body.force-mobile-main #dispatchSettingsBox > div:nth-child(2) { flex-direction: column !important; gap: 8px !important; }
         body.force-mobile-main #salesInputs .add-product-row { flex-wrap: wrap !important; }
@@ -1484,7 +1567,7 @@
 
         body.force-mobile-main .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
         body.force-mobile-main .analytics-grid-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
-        body.force-mobile-main .analytics-grid-btn .ag-icon { font-size: 18px; }
+        body.force-mobile-main .analytics-grid-btn .ag-icon { width: 28px; height: 28px; } .analytics-grid-btn .ag-icon svg { width: 15px; height: 15px; }
         body.force-mobile-main .analytics-section { padding: 10px; }
 
         body.force-mobile-main .action-bar {
@@ -1641,8 +1724,9 @@
                 font-size: 15px; 
                 border-radius: 6px; }
         body.force-mobile-main input::placeholder { font-size: 14px; }
-        body.force-mobile-main #docNoDateRow { flex-direction: column !important; gap: 8px !important; }
-        body.force-mobile-main #salesInputs > div:first-child { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #docNoDateRow { flex-wrap: wrap !important; gap: 8px !important; }
+        body.force-mobile-main #docNoDateRow > div { min-width: 130px; }
+        /* vBeta5 F5: superseded by #titleClientRow/#billingContactRow's own inline flex-wrap — see the non-force-mobile block above for the full explanation. */
         body.force-mobile-main #dispatchSettingsBox > div:first-child { flex-direction: column !important; gap: 8px !important; }
         body.force-mobile-main #dispatchSettingsBox > div:nth-child(2) { flex-direction: column !important; gap: 8px !important; }
         body.force-mobile-main #salesInputs .add-product-row { flex-wrap: wrap !important; }
@@ -1659,7 +1743,7 @@
         body.force-mobile-main .action-trio-btn .trio-icon { font-size: 18px; }
         body.force-mobile-main .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
         body.force-mobile-main .analytics-grid-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
-        body.force-mobile-main .analytics-grid-btn .ag-icon { font-size: 18px; }
+        body.force-mobile-main .analytics-grid-btn .ag-icon { width: 28px; height: 28px; } .analytics-grid-btn .ag-icon svg { width: 15px; height: 15px; }
         body.force-mobile-main .analytics-section { padding: 10px; }
         body.force-mobile-main .action-bar { bottom: 0; left: 0; width: 100%;
                 border-radius: 0;
@@ -2518,7 +2602,7 @@
              Tap to force-check for updates. Update this string (and the
              matching APP_VERSION const in the script block) on every release. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:rgba(255,255,255,0.35); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta4</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta5</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- v73a: passive unsynced warning. Hidden by default and only
@@ -2573,19 +2657,19 @@
             <div class="analytics-section-title" onclick="toggleAnalyticsSection()"><span>📊 Reports &amp; Tools</span><span class="analytics-section-chevron" id="analyticsSectionChevron">›</span></div>
             <div id="analyticsSectionBody">
             <div class="analytics-grid">
-                <button id="btnAnalyticsLedger" class="analytics-grid-btn" onclick="openLedger()"><span class="ag-icon">👤</span><span>Ledger</span></button>
-                <button id="btnAnalyticsOutstanding" class="analytics-grid-btn" onclick="openOutstanding()"><span class="ag-icon">⏰</span><span>Outstanding</span></button>
-                <button id="btnAnalyticsSummary" class="analytics-grid-btn" onclick="openMonthlySummary()"><span class="ag-icon">📊</span><span>Summary</span></button>
-                <button id="btnAnalyticsAudit" class="analytics-grid-btn" onclick="openAuditorExport()"><span class="ag-icon">📋</span><span>Audit</span></button>
-                <button id="btnAnalyticsCashBook" class="analytics-grid-btn" onclick="openCashBook()"><span class="ag-icon">💵</span><span>Cash Book</span></button>
-                <button id="btnAnalyticsStock" class="analytics-grid-btn" onclick="openStockManager()"><span class="ag-icon">📦</span><span>Stock</span></button>
-                <button id="btnAnalyticsSyncHealth" class="analytics-grid-btn" onclick="openSyncHealth()"><span class="ag-icon">🛟</span><span>Data &amp; Sync</span></button>
-                <button id="btnAnalyticsAdvPool" class="analytics-grid-btn" onclick="openUnregisteredAdvancePoolSearch()"><span class="ag-icon">💰</span><span>Advance Pool</span></button>
-                <button id="btnAnalyticsTrips" class="analytics-grid-btn" onclick="openTrips()"><span class="ag-icon">🚚</span><span>Trips</span></button>
-                <button id="btnAnalyticsClients" class="analytics-grid-btn" onclick="openClientList()"><span class="ag-icon">📇</span><span>Clients</span></button>
-                <button id="btnAnalyticsSites" class="analytics-grid-btn" onclick="openSitesManager()"><span class="ag-icon">📍</span><span>Sites</span></button>
-                <button id="btnAnalyticsBrandAssets" class="analytics-grid-btn" onclick="openBrandAssets()"><span class="ag-icon">🎨</span><span>Brand Assets</span></button>
-                <button id="btnAnalyticsAllProjects" class="analytics-grid-btn" onclick="openAllProjectsOverview()"><span class="ag-icon">📊</span><span>All Projects</span></button>
+                <button id="btnAnalyticsLedger" class="analytics-grid-btn" onclick="openLedger()"><span class="ag-icon" data-vicon="ledger"></span><span>Ledger</span></button>
+                <button id="btnAnalyticsOutstanding" class="analytics-grid-btn" onclick="openOutstanding()"><span class="ag-icon" data-vicon="outstanding"></span><span>Outstanding</span></button>
+                <button id="btnAnalyticsSummary" class="analytics-grid-btn" onclick="openMonthlySummary()"><span class="ag-icon" data-vicon="summary"></span><span>Summary</span></button>
+                <button id="btnAnalyticsAudit" class="analytics-grid-btn" onclick="openAuditorExport()"><span class="ag-icon" data-vicon="audit"></span><span>Audit</span></button>
+                <button id="btnAnalyticsCashBook" class="analytics-grid-btn" onclick="openCashBook()"><span class="ag-icon" data-vicon="cashbook"></span><span>Cash Book</span></button>
+                <button id="btnAnalyticsStock" class="analytics-grid-btn" onclick="openStockManager()"><span class="ag-icon" data-vicon="stock"></span><span>Stock</span></button>
+                <button id="btnAnalyticsSyncHealth" class="analytics-grid-btn" onclick="openSyncHealth()"><span class="ag-icon" data-vicon="sync"></span><span>Data &amp; Sync</span></button>
+                <button id="btnAnalyticsAdvPool" class="analytics-grid-btn" onclick="openUnregisteredAdvancePoolSearch()"><span class="ag-icon" data-vicon="advpool"></span><span>Advance Pool</span></button>
+                <button id="btnAnalyticsTrips" class="analytics-grid-btn" onclick="openTrips()"><span class="ag-icon" data-vicon="trips"></span><span>Trips</span></button>
+                <button id="btnAnalyticsClients" class="analytics-grid-btn" onclick="openClientList()"><span class="ag-icon" data-vicon="clients"></span><span>Clients</span></button>
+                <button id="btnAnalyticsSites" class="analytics-grid-btn" onclick="openSitesManager()"><span class="ag-icon" data-vicon="sites"></span><span>Sites</span></button>
+                <button id="btnAnalyticsBrandAssets" class="analytics-grid-btn" onclick="openBrandAssets()"><span class="ag-icon" data-vicon="brand"></span><span>Brand Assets</span></button>
+                <button id="btnAnalyticsAllProjects" class="analytics-grid-btn" onclick="openAllProjectsOverview()"><span class="ag-icon" data-vicon="allprojects"></span><span>All Projects</span></button>
                 <!-- v68: Search Everything disabled per request — not working
                      right now and not currently needed. Kept commented out,
                      not deleted, so it can be re-enabled later. Removing this
@@ -2601,8 +2685,8 @@
                 <!-- v82: Audit Lock moved into the Audit modal as its own tab
                      (switchAuditTab('lock')) — this slot now opens the
                      Tonnage & Load Balancer calculator instead. -->
-                <button id="btnAnalyticsTonnage" class="analytics-grid-btn" onclick="openTonnageCalc()"><span class="ag-icon">⚖️</span><span>Tonnage</span></button>
-                <button id="btnAnalyticsProjects" class="analytics-grid-btn" onclick="openContracts()"><span class="ag-icon">📋</span><span>Letterpad</span></button>
+                <button id="btnAnalyticsTonnage" class="analytics-grid-btn" onclick="openTonnageCalc()"><span class="ag-icon" data-vicon="tonnage"></span><span>Tonnage</span></button>
+                <button id="btnAnalyticsProjects" class="analytics-grid-btn" onclick="openContracts()"><span class="ag-icon" data-vicon="letterpad"></span><span>Letterpad</span></button>
             </div>
             <!-- Improvement #1: full data backup/export — deliberately understated
                  (text link, not a button) since this is a safety-net action rather
@@ -2634,15 +2718,18 @@
              selectBlockSize()/qtyInput path a human tap would use. Deleting
              this whole block (HTML here + the paired JS block + CSS block)
              fully removes the feature with zero side effects on v73. -->
-        <div id="blocksCalcSection" style="background:var(--hp-surface-alt); border:none; border-radius:var(--hp-radius-md,16px); padding:13px 15px; margin-bottom:10px;">
+        <!-- vBeta5 F2: now shares the exact analytics-section/-title/-chevron
+             classes Reports & Tools uses, instead of its own one-off inline
+             styles — same header height/font-weight, same rotating "›"
+             chevron instead of the old ▸/▾ text-swap. See
+             toggleBlocksCalcCollapse() for the matching JS-side unification
+             (open class + CSS display, mirroring toggleAnalyticsSection()). -->
+        <div class="analytics-section" id="blocksCalcSection">
             <!-- v74c: the ENTIRE header row is now the tap target (not just
                  the small chevron) — tap anywhere across the title/badge/
                  chevron to expand or collapse. -->
-            <div onclick="toggleBlocksCalcCollapse()" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; cursor:pointer;">
-                <div style="font-weight:800; color:var(--hp-ink); font-size:13px; letter-spacing:0.02em;">🧱 Blocks Calculator</div>
-                <span id="btnBlocksCalcCollapse" style="color:var(--hp-ink-muted); font-size:18px; padding:2px 8px;">▸</span>
-            </div>
-            <div id="blocksCalcBody" style="display:none;">
+            <div class="analytics-section-title" onclick="toggleBlocksCalcCollapse()"><span>🧱 Blocks Calculator</span><span class="analytics-section-chevron" id="btnBlocksCalcCollapse">›</span></div>
+            <div class="analytics-section-body" id="blocksCalcBody">
                 <div style="font-size:11px; color:#7f8c8d; margin-bottom:10px;">Quick rough estimate.</div>
 
                 <div id="blocksCalcRows"></div>
@@ -2826,9 +2913,23 @@
         </div>
 
         <div id="salesInputs">
-            <div style="display:flex; gap:10px;">
+            <!-- vBeta5 F5: previously one 4-column row (Title/Client Name/
+                 Billing Location/Contact No.), forced to fully stack on
+                 mobile via "#salesInputs > div:first-child { flex-direction:
+                 column !important }" (v71) because 4 columns squeezed onto
+                 one phone-width line collided. Split into two explicit
+                 2-up rows instead — Title+Client Name, then Billing
+                 Location+Contact No. — each narrow enough to sit side by
+                 side on a real phone without the old collision, cutting
+                 two stacked-field rows' worth of vertical space. Both new
+                 rows keep the same flex ratios (0.6/1.5 and 1.5/1) used on
+                 desktop, plus flex-wrap so an unusually narrow device
+                 still wraps gracefully instead of overflowing — see the
+                 v76 "MOBILE LAYOUT SAFETY NET" comment on why nothing here
+                 forces a rigid alignment. -->
+            <div id="titleClientRow" style="display:flex; gap:10px; flex-wrap:wrap;">
                 <!-- A7: Title selector — empty/blank is the default and always available -->
-                <div style="flex:0.6;">
+                <div style="flex:0.6; min-width:76px;">
                     <label>Title</label>
                     <select id="clientTitleIn" onchange="updateInfo()">
                         <option value="">—</option>
@@ -2838,14 +2939,14 @@
                         <option value="M/s">M/s</option>
                         <option value="Ms.">Ms.</option>
                         <option value="Dr.">Dr.</option>
-                        
+
                     </select>
                 </div>
                 <!-- A7: Client Name — custom live-suggestion autocomplete replaces the
                      native <datalist> dropdown (which forces an arrow icon and doesn't
                      scale past a handful of entries). Matches by name substring OR by
                      client ID number (typing "22" surfaces C22, C220, etc.) -->
-                <div style="flex:1.5; position:relative;">
+                <div style="flex:1.5; min-width:140px; position:relative;">
                     <label>Client Name</label>
                     <input type="text" id="clientNameIn" autocomplete="off" onkeyup="updateInfo(); handleClientAutofill(); updateMakeRepeatClientVisibility();" onkeydown="handleClientSuggestionKeydown(event)" onchange="handleClientShortcut(); updateMakeRepeatClientVisibility(); try{renderClientCreditWarning(true);}catch(e){}" onblur="setTimeout(closeClientSuggestions, 150)">
                     <div id="clientSuggestionsBox" class="client-suggestions-box"></div>
@@ -2857,8 +2958,10 @@
                          whole history becomes visible under one ID at once. -->
                     <button id="btnMakeRepeatClient" onclick="makeRepeatClient()" style="display:none; margin-top:4px; background:var(--hp-amber); color:#fff; border:none; padding:6px 10px; border-radius:var(--hp-radius-sm); cursor:pointer; font-size:11px; font-weight:bold; width:auto;">⭐ Make Repeat Client</button>
                 </div>
-                <div style="flex:1.5;"><label>Billing Location</label><input type="text" id="locIn" value="Udumalpet" placeholder="e.g. Udumalpet" onkeyup="updateInfo()"></div>
-                <div style="flex:1;"><label>Contact No.</label><input type="text" id="phoneIn" onkeyup="updateInfo()"></div>
+            </div>
+            <div id="billingContactRow" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+                <div style="flex:1.5; min-width:140px;"><label>Billing Location</label><input type="text" id="locIn" value="Udumalpet" placeholder="e.g. Udumalpet" onkeyup="updateInfo()"></div>
+                <div style="flex:1; min-width:100px;"><label>Contact No.</label><input type="text" id="phoneIn" onkeyup="updateInfo()"></div>
             </div>
             <!-- F16: Returning client autofill suggestion -->
             <div id="clientAutofillBanner" class="client-autofill-banner" onclick="applyClientAutofill()">
@@ -2940,7 +3043,7 @@
                  price in cart" is explicitly turned on in Pricing settings
                  (off by default). -->
             <div style="display:flex; gap:8px; margin-bottom:10px;">
-                <button type="button" id="btnDeliveryRetail" onclick="setDeliveryMode('Retail')" style="flex:1; margin:0; padding:9px; font-size:13px; background:var(--hp-blue); border:2px solid var(--hp-blue); color:#fff; font-weight:bold; border-radius:var(--hp-radius-sm);">🏬 Retail</button>
+                <button type="button" id="btnDeliveryRetail" onclick="setDeliveryMode('Retail')" style="flex:1; margin:0; padding:9px; font-size:13px; background:var(--hp-ink); border:2px solid var(--hp-ink); color:#fff; font-weight:bold; border-radius:var(--hp-radius-sm);">🏬 Retail</button>
                 <button type="button" id="btnDeliveryLoad" onclick="setDeliveryMode('Wholesale')" style="flex:1; margin:0; padding:9px; font-size:13px; background:var(--hp-surface-alt-strong); border:2px solid transparent; color:var(--hp-ink-muted); font-weight:bold; border-radius:var(--hp-radius-sm);">🚛 Full Load</button>
             </div>
             
@@ -3704,33 +3807,24 @@
             <div style="color: #7f8c8d; font-size: 13px; margin-bottom: 15px;">
                 Set the per-inch rate for each tier, broken down by brand. Load vs Retail is chosen manually with the buttons next to Add Product — it's no longer guessed automatically from cart tonnage.
             </div>
-            <!-- v70: BRAND-AWARE TIER GRID — replaces the old flat 4-input
-                 layout (one number per tier, shared across every brand) with
-                 a table: one row per tier, one column per configured brand,
-                 plus a "No Brand" column for the fallback rate used when a
-                 block is added with brand left blank. Rendered dynamically
-                 by renderBrandTierGrid() since the brand list can grow at
-                 any time from the Brands tab — no code change needed to
-                 add a 6th, 7th, etc. brand. -->
-            <div id="brandTierGridWrap" style="overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -4px;">
-                <!-- v71 CRITICAL FIX: the table previously had width:100%,
-                     which forces the browser to compress every column to
-                     fit inside the viewport no matter how many brands
-                     exist — that's what was squeezing "Meghalite" into
-                     "MEGHA/LITE" across two lines and making each rate
-                     input (fixed at 70px) overflow its own compressed
-                     cell, producing the overlapping/misaligned look on
-                     mobile. overflow-x:auto on the wrapper was already
-                     correct but had nothing to actually scroll to, since
-                     the table itself was never allowed to be wider than
-                     the screen. Removing the 100% width lets the table
-                     size itself naturally (wide enough for every column
-                     to keep its real width) and the wrapper's horizontal
-                     scroll now does real work — swipe sideways to see
-                     more brands, exactly like the Document Manager's
-                     table already does elsewhere in the app. -->
-                <table id="brandTierGrid" style="border-collapse:collapse; font-size:12px; white-space:nowrap;"></table>
-            </div>
+            <!-- vBeta5 F3: v70/v71's approach was a table with one column
+                 per brand plus "No Brand" — fine for 2-3 brands, but grew
+                 wider than any phone screen with more, forcing the
+                 horizontal-scroll-on-a-data-table pattern that's genuinely
+                 hard to use on mobile (easy to miss that more columns
+                 exist, easy to lose your place while swiping). Replaced
+                 with a brand SELECTOR (chips) above a single compact
+                 Tier x Rate table for whichever brand is currently
+                 selected — brand becomes a filter, not a column, so the
+                 table is always exactly 2 columns and never needs to
+                 scroll, no matter how many brands get added later.
+                 selectBrandForGrid() commits the visible tier rates into
+                 pricingConfig.tiers before switching brands, so an
+                 in-progress edit is never lost when the table re-renders
+                 for the newly chosen brand. Entirely rendered by
+                 renderBrandTierGrid() — see that function for the chip
+                 row + table markup. -->
+            <div id="brandTierGridWrap"></div>
 
             <!-- LEGACY FLAT TIER INPUTS — v70: kept fully intact, not deleted,
                  purely for instant rollback. Hidden by default since the
@@ -6071,7 +6165,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta4";
+    const APP_VERSION = "vBeta5";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -7865,15 +7959,22 @@
     // effect on anything already in the cart.
     let currentDeliveryMode = 'Retail'; // 'Retail' or 'Wholesale' — defaults to Retail per the confirmed design
 
+    // vBeta5: was 'var(--hp-blue)' (#2AA7FF), a solid saturated fill that
+    // stood out louder than every other "selected" state in Vista — the
+    // active Customer/Engineer/Builder/Sub-Dealer pricing tier and the
+    // Document Type dropdown both use near-black (--hp-ink) for "this is
+    // selected", with --hp-blue reserved elsewhere as a lighter accent/
+    // tint, not a solid CTA-strength fill. Switched to --hp-ink so the
+    // Retail/Full Load toggle matches that established pattern.
     function setDeliveryMode(mode) {
         currentDeliveryMode = mode;
         let retailBtn = document.getElementById('btnDeliveryRetail');
         let loadBtn = document.getElementById('btnDeliveryLoad');
         if (mode === 'Retail') {
-            retailBtn.style.background = 'var(--hp-blue)'; retailBtn.style.borderColor = 'var(--hp-blue)'; retailBtn.style.color = '#fff';
+            retailBtn.style.background = 'var(--hp-ink)'; retailBtn.style.borderColor = 'var(--hp-ink)'; retailBtn.style.color = '#fff';
             loadBtn.style.background = 'var(--hp-surface-alt-strong)'; loadBtn.style.borderColor = 'transparent'; loadBtn.style.color = 'var(--hp-ink-muted)';
         } else {
-            loadBtn.style.background = 'var(--hp-blue)'; loadBtn.style.borderColor = 'var(--hp-blue)'; loadBtn.style.color = '#fff';
+            loadBtn.style.background = 'var(--hp-ink)'; loadBtn.style.borderColor = 'var(--hp-ink)'; loadBtn.style.color = '#fff';
             retailBtn.style.background = 'var(--hp-surface-alt-strong)'; retailBtn.style.borderColor = 'transparent'; retailBtn.style.color = 'var(--hp-ink-muted)';
         }
         triggerRateAutoFill(); // refresh the suggested rate immediately for whatever's currently selected
@@ -8257,12 +8358,13 @@
             </div>`;
     }
 
+    // vBeta5 F2: unified with toggleAnalyticsSection()'s mechanism — toggle
+    // an "open" class on the section, let CSS (.analytics-section.open
+    // .analytics-section-chevron / .analytics-section-body) handle both the
+    // chevron rotation and the show/hide, instead of this function
+    // separately flipping inline display + swapping ▾/▸ glyphs by hand.
     function toggleBlocksCalcCollapse() {
-        let body = document.getElementById('blocksCalcBody');
-        let btn = document.getElementById('btnBlocksCalcCollapse');
-        let collapsed = body.style.display === 'none';
-        body.style.display = collapsed ? 'block' : 'none';
-        btn.innerText = collapsed ? '▾' : '▸';
+        document.getElementById('blocksCalcSection').classList.toggle('open');
     }
 
     // VISTA 4 (2026-09-03): Reports & Tools collapse — same mechanic as
@@ -8287,6 +8389,44 @@
     // Script sits at the very end of <body>, so the DOM (including
     // #analyticsSection) already exists — no need to wait for an onload event.
     restoreAnalyticsSectionState();
+
+    // vBeta5 F1: Reports & Tools grid previously used raw emoji for its 15
+    // icons — each brings its own OS-dependent color/style, reading as
+    // visual noise rather than a designed set. Replaced with one cohesive
+    // set of inline-SVG line icons (Feather-style: 24x24 viewBox, round
+    // caps, currentColor stroke) sharing a single ink color and a single
+    // tinted circle background (--hp-blue-ink on --hp-blue-tint), defined
+    // here as plain strings rather than hand-edited into the markup 15
+    // times over — one source of truth, far less risk of a stray
+    // unclosed tag breaking the page. Markup side: each button's
+    // <span class="ag-icon" data-vicon="key"></span> gets its innerHTML
+    // set below, once, on load.
+    const VISTA_GRID_ICONS = {
+        ledger: '<path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/>',
+        outstanding: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>',
+        summary: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+        audit: '<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="8" y="3" width="8" height="4" rx="1"/><path d="m9 14 2 2 4-4"/>',
+        cashbook: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/>',
+        stock: '<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.73Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/>',
+        sync: '<path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+        advpool: '<circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M9.5 9.3c0-1.1 1.1-1.8 2.5-1.8s2.5.8 2.5 1.9-1.1 1.6-2.5 1.6-2.5.6-2.5 1.7 1.1 1.9 2.5 1.9 2.5-.7 2.5-1.8"/>',
+        trips: '<rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
+        clients: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+        sites: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/>',
+        brand: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>',
+        allprojects: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>',
+        tonnage: '<path d="M12 3v18"/><path d="M9 3h6"/><path d="M5 7h6M13 7h6"/><path d="M5 7l-3 7a3 3 0 0 0 6 0z"/><path d="M19 7l-3 7a3 3 0 0 0 6 0z"/>',
+        letterpad: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/>'
+    };
+    function renderVistaGridIcons() {
+        document.querySelectorAll('.ag-icon[data-vicon]').forEach(function(el) {
+            let key = el.getAttribute('data-vicon');
+            let paths = VISTA_GRID_ICONS[key];
+            if (!paths) return;
+            el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg>';
+        });
+    }
+    renderVistaGridIcons();
 
     // ---------- DRAFT PERSISTENCE ----------
     // Deliberately a plain localStorage read/write, NOT routed through
@@ -12094,38 +12234,65 @@
     // v70: BRAND MANAGEMENT — brand list + per-brand tier pricing grid.
     const TIER_NAMES = ["Customer", "Engineer", "Builder", "Sub-Dealer"];
 
-    // Renders the tier x brand rate table on the Block Tiers tab. One row
-    // per tier (fixed 4), one column per brand PLUS a leading "No Brand"
-    // column for the __default fallback rate. Rebuilt from scratch every
-    // time the modal opens or a brand is added/removed, since the column
-    // count itself changes with the brand list.
-    function renderBrandTierGrid() {
-        let table = document.getElementById('brandTierGrid');
-        let brands = pricingConfig.brands || [];
-        // v71: fixed min-width per column (rather than letting cramped
-        // columns wrap brand names like "Meghalite" into two lines) now
-        // that the table scrolls horizontally instead of compressing —
-        // see the brandTierGridWrap fix above.
-        let headCells = `<th style="text-align:left; padding:6px 10px; border-bottom:2px solid #ddd; font-size:10px; text-transform:uppercase; color:#7f8c8d; min-width:70px;">Tier</th>`
-            + `<th style="text-align:center; padding:6px 10px; border-bottom:2px solid #ddd; font-size:10px; text-transform:uppercase; color:#7f8c8d; min-width:90px;">No Brand</th>`
-            + brands.map(b => `<th style="text-align:center; padding:6px 10px; border-bottom:2px solid #ddd; font-size:10px; text-transform:uppercase; color:#7f8c8d; min-width:90px;">${esc(b)}</th>`).join('');
+    // vBeta5 F3: which brand's rates the compact table currently shows —
+    // '__default' means the "No Brand" fallback column. Reset to
+    // '__default' whenever the modal opens (see openPricingEngine()).
+    let currentGridBrand = '__default';
 
-        let bodyRows = TIER_NAMES.map(tier => {
-            let rates = pricingConfig.tiers[tier] || {};
-            let safeTier = tier.replace(/[^a-zA-Z0-9]/g, '_');
-            let defaultCell = `<td style="text-align:center; padding:5px 8px; border-bottom:1px solid #eee;">
-                <input type="number" step="0.25" id="brandRate_${safeTier}___default" value="${rates['__default'] ?? 0}" style="width:72px; text-align:center; background:#fdf6ec; border:1px solid #f0c987; padding:6px 4px; font-size:13px;">
-            </td>`;
-            let brandCells = brands.map(b => {
-                let safeBrand = b.replace(/[^a-zA-Z0-9]/g, '_');
-                return `<td style="text-align:center; padding:5px 8px; border-bottom:1px solid #eee;">
-                    <input type="number" step="0.25" id="brandRate_${safeTier}___${safeBrand}" data-brand="${esc(b)}" value="${rates[b] ?? 0}" style="width:72px; text-align:center; padding:6px 4px; font-size:13px;">
-                </td>`;
-            }).join('');
-            return `<tr><td style="padding:5px 10px; font-weight:bold; font-size:12px; border-bottom:1px solid #eee; white-space:nowrap;">${tier}</td>${defaultCell}${brandCells}</tr>`;
+    // Renders the Block Tiers tab: a brand-selector chip row (was a
+    // horizontally-scrolling one-column-per-brand table — see the
+    // brandTierGridWrap comment above for why that didn't work well on
+    // mobile) plus a single compact Tier x Rate table for whichever brand
+    // is currently selected. Brand is a FILTER now, not a table column, so
+    // the table is always exactly 2 columns regardless of brand count.
+    // Rebuilt from scratch on modal open, brand add/remove, and every
+    // chip click (selectBrandForGrid()).
+    function renderBrandTierGrid() {
+        let wrap = document.getElementById('brandTierGridWrap');
+        let brands = pricingConfig.brands || [];
+        let chipKeys = ['__default'].concat(brands);
+        if (!chipKeys.includes(currentGridBrand)) currentGridBrand = '__default';
+
+        let chipsHtml = chipKeys.map(key => {
+            let label = key === '__default' ? 'No Brand' : esc(key);
+            let activeCls = key === currentGridBrand ? ' active' : '';
+            return `<button type="button" class="brand-chip${activeCls}" data-chip-brand="${esc(key)}">${label}</button>`;
         }).join('');
 
-        table.innerHTML = `<thead><tr>${headCells}</tr></thead><tbody>${bodyRows}</tbody>`;
+        let isDefault = currentGridBrand === '__default';
+        let idSuffix = isDefault ? 'default' : currentGridBrand.replace(/[^a-zA-Z0-9]/g, '_');
+        let dataBrandAttr = isDefault ? '' : ` data-brand="${esc(currentGridBrand)}"`;
+        let rowsHtml = TIER_NAMES.map(tier => {
+            let rates = pricingConfig.tiers[tier] || {};
+            let safeTier = tier.replace(/[^a-zA-Z0-9]/g, '_');
+            let val = isDefault ? (rates['__default'] ?? 0) : (rates[currentGridBrand] ?? 0);
+            return `<tr><td class="btg-tier-cell">${esc(tier)}</td><td class="btg-rate-cell"><input type="number" step="0.25" id="brandRate_${safeTier}___${idSuffix}"${dataBrandAttr} value="${val}"></td></tr>`;
+        }).join('');
+
+        wrap.innerHTML = `<div class="brand-chip-row" id="brandChipRow">${chipsHtml}</div>`
+            + `<table id="brandTierGrid" class="btg-table"><thead><tr><th>Tier</th><th>Rate (per inch)</th></tr></thead><tbody>${rowsHtml}</tbody></table>`;
+
+        // Event delegation on the freshly-inserted chip row — innerHTML
+        // above already discarded any previous chip row (and its
+        // listener) along with the old nodes, so this never stacks up
+        // duplicate handlers across renders.
+        document.getElementById('brandChipRow').addEventListener('click', function(e) {
+            let chip = e.target.closest('.brand-chip');
+            if (!chip) return;
+            selectBrandForGrid(chip.getAttribute('data-chip-brand'));
+        });
+    }
+
+    // Switches which brand's rates the table shows. Commits the currently
+    // visible tier inputs into pricingConfig.tiers FIRST (same read used
+    // by the main Save button — see readBrandTierGridIntoConfig() below)
+    // so a rate you just typed for the brand you're leaving isn't lost
+    // when the table re-renders for the newly chosen brand.
+    function selectBrandForGrid(brand) {
+        if (brand === currentGridBrand) return;
+        readBrandTierGridIntoConfig();
+        currentGridBrand = brand;
+        renderBrandTierGrid();
     }
 
     // Reads the brand-tier grid's current input values back into
@@ -12177,6 +12344,10 @@
         if ((pricingConfig.brands || []).some(b => b.toLowerCase() === name.toLowerCase())) {
             alert(`"${name}" is already in the brand list.`); return;
         }
+        // vBeta5 F3: commit whatever's currently visible in the (now
+        // single-brand) tier grid before this re-renders it for the new
+        // brand list, so an in-progress rate edit isn't silently dropped.
+        readBrandTierGridIntoConfig();
         pricingConfig.brands.push(name);
         TIER_NAMES.forEach(tier => {
             if (!pricingConfig.tiers[tier]) pricingConfig.tiers[tier] = {};
@@ -12202,6 +12373,9 @@
         let name = brands[idx];
         if (!name) return;
         if (!confirm(`Remove "${name}" from the brand list? Existing documents that used it are not affected.`)) return;
+        // vBeta5 F3: same reasoning as addBrand() above — commit any
+        // visible in-progress edit before the chip list changes under it.
+        readBrandTierGridIntoConfig();
         brands.splice(idx, 1);
         renderBrandList();
         renderBrandTierGrid();
@@ -12210,6 +12384,9 @@
     }
 
     function openPricingEngine() {
+        // vBeta5 F3: always open the tier grid on "No Brand" so the modal
+        // starts from a predictable, consistent state every time.
+        currentGridBrand = '__default';
         // v70: legacy flat inputs are kept populated (from each brand's
         // Meghalite-equivalent-ish first value isn't meaningful anymore, so
         // these now just mirror the "__default" rate per tier) purely so
