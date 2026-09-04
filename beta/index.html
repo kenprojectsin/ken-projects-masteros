@@ -478,7 +478,7 @@
         .bcalc-seg.disabled { opacity:0.35; pointer-events:none; }
         .bcalc-seg-btn { flex:1; margin:0; padding:6px 2px; font-size:11px; font-weight:bold; cursor:pointer; background:var(--hp-surface); color:var(--hp-ink-muted); border:none; border-right:1px solid var(--hp-border); }
         .bcalc-seg-btn:last-child { border-right:none; }
-        /* vBeta11 FIX: was background:var(--hp-purple)/var(--hp-amber) — the vivid base
+        /* vBeta12 FIX: was background:var(--hp-purple)/var(--hp-amber) — the vivid base
            tones — with the dark ink text on top. Measured contrast was only 2.97:1
            (purple) and 3.47:1 (amber), both under WCAG AA. Swapped to the tint
            background (same pairing used everywhere else in the app) for ~6.2:1 and
@@ -1653,7 +1653,7 @@
         }
 
         body.force-mobile-main .editor-box label { font-size: 11px; margin-top: 12px; }
-        /* vBeta11 FIX: was "body.force-mobile-main .editor-box input, ...select"
+        /* vBeta12 FIX: was "body.force-mobile-main .editor-box input, ...select"
            — that selector's specificity (2 classes + 2 types) accidentally beat
            .doctype-spotlight select / .master-bar select's pill radius (var(--hp-radius-sm),
            16px), shrinking the Document-Type dropdown and every text input down to a
@@ -1696,7 +1696,7 @@
             bottom: 0; left: 0; width: 100%; border-radius: 0; padding: 8px 10px; gap: 8px;
             background: rgba(26,37,47,0.97); box-shadow: 0 -2px 12px rgba(0,0,0,0.3); box-sizing: border-box;
         }
-        /* vBeta11 FIX: was border-radius:8px !important, which didn't match the real
+        /* vBeta12 FIX: was border-radius:8px !important, which didn't match the real
            @media(480px) equivalent (12px !important, see .btn-print/.btn-pdf/.btn-save
            near line 1469) — buttons visibly got squarer corners only when the toggle
            was forced on. Corrected to 12px to match real narrow-viewport rendering. */
@@ -1846,7 +1846,7 @@
         body.force-mobile-main .container > .editor-box > div:first-child button { font-size: 14px !important;
                 padding: 13px 10px !important; }
         body.force-mobile-main label { font-size: 11px; margin-top: 12px; }
-        /* vBeta11 FIX: same :where() fix as the .editor-box copy of this rule above —
+        /* vBeta12 FIX: same :where() fix as the .editor-box copy of this rule above —
            see that comment for the full explanation. */
         :where(body.force-mobile-main) input, :where(body.force-mobile-main) select { padding: 12px 10px;
                 font-size: 15px;
@@ -2169,6 +2169,41 @@
                   and the Blocks Calculator's active wastage/round-to chips had
                   dark ink text on a dark fill — fixed, contrast verified). */
         }
+        /* vBeta12 FIX — RESTORED MISSING --glass-* ROOT TOKENS.
+           The comments above and on #cashBookModal both say the old "Liquid
+           Glass" tokens are "still defined at :root" / "further down" — but a
+           full-file search turned up zero definitions of --glass-bg, --glass-
+           ink, --glass-muted, --glass-accent, --glass-success, --glass-danger,
+           --glass-warn, --glass-radius-* anywhere. They were dropped at some
+           point (most likely when this very :root block was introduced for
+           Vista and the old glass :root got replaced instead of merged), and
+           nothing since then ever noticed, because an undefined custom
+           property doesn't throw — it just silently fails, so every rule
+           reading var(--glass-ink) etc. fell through to inherited/default
+           black text. That's why Cash Book's h2, labels, and voice-entry
+           panel were rendering black-on-near-black: the whole modal has been
+           running with no real text color since whenever that root block was
+           lost. Restored here using the same iOS-dark-glass palette the
+           modal's own inline rgba() accents already assume (rgba(10,132,255,…)
+           blue, rgba(191,90,242,…) purple, rgba(48,209,88,…) green, rgba(255,
+           69,58,…) red are iOS's system blue/purple/green/red in dark mode). */
+        :root {
+            --glass-bg: rgba(255,255,255,0.06);
+            --glass-bg-strong: rgba(255,255,255,0.12);
+            --glass-border: rgba(255,255,255,0.14);
+            --glass-ink: #FFFFFF;
+            --glass-muted: rgba(255,255,255,0.58);
+            --glass-input-bg: rgba(255,255,255,0.07);
+            --glass-accent: #BF5AF2;
+            --glass-accent-bg: rgba(191,90,242,0.18);
+            --glass-accent-text: #FFFFFF;
+            --glass-success: #30D158;
+            --glass-danger: #FF453A;
+            --glass-warn: #FF9F0A;
+            --glass-info: #0A84FF;
+            --glass-radius-lg: 18px;
+            --glass-radius-sm: 10px;
+        }
         #tonnageModal {
             --tng-glass: var(--vista-surface-alt);
             --tng-glass-strong: var(--vista-surface-alt-strong);
@@ -2179,6 +2214,11 @@
             --tng-accent: var(--vista-purple);
             --tng-accent-bg: var(--vista-purple-tint);
             --tng-accent-text: var(--vista-ink);
+            /* vBeta12: added — .tng-step-btn was using --tng-accent (the vivid purple
+               base) directly as a TEXT color at 2.48:1 contrast on white. Purple base
+               is a fill token; Purple Ink is the one meant to sit on top of light
+               surfaces as text (7.4:1). */
+            --tng-accent-ink: var(--vista-purple-ink);
             --tng-success: var(--vista-mint-text);
             --tng-danger: var(--vista-danger);
             --tng-warn: #92400E;
@@ -2268,11 +2308,14 @@
         #tonnageModal .ios-switch input.tng-auto-switch:checked ~ .ios-thumb { left: 21px; }
         #tonnageModal .tng-stepper { display: flex; align-items: stretch; gap: 0; border: none; border-radius: var(--tng-radius-sm); overflow: hidden; background: var(--tng-input-bg); box-shadow: inset 0 0 0 1.5px rgba(28,28,39,0.06); }
         #tonnageModal .tng-step-btn {
-            width: 38px; margin: 0; padding: 0; border: none; background: transparent; color: var(--tng-accent);
+            width: 38px; margin: 0; padding: 0; border: none; background: transparent; color: var(--tng-accent-ink);
             font-size: 20px; font-weight: 800; line-height: 1; cursor: pointer; flex-shrink: 0; transition: background 0.15s ease;
         }
         #tonnageModal .tng-step-btn:hover { background: var(--vista-purple-tint); }
-        #tonnageModal .tng-step-btn:active { background: var(--tng-accent); color: #FFFFFF; }
+        /* vBeta12 FIX: was background:var(--tng-accent) (vivid purple base) + white
+           text — 2.48:1, the same vivid-plus-white pattern fixed elsewhere. Ink
+           background reads white text at 7.4:1. */
+        #tonnageModal .tng-step-btn:active { background: var(--tng-accent-ink); color: #FFFFFF; }
         #tonnageModal .tng-stepper input[type="number"] {
             width: 92px; border: none; border-radius: 0; text-align: center; font-size: 18px; padding: 10px 4px; background: transparent; box-shadow: none;
         }
@@ -2405,6 +2448,7 @@
             --cb-success: var(--glass-success);
             --cb-danger: var(--glass-danger);
             --cb-warn: var(--glass-warn);
+            --cb-info: var(--glass-info);
             --cb-radius: var(--glass-radius-lg);
             --cb-radius-sm: var(--glass-radius-sm);
         }
@@ -2441,9 +2485,20 @@
         }
         #cashBookModal .cash-entry-form > div > div[style*="color:#2c3e50"] { color: var(--cb-ink) !important; }
         #cashBookModal #cbVoiceReviewPanel { background: rgba(191,90,242,0.14) !important; border-color: rgba(191,90,242,0.4) !important; }
+        /* vBeta12 FIX: the "I heard — confirm before adding" header's inline
+           color:#6B3FA0 (Purple Ink) assumed the panel's original light-purple
+           #F1E7FE background — it's since been reskinned dark by the rule right
+           above, dropping this label to 1.58:1. Lightened to match the dark panel. */
+        #cashBookModal #cbVoiceReviewPanel > div:first-child { color: #E3BCFC !important; }
         #cashBookModal #cbVoiceReviewPanel > div[style*="background:#FFFFFF"] { background: var(--cb-glass) !important; border-color: var(--cb-border) !important; }
         #cashBookModal #cbVoiceTranscript { color: var(--cb-muted) !important; }
-        #cashBookModal #cbVoiceDir, #cashBookModal #cbVoiceAmt, #cashBookModal #cbVoiceCat, #cashBookModal #cbVoiceParty { color: var(--cb-ink) !important; }
+        /* vBeta12 FIX: this rule forced var(--cb-ink) (white, once the missing
+           --glass-* tokens above were restored) onto #cbVoiceDir/Amt/Cat/Party —
+           but those four sit on their OWN small white mini-cards
+           (background:#FFFFFF) nested inside the purple voice-review panel, not
+           directly on the dark glass. White-on-white. Their original inline
+           color:#2c3e50 was already correct for that white card and is now left
+           alone — removed the override rather than the markup. */
         /* Summary cards — same glass-card treatment as the Tonnage summary
            card, keeping the meaningful green/red/blue accent colors as
            left-border + figure color rather than a solid light fill (which
@@ -2731,7 +2786,7 @@
              production by design (per owner's explicit confirmation), so
              the badge below exists purely so no one mistakes this build for
              production. -->
-        <!-- vBeta11 FIX: color was #1C1C27 (near-black), left dark-on-dark against
+        <!-- vBeta12 FIX: color was #1C1C27 (near-black), left dark-on-dark against
              this #92400E (Amber Ink) solid fill — Amber Ink is meant to be TEXT on a
              light tint, not a background color of its own, so pairing it with dark
              text was the same class of bug as every other solid/dark button in the
@@ -2744,8 +2799,14 @@
              sister) can glance and confirm which build they're running.
              Tap to force-check for updates. Update this string (and the
              matching APP_VERSION const in the script block) on every release. -->
-        <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:rgba(255,255,255,0.35); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta11</span> · <span id="appUpdateStatus">tap to check for updates</span>
+        <!-- vBeta12 FIX: color was rgba(255,255,255,0.35) — white at low opacity,
+             a leftover from when this sat on a dark editor-box background. Vista's
+             editor background is white now, so this was literally invisible white-
+             on-white (the exact bug flagged in the audit). Switched to Ink Muted,
+             the token this app already uses everywhere else for de-emphasized
+             secondary text. -->
+        <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #6E6C80); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
+            <span id="appVersionBadge">vBeta12</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- v73a: passive unsynced warning. Hidden by default and only
@@ -3126,7 +3187,10 @@
                          assigns the next C-number AND retroactively tags
                          every past document with this exact name, so their
                          whole history becomes visible under one ID at once. -->
-                    <button id="btnMakeRepeatClient" onclick="makeRepeatClient()" style="display:none; margin-top:4px; background:var(--hp-amber); color:#FFFFFF; border:none; padding:6px 10px; border-radius:var(--hp-radius-sm); cursor:pointer; font-size:11px; font-weight:bold; width:auto;">⭐ Make Repeat Client</button>
+                    <!-- vBeta12 FIX: was background:var(--hp-amber) (vivid) + white text,
+                         2.04:1 contrast — the same vivid-base-plus-white anti-pattern fixed
+                         elsewhere. Amber Tint + Amber Ink matches the rest of the app (~6.5:1). -->
+                    <button id="btnMakeRepeatClient" onclick="makeRepeatClient()" style="display:none; margin-top:4px; background:var(--hp-amber-tint); color:var(--hp-amber-ink); border:none; padding:6px 10px; border-radius:var(--hp-radius-sm); cursor:pointer; font-size:11px; font-weight:bold; width:auto;">⭐ Make Repeat Client</button>
                 </div>
             </div>
             <div id="billingContactRow" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
@@ -3317,7 +3381,8 @@
                             style="margin-top:5px; width:100%;">
                         <div id="supersedesRefSuggestBox" class="client-suggestions-box" style="top:100%;"></div>
                     </div>
-                    <button onclick="openAmendmentDiff()" style="width:auto; margin:5px 0 0 0; background:var(--hp-amber); color:#FFFFFF; padding:8px 12px; font-size:11px; border-radius:var(--hp-radius-sm);">🔍 View Changes</button>
+                    <!-- vBeta12 FIX: same vivid-base + white-text bug as Make Repeat Client above. -->
+                    <button onclick="openAmendmentDiff()" style="width:auto; margin:5px 0 0 0; background:var(--hp-amber-tint); color:var(--hp-amber-ink); padding:8px 12px; font-size:11px; border-radius:var(--hp-radius-sm);">🔍 View Changes</button>
                 </div>
             </div>
 
@@ -4235,7 +4300,11 @@
         <div id="ledgerBalanceBar" class="ledger-balance-bar" style="display:none;">
             <span id="ledgerClientName" style="font-weight:bold; font-size:15px;"></span>
             <div style="text-align:right;">
-                <div style="font-size:11px; color:#6E6C80;">NET BALANCE DUE</div>
+                <!-- vBeta12 FIX: color was #6E6C80 (Ink Muted — a light-mode grey) on this
+                     bar's own #2c3e50 navy background: 2.15:1. The bar already sets
+                     color:#FFFFFF as its default (see .ledger-balance-bar); this inline
+                     override just needed to stay a muted WHITE instead of a muted dark grey. -->
+                <div style="font-size:11px; color:rgba(255,255,255,0.65);">NET BALANCE DUE</div>
                 <div id="ledgerNetBalance" style="font-size:22px; font-weight:bold;"></div>
             </div>
         </div>
@@ -4899,21 +4968,27 @@
             <div id="cbVoiceReviewPanel" style="display:none; background:#F1E7FE; border:2px solid #6B3FA0; border-radius:8px; padding:12px; margin-bottom:12px;">
                 <div style="font-size:11px; font-weight:bold; color:#6B3FA0; text-transform:uppercase; margin-bottom:8px;">🎤 I heard — confirm before adding:</div>
                 <div id="cbVoiceTranscript" style="font-size:13px; color:#1C1C27; font-style:italic; margin-bottom:10px;"></div>
+                <!-- vBeta12 FIX: these four labels used color:var(--cb-muted,#6E6C80) —
+                     harmless while --cb-muted was undefined (fell back to the literal
+                     grey), but once the missing --glass-* tokens were restored above,
+                     --cb-muted resolved to translucent white, landing white text on
+                     these labels' own white:#FFFFFF mini-cards. Simplified to the plain
+                     grey these light sub-cards actually need. -->
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
                     <div style="background:#FFFFFF; border:1px solid #F1E7FE; border-radius:6px; padding:8px 12px; font-size:12px; flex:1;">
-                        <div style="color:var(--cb-muted,#6E6C80); font-size:10px; text-transform:uppercase;">Direction</div>
+                        <div style="color:#6E6C80; font-size:10px; text-transform:uppercase;">Direction</div>
                         <div id="cbVoiceDir" style="font-weight:bold; color:#2c3e50; margin-top:2px;"></div>
                     </div>
                     <div style="background:#FFFFFF; border:1px solid #F1E7FE; border-radius:6px; padding:8px 12px; font-size:12px; flex:1;">
-                        <div style="color:var(--cb-muted,#6E6C80); font-size:10px; text-transform:uppercase;">Amount</div>
+                        <div style="color:#6E6C80; font-size:10px; text-transform:uppercase;">Amount</div>
                         <div id="cbVoiceAmt" style="font-weight:bold; color:#2c3e50; margin-top:2px;"></div>
                     </div>
                     <div style="background:#FFFFFF; border:1px solid #F1E7FE; border-radius:6px; padding:8px 12px; font-size:12px; flex:1;">
-                        <div style="color:var(--cb-muted,#6E6C80); font-size:10px; text-transform:uppercase;">Category</div>
+                        <div style="color:#6E6C80; font-size:10px; text-transform:uppercase;">Category</div>
                         <div id="cbVoiceCat" style="font-weight:bold; color:#2c3e50; margin-top:2px;"></div>
                     </div>
                     <div style="background:#FFFFFF; border:1px solid #F1E7FE; border-radius:6px; padding:8px 12px; font-size:12px; flex:2;">
-                        <div style="color:var(--cb-muted,#6E6C80); font-size:10px; text-transform:uppercase;">Description</div>
+                        <div style="color:#6E6C80; font-size:10px; text-transform:uppercase;">Description</div>
                         <div id="cbVoiceParty" style="font-weight:bold; color:#2c3e50; margin-top:2px;"></div>
                     </div>
                 </div>
@@ -4973,7 +5048,11 @@
                          cbLinkedDoc (hidden), displays a human-readable pill. -->
                     <div id="cbInvoicePickerDisplay" onclick="openInvoicePicker()" style="margin-top:4px; padding:8px; border-radius:4px; cursor:pointer; font-size:13px; min-height:36px; display:flex; align-items:center; justify-content:space-between;">
                         <span id="cbInvoicePickerLabel" style="color:#6E6C80;">🔍 Search document...</span>
-                        <span id="cbInvoiceClearBtn" onclick="clearInvoicePicker(event)" style="display:none; color:#A32A2E; font-weight:bold; padding:0 4px;">✕</span>
+                        <!-- vBeta12 FIX: was color:#A32A2E (Danger Ink), a dark red meant for
+                             light backgrounds — sitting on Cash Book's dark glass input, that
+                             was only 1.92:1. --glass-danger is the same red family already used
+                             for dark-glass contexts elsewhere in this modal (e.g. .cb-row-out). -->
+                        <span id="cbInvoiceClearBtn" onclick="clearInvoicePicker(event)" style="display:none; color:var(--glass-danger,#FF453A); font-weight:bold; padding:0 4px;">✕</span>
                     </div>
                     <input type="hidden" id="cbLinkedDoc">
                     <input type="hidden" id="cbLinkedDocAmt">
@@ -5909,7 +5988,11 @@
                 <button onclick="manualScanAndLink()" style="width:auto; margin:0; background:none; border:none; color:#1C7A3E; font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">🔗 Scan & link existing documents now…</button>
                 <button onclick="openRebuildRegistryChecklist()" style="width:auto; margin:0; background:none; border:none; color:#0B5A94; font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">🔄 Register repeat clients from documents…</button>
             </div>
-            <button onclick="resetClientRegistry()" style="width:auto; margin:0; background:none; border:none; color:#E1E1E6; font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">Reset entire client registry…</button>
+            <!-- vBeta12 FIX: color was #E1E1E6 (Surface Alt Strong — a near-white grey
+                 meant for borders/insets, not text) on the plain white settings background:
+                 1.3:1 contrast, effectively invisible. This is a destructive, irreversible
+                 action, so it now uses Danger Ink like every other destructive control. -->
+            <button onclick="resetClientRegistry()" style="width:auto; margin:0; background:none; border:none; color:#A32A2E; font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">Reset entire client registry…</button>
         </div>
     </div>
 </div>
@@ -6342,7 +6425,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta11";
+    const APP_VERSION = "vBeta12";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -21748,11 +21831,18 @@
         let cashInHand = openingBalance + periodNet;
         _lastCashBookOpening = openingBalance;
 
+        // vBeta12 FIX: these four figures were hardcoded to the LIGHT-mode ink
+        // hexes (#1C7A3E/#A32A2E/#0B5A94/#6E6C80) — fine on the cards' original
+        // light tint fill, but the card background is overridden to dark glass
+        // right above (see "Summary cards" comment), so on that dark card these
+        // measured 2.56:1 / 1.92:1 / 1.91:1. Switched to the --cb-* tokens (which
+        // resolve to the dark-glass-appropriate --glass-success/danger/info),
+        // with the original hexes kept as fallback for any non-Cash-Book context.
         document.getElementById('cashBookSummary').innerHTML = `
-            <div class="cash-book-card cb-in"><div class="cb-label">Cash In</div><div class="cb-val" style="color:#1C7A3E;">₹${totalIn.toLocaleString('en-IN')}</div></div>
-            <div class="cash-book-card cb-out"><div class="cb-label">Cash Out</div><div class="cb-val" style="color:#A32A2E;">₹${totalOut.toLocaleString('en-IN')}</div></div>
-            <div class="cash-book-card"><div class="cb-label">Net This Period</div><div class="cb-val" style="color:${periodNet>=0?'#6E6C80':'#A32A2E'};">${periodNet<0?'-':''}₹${Math.abs(periodNet).toLocaleString('en-IN')}</div></div>
-            <div class="cash-book-card cb-bal"><div class="cb-label">Cash in Hand</div><div class="cb-val" style="color:${cashInHand>=0?'#0B5A94':'#A32A2E'};">₹${Math.abs(cashInHand).toLocaleString('en-IN')}${cashInHand<0?' (deficit)':''}</div><div style="font-size:9px;color:#6E6C80;margin-top:2px;">${openingBalance!==0?'incl. ₹'+Math.abs(openingBalance).toLocaleString('en-IN')+' brought forward':'all-time position'}</div></div>`;
+            <div class="cash-book-card cb-in"><div class="cb-label">Cash In</div><div class="cb-val" style="color:var(--cb-success,#1C7A3E);">₹${totalIn.toLocaleString('en-IN')}</div></div>
+            <div class="cash-book-card cb-out"><div class="cb-label">Cash Out</div><div class="cb-val" style="color:var(--cb-danger,#A32A2E);">₹${totalOut.toLocaleString('en-IN')}</div></div>
+            <div class="cash-book-card"><div class="cb-label">Net This Period</div><div class="cb-val" style="color:${periodNet>=0?'var(--cb-muted,#6E6C80)':'var(--cb-danger,#A32A2E)'};">${periodNet<0?'-':''}₹${Math.abs(periodNet).toLocaleString('en-IN')}</div></div>
+            <div class="cash-book-card cb-bal"><div class="cb-label">Cash in Hand</div><div class="cb-val" style="color:${cashInHand>=0?'var(--cb-info,#0B5A94)':'var(--cb-danger,#A32A2E)'};">₹${Math.abs(cashInHand).toLocaleString('en-IN')}${cashInHand<0?' (deficit)':''}</div><div style="font-size:9px;color:var(--cb-muted,#6E6C80);margin-top:2px;">${openingBalance!==0?'incl. ₹'+Math.abs(openingBalance).toLocaleString('en-IN')+' brought forward':'all-time position'}</div></div>`;
 
         // #15: category totals — a quick "spent ₹X on Transport" breakdown
         // for OUT entries, since the data was always there but never

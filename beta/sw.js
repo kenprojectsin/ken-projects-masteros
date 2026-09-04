@@ -18,7 +18,7 @@
 // a changed CACHE_NAME means the browser sees this as a genuinely different
 // service worker file, triggering the install/updatefound/waiting flow that
 // index.html's updatefound listener picks up and turns into the orange banner.
-const CACHE_NAME = 'ken-traders-beta-vbeta11';
+const CACHE_NAME = 'ken-traders-beta-vbeta12';
 const SHELL_FILES = [
   './index.html',
   './manifest.json',
