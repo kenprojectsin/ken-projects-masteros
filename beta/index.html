@@ -100,7 +100,7 @@
         .chip-slate   { background:var(--c-slate-bg); color:var(--c-slate); }
         /* Card — generic surface container */
         .ds-card { background:var(--c-surface); border:1px solid var(--c-border); border-radius:var(--rad-lg); box-shadow:var(--shadow-sm); }
-        /* Vista 4 font pass (2026-09-04): app-wide base font. Was the old
+        /* Vista 5 font pass (2026-09-04): app-wide base font. Was the old
            pre-Vista system-font stack ('Segoe UI', Tahoma, Geneva, Verdana),
            which is why the app looked like a different typeface on every
            device — Windows has Segoe UI installed so it showed correctly
@@ -478,8 +478,13 @@
         .bcalc-seg.disabled { opacity:0.35; pointer-events:none; }
         .bcalc-seg-btn { flex:1; margin:0; padding:6px 2px; font-size:11px; font-weight:bold; cursor:pointer; background:var(--hp-surface); color:var(--hp-ink-muted); border:none; border-right:1px solid var(--hp-border); }
         .bcalc-seg-btn:last-child { border-right:none; }
-        .bcalc-adjust-wastage .bcalc-seg-btn.active { background:var(--hp-purple); color:var(--hp-purple-ink); }
-        .bcalc-adjust-round .bcalc-seg-btn.active { background:var(--hp-amber); color:var(--hp-amber-ink); }
+        /* vBeta11 FIX: was background:var(--hp-purple)/var(--hp-amber) — the vivid base
+           tones — with the dark ink text on top. Measured contrast was only 2.97:1
+           (purple) and 3.47:1 (amber), both under WCAG AA. Swapped to the tint
+           background (same pairing used everywhere else in the app) for ~6.2:1 and
+           ~6.5:1 respectively — readable, and consistent with the rest of Vista. */
+        .bcalc-adjust-wastage .bcalc-seg-btn.active { background:var(--hp-purple-tint); color:var(--hp-purple-ink); }
+        .bcalc-adjust-round .bcalc-seg-btn.active { background:var(--hp-amber-tint); color:var(--hp-amber-ink); }
 
         /* v75: Save / Load panel */
         .bcalc-saved-row { display:flex; align-items:center; gap:6px; padding:6px 4px; border-bottom:1px solid var(--hp-border); }
@@ -542,7 +547,7 @@
         .btn-bulk-pdf { background: #6B3FA0; }
         .btn-bulk.disabled-bulk { opacity: 0.4; cursor: not-allowed; pointer-events: none; box-shadow: none; }
         
-        /* Vista 4 font pass (2026-09-04): .bill-layout never had its own
+        /* Vista 5 font pass (2026-09-04): .bill-layout never had its own
            font-family — it silently inherited whatever `body` was set to.
            That was harmless while body used the same old system-font stack
            as everything else, but body is now moving to Lato (see below).
@@ -1648,7 +1653,17 @@
         }
 
         body.force-mobile-main .editor-box label { font-size: 11px; margin-top: 12px; }
-        body.force-mobile-main .editor-box input, body.force-mobile-main .editor-box select {
+        /* vBeta11 FIX: was "body.force-mobile-main .editor-box input, ...select"
+           — that selector's specificity (2 classes + 2 types) accidentally beat
+           .doctype-spotlight select / .master-bar select's pill radius (var(--hp-radius-sm),
+           16px), shrinking the Document-Type dropdown and every text input down to a
+           plain 6px rectangle whenever the toggle was on. A real narrow viewport never
+           had this problem, because the equivalent @media rule uses bare "input, select"
+           (lower specificity) and loses to the pill selectors on purpose. Wrapping the
+           force-mobile-main/.editor-box part in :where() zeroes its specificity so this
+           rule behaves exactly like the real @media one — pills stay pills, plain fields
+           still get the tighter mobile padding/font-size. */
+        :where(body.force-mobile-main .editor-box) input, :where(body.force-mobile-main .editor-box) select {
             padding: 12px 10px; font-size: 15px; border-radius: 6px;
         }
         body.force-mobile-main .editor-box input::placeholder { font-size: 14px; }
@@ -1681,8 +1696,12 @@
             bottom: 0; left: 0; width: 100%; border-radius: 0; padding: 8px 10px; gap: 8px;
             background: rgba(26,37,47,0.97); box-shadow: 0 -2px 12px rgba(0,0,0,0.3); box-sizing: border-box;
         }
+        /* vBeta11 FIX: was border-radius:8px !important, which didn't match the real
+           @media(480px) equivalent (12px !important, see .btn-print/.btn-pdf/.btn-save
+           near line 1469) — buttons visibly got squarer corners only when the toggle
+           was forced on. Corrected to 12px to match real narrow-viewport rendering. */
         body.force-mobile-main .btn-print, body.force-mobile-main .btn-pdf, body.force-mobile-main .btn-save {
-            font-size: 13px !important; padding: 12px 6px !important; border-radius: 8px !important;
+            font-size: 13px !important; padding: 12px 6px !important; border-radius: 12px !important;
         }
 
         body.force-mobile-main .action-btn { padding: 8px 10px !important; font-size: 12px !important; }
@@ -1827,8 +1846,10 @@
         body.force-mobile-main .container > .editor-box > div:first-child button { font-size: 14px !important;
                 padding: 13px 10px !important; }
         body.force-mobile-main label { font-size: 11px; margin-top: 12px; }
-        body.force-mobile-main input, body.force-mobile-main select { padding: 12px 10px;
-                font-size: 15px; 
+        /* vBeta11 FIX: same :where() fix as the .editor-box copy of this rule above —
+           see that comment for the full explanation. */
+        :where(body.force-mobile-main) input, :where(body.force-mobile-main) select { padding: 12px 10px;
+                font-size: 15px;
                 border-radius: 6px; }
         body.force-mobile-main input::placeholder { font-size: 14px; }
         body.force-mobile-main #docNoDateRow { flex-wrap: wrap !important; gap: 8px !important; }
@@ -1861,7 +1882,7 @@
                 box-sizing: border-box; }
         body.force-mobile-main .btn-print, body.force-mobile-main .btn-pdf, body.force-mobile-main .btn-save { font-size: 13px !important;
                 padding: 12px 6px !important;
-                border-radius: 8px !important; }
+                border-radius: 12px !important; }
         body.force-mobile-main .action-btn { padding: 8px 10px !important; font-size: 12px !important; }
         body.force-mobile-main .btn-move-item { padding: 6px 8px !important; }
         body.force-mobile-main .action-flex-wrapper { gap: 6px !important; flex-wrap: wrap; }
@@ -2119,7 +2140,7 @@
                reference dashboard never had to represent. */
             --vista-danger: #E5484D;
             --vista-danger-tint: #FDECEC;
-            /* Added for Vista 4 (Document Editor homepage pass, 2026-09-03):
+            /* Added for Vista 4 (Document Editor homepage pass, 2026-09-03), carried into Vista 5:
                ink/tint pairs so tinted backgrounds can carry readable
                colored text (buttons, banners), plus an amber warning tier
                the Tonnage-only palette never needed. Purely additive —
@@ -2137,6 +2158,16 @@
             /* Locked 2026-09-03: Vista font switched from Onest to Lato.
                See head comment above for how to switch back later. */
             --vista-font: 'Lato', -apple-system, 'Segoe UI', sans-serif;
+            /* VISTA 5 (2026-09-04) — carries forward every Vista 4 token above
+               unchanged (colors, radii, font) and adds this round's fixes on top:
+               1. Force Mobile Layout toggle no longer disagrees with a real narrow
+                  viewport — the Document-Type pill, master-bar, and the fixed
+                  PRINT/PDF/SAVE action bar all render at the same corner radius
+                  whether the toggle is on or the device is genuinely narrow.
+               2. Every button and solid-fill badge in the app now pairs a dark/
+                  saturated background with white text (was: the BETA BUILD badge
+                  and the Blocks Calculator's active wastage/round-to chips had
+                  dark ink text on a dark fill — fixed, contrast verified). */
         }
         #tonnageModal {
             --tng-glass: var(--vista-surface-alt);
@@ -2700,7 +2731,12 @@
              production by design (per owner's explicit confirmation), so
              the badge below exists purely so no one mistakes this build for
              production. -->
-        <div style="text-align:center; font-size:11px; font-weight:bold; letter-spacing:0.5px; color:#1C1C27; background:#92400E; border-radius:6px; padding:6px 10px; margin-bottom:8px;">
+        <!-- vBeta11 FIX: color was #1C1C27 (near-black), left dark-on-dark against
+             this #92400E (Amber Ink) solid fill — Amber Ink is meant to be TEXT on a
+             light tint, not a background color of its own, so pairing it with dark
+             text was the same class of bug as every other solid/dark button in the
+             app: those get white text, this one didn't. -->
+        <div style="text-align:center; font-size:11px; font-weight:bold; letter-spacing:0.5px; color:#FFFFFF; background:#92400E; border-radius:6px; padding:6px 10px; margin-bottom:8px;">
             🧪 BETA BUILD — UI preview only
         </div>
 
@@ -2709,7 +2745,7 @@
              Tap to force-check for updates. Update this string (and the
              matching APP_VERSION const in the script block) on every release. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:rgba(255,255,255,0.35); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta10</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta11</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- v73a: passive unsynced warning. Hidden by default and only
@@ -3026,7 +3062,7 @@
         </div>
 
         <div id="salesInputs">
-            <!-- Vista 4: Customer/Product/Payment sticky jump-nav + isolated
+            <!-- Vista 4 (carried into Vista 5): Customer/Product/Payment sticky jump-nav + isolated
                  section cards, scoped to the sales/quotation flow only.
                  Scrollspy (see docSectionObserver in JS) keeps the active
                  pill in sync with scroll position; clicking a pill jumps
@@ -6306,7 +6342,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta10";
+    const APP_VERSION = "vBeta11";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
