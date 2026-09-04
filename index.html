@@ -3,19 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KEN Traders - Master OS (BETA)</title>
+    <title>KEN Traders - Master OS</title>
 
-    <!-- Lato: originally the Letterpad feature's letterhead font, now also
-         the live Vista design system font (locked 2026-09-03, replacing
-         Onest) — used only within screens migrated to Vista (Tonnage
-         Calculator first). Never applied to the print/PDF output, which
-         keeps its own existing fonts untouched. Weight 900 added for
-         Vista's heavier headings/labels. -->
-    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
-
-    <!-- Onest is no longer loaded live (Vista switched to Lato), but stays
-         available for a future switch back: swap --vista-font below and
-         re-add "family=Onest:wght@400;500;600;700;800;900" to a link here. -->
+    <!-- Letterpad feature: Lato font for letterhead correspondence -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 
     <!-- Improvement #6: PWA basics — installable on phone/desktop home
          screens. Requires manifest.json + the icons/ folder to be hosted
@@ -31,10 +22,10 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="KEN Traders (BETA)">
-    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png">
+    <meta name="apple-mobile-web-app-title" content="KEN Traders">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
@@ -100,27 +91,7 @@
         .chip-slate   { background:var(--c-slate-bg); color:var(--c-slate); }
         /* Card — generic surface container */
         .ds-card { background:var(--c-surface); border:1px solid var(--c-border); border-radius:var(--rad-lg); box-shadow:var(--shadow-sm); }
-        /* Vista 4 font pass (2026-09-04): app-wide base font. Was the old
-           pre-Vista system-font stack ('Segoe UI', Tahoma, Geneva, Verdana),
-           which is why the app looked like a different typeface on every
-           device — Windows has Segoe UI installed so it showed correctly
-           there, Android/iOS/Mac don't, so those devices silently fell
-           through the stack to whatever generic sans the OS defaults to.
-           Now matches --vista-font exactly, so the whole app (everything
-           that doesn't have its own more specific override, plus every
-           screen not yet migrated onto Vista) renders in the same loaded
-           Lato webfont everywhere, regardless of device or OS.
-           font-synthesis:none stops browsers from faking a bold/italic cut
-           for a weight Lato doesn't actually have loaded (Google Fonts
-           only serves Lato at 400/700/900 here — see the <link> in <head>;
-           several places in this file use font-weight:500/600/800, which
-           used to get faked-bold inconsistently by browser/OS — now the
-           browser must pick the nearest real loaded weight instead, so
-           every device renders the exact same weight for the exact same
-           declaration. .bill-layout explicitly resets both of these back
-           to the old stack/behavior so the printed/PDF document is
-           completely unaffected — see the comment there. */
-        body { font-family: 'Lato', -apple-system, 'Segoe UI', sans-serif; font-synthesis: none; background: #eef2f5; margin: 0; padding: 0; padding-bottom: 100px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2f5; margin: 0; padding: 0; padding-bottom: 100px; }
         /* v63: GLOBAL HORIZONTAL-SCROLL SAFETY NET.
            Root cause of "not mobile responsive" reports: individual pieces of UI
            (added across many feature passes) can be a few px wider than the
@@ -138,72 +109,7 @@
         /* --- RESPONSIVE LAYOUT ENGINE (DESKTOP OPTIMIZED) --- */
         .container { display: flex; align-items: flex-start; gap: 20px; width: 98%; max-width: 1900px; margin: 20px auto; }
         
-        /* ============================================================
-           VISTA 4 — Document Editor (homepage) local token aliases.
-           Same pattern as #tonnageModal's --tng-* aliases: references the
-           shared --vista-* tokens so this screen and Tonnage stay in sync
-           if the palette ever changes, without touching any selector that
-           isn't a descendant of .editor-box. Locked 2026-09-03.
-        ============================================================ */
-        .editor-box {
-            --hp-ink: var(--vista-ink); --hp-ink-muted: var(--vista-ink-muted);
-            --hp-surface: var(--vista-surface); --hp-surface-alt: var(--vista-surface-alt);
-            --hp-surface-alt-strong: var(--vista-surface-alt-strong); --hp-border: var(--vista-border);
-            --hp-purple: var(--vista-purple); --hp-purple-tint: var(--vista-purple-tint); --hp-purple-ink: var(--vista-purple-ink);
-            --hp-blue: var(--vista-blue); --hp-blue-tint: var(--vista-blue-tint); --hp-blue-ink: var(--vista-blue-ink);
-            --hp-mint: var(--vista-mint); --hp-mint-tint: var(--vista-mint-tint); --hp-mint-ink: var(--vista-mint-text);
-            --hp-danger: var(--vista-danger); --hp-danger-tint: var(--vista-danger-tint); --hp-danger-ink: var(--vista-danger-ink);
-            --hp-amber: var(--vista-amber); --hp-amber-tint: var(--vista-amber-tint); --hp-amber-ink: var(--vista-amber-ink);
-            --hp-radius-lg: var(--vista-radius-lg); --hp-radius-sm: var(--vista-radius-sm);
-            --hp-shadow: var(--vista-shadow); --hp-font: var(--vista-font);
-            flex: 0 0 700px; background: var(--hp-surface); color: var(--hp-ink); font-family: var(--hp-font);
-            padding: 20px; box-shadow: var(--hp-shadow); position: sticky; top: 20px; max-height: 94vh;
-            overflow-y: auto; z-index: 10; border-radius: var(--hp-radius-lg); box-sizing: border-box;
-        }
-        /* ============================================================
-           VISTA 4 — Customer/Product/Payment sticky jump-nav + isolated
-           section cards. Scoped entirely inside .editor-box (uses the
-           --hp-* aliases above), so it inherits the palette automatically
-           and never touches anything outside the editor form. Only wraps
-           #salesInputs' own children (INV/SAL/QUO/CRN/ADV/RCP) — #voucherInputs
-           (Payment Voucher) is a separate, unrelated flow and is untouched.
-           Locked 2026-09-04. */
-        .doc-jumpnav-wrap {
-            position: sticky; top: 0; z-index: 15;
-            background: var(--hp-surface); padding: 0 0 10px 0; margin: 0 0 14px 0;
-            border-bottom: 1px solid var(--hp-border);
-        }
-        .doc-jumpnav {
-            display: flex; gap: 6px; background: var(--hp-surface-alt-strong);
-            border-radius: 14px; padding: 4px;
-        }
-        .doc-jumpnav-item {
-            flex: 1; text-align: center; padding: 9px 4px; border-radius: 11px;
-            font-size: 12.5px; font-weight: 700; color: var(--hp-ink-muted);
-            cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none;
-            transition: background .18s ease, color .18s ease;
-        }
-        .doc-jumpnav-item.active { background: var(--hp-ink); color: #fff; }
-        .doc-sections-wrap {
-            background: var(--hp-surface-alt); border-radius: var(--hp-radius-lg);
-            padding: 14px 14px 2px; margin: 0 -6px 4px;
-        }
-        .doc-section {
-            background: var(--hp-surface); border-radius: var(--hp-radius-lg);
-            border: 1px solid var(--hp-border); box-shadow: var(--hp-shadow);
-            padding: 16px 16px 18px; margin-bottom: 16px; scroll-margin-top: 62px;
-        }
-        .doc-section-title {
-            font-size: 13px; font-weight: 800; letter-spacing: -0.2px; color: var(--hp-ink);
-            margin: 0 0 12px 0; display: flex; align-items: center; gap: 7px;
-        }
-        @media (max-width: 1100px) {
-            /* On mobile .editor-box loses its own scroll container (becomes
-               position:relative/overflow-visible — see the 1100px breakpoint
-               above), so the nav sticks to the page viewport instead. Give
-               it a touch more breathing room there. */
-            .doc-jumpnav-wrap { top: 0; padding-top: 6px; margin: -6px -6px 14px; padding-left: 6px; padding-right: 6px; }
-        }
+        .editor-box { flex: 0 0 700px; background: #2c3e50; color: white; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: sticky; top: 20px; max-height: 94vh; overflow-y: auto; z-index: 10; border-bottom: 4px solid #e67e22; border-radius: 6px; box-sizing: border-box; }
         .preview-box { flex: 1; background: transparent; padding: 0; width: 100%; display: block; box-sizing: border-box; }
         
         @media (max-width: 1100px) {
@@ -272,11 +178,11 @@
         
         .footer-flex { display: flex; justify-content: flex-end; align-items: center; gap: 15px; width: 100%; margin-right: -10px; }
         .grand-badge { display: inline-block; background: #21b860; color: white; padding: 4px 6px; border-radius: 4px; margin-right: -10px}
-        .master-bar { background: transparent; padding: 0; border-radius: 0; margin-bottom: 10px; margin-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; box-sizing: border-box; }
+        .master-bar { background: #1a252f; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; box-sizing: border-box; }
         .master-bar > div { display: flex; flex: 1; min-width: 140px; }
-        .master-bar select, .master-bar button { width: 100%; font-size: 13px; font-weight: 700; padding: 11px 8px; background: var(--hp-blue-tint); color: var(--hp-blue-ink); border: none; border-radius: var(--hp-radius-sm); cursor: pointer; margin: 0; height: 100%; box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35); }
-        .master-bar .btn-engine { background: var(--hp-blue-tint); border: none; }
-        .master-bar .btn-void { background: var(--hp-danger-tint); color: var(--hp-danger-ink); }
+        .master-bar select, .master-bar button { width: 100%; font-size: 13px; font-weight: bold; padding: 10px 8px; background: #e67e22; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 0; height: 100%; }
+        .master-bar .btn-engine { background: #34495e; border: 1px solid #7f8c8d; }
+        .master-bar .btn-void { background: #c0392b; }
 
         /* v70: Size Grid + Brand Picker, Pricing Tier Bar — base styling.
            Active/inactive colors are still set inline by selectBlockSize()/
@@ -290,15 +196,15 @@
         /* ============================================================
            U5: DOC TYPE — its own dedicated, visually prominent block
         ============================================================ */
-        .doctype-spotlight { background: var(--hp-surface-alt); padding: 12px 14px; border-radius: var(--hp-radius-md, 16px); margin-bottom: 10px; box-shadow: none; }
-        .doctype-spotlight label { color: var(--hp-ink-muted); font-size: 10px; margin: 0 0 6px 0; opacity: 1; }
-        .doctype-spotlight select { background: var(--hp-ink); color: #fff; font-size: 15px; font-weight: 800; padding: 12px 14px; border-radius: var(--hp-radius-sm); border: none; margin-top: 0; box-shadow: none; }
+        .doctype-spotlight { background: linear-gradient(135deg, #e67e22, #d35400); padding: 4px; border-radius: 8px; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(230,126,34,0.35); }
+        .doctype-spotlight label { color: #fff8f0; font-size: 10px; margin: 6px 0 2px 10px; opacity: 0.9; }
+        .doctype-spotlight select { background: #1a252f; color: #fff; font-size: 16px; font-weight: 800; padding: 14px 12px; border-radius: 6px; border: none; margin-top: 0; }
 
         /* ============================================================
            U7: Signature / Boss Mode / Void — uniform grouped row
         ============================================================ */
-        .action-trio-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; margin-bottom: 4px; }
-        .action-trio-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 6px; border-radius: var(--hp-radius-sm, 6px); border: none; cursor: pointer; font-size: 11px; font-weight: 700; text-align: center; min-height: 58px; width: 100%; margin: 0; box-sizing: border-box; }
+        .action-trio-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+        .action-trio-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 6px; border-radius: 6px; border: none; cursor: pointer; font-size: 11px; font-weight: bold; color: #fff; text-align: center; min-height: 64px; width: 100%; margin: 0; box-sizing: border-box; }
         .action-trio-btn .trio-icon { font-size: 20px; line-height: 1; }
         /* v82: the <select> is no longer this tile's visible label (see the
            HTML comment above signatorySelect for why) — it's now a fully
@@ -315,184 +221,131 @@
            background (white), so they need an explicit dark color — without this
            they inherit the closed-select's white text and become invisible. */
         .action-trio-btn select.trio-select option { color: #222; background: #fff; }
-        .trio-signature { background: var(--hp-purple-tint); color: var(--hp-purple-ink); position: relative; }
-        .trio-bossmode { background: var(--hp-mint-tint); color: var(--hp-mint-ink); }
-        .trio-bossmode.is-on { background: var(--hp-mint); color: var(--hp-mint-ink); box-shadow: inset 0 0 0 2px var(--hp-mint-ink); }
-        .trio-void { background: var(--hp-danger-tint); color: var(--hp-danger-ink); }
+        .trio-signature { background: #8e44ad; position: relative; }
+        .trio-bossmode { background: #2e7d32; }
+        .trio-bossmode.is-on { background: #1b5e20; box-shadow: inset 0 0 0 2px #a5d6a7; }
+        .trio-void { background: #c0392b; }
 
         /* ============================================================
            U4: Analytics buttons — dedicated 2x3 grid section
         ============================================================ */
-        /* VISTA 4: Reports & Tools is now collapsible (see #analyticsSectionBody /
-           toggleAnalyticsSection() in JS) — same chevron-header mechanic as the
-           Blocks Calculator below it. Defaults to OPEN (these 15 buttons are
-           core daily navigation, unlike the Blocks Calculator trial feature),
-           but remembers the user's last choice via localStorage. */
-        /* vBeta5 F2: generalized from analytics-only selectors so any
-           collapsible section (Reports & Tools, Blocks Calculator, and
-           any future one) shares one visual/behavioral treatment instead
-           of each hand-rolling its own header, chevron and show/hide
-           logic — which is what produced the mismatched heights, fonts
-           and arrow glyphs between Reports & Tools and Blocks Calculator
-           in vBeta4. #analyticsSectionBody kept as an alias of the new
-           .analytics-section-body class so nothing else that may
-           reference that ID elsewhere breaks. */
-        .analytics-section { background: var(--hp-surface-alt); border-radius: var(--hp-radius-md, 16px); padding: 12px 14px; margin-bottom: 10px; border: none; }
-        .analytics-section-title { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 800; text-transform: none; letter-spacing: 0; color: var(--hp-ink); margin-bottom: 0; padding-left: 2px; cursor: pointer; }
-        .analytics-section-chevron { color: var(--hp-ink-muted); font-size: 15px; transition: transform 0.18s ease; }
-        .analytics-section.open .analytics-section-chevron { transform: rotate(90deg); }
-        .analytics-section-body, #analyticsSectionBody { display: none; margin-top: 10px; }
-        .analytics-section.open .analytics-section-body, .analytics-section.open #analyticsSectionBody { display: block; }
-        .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+        .analytics-section { background: #16212c; border-radius: 8px; padding: 12px; margin-bottom: 16px; border: 1px solid #2c3e50; }
+        .analytics-section-title { font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #7f8c8d; margin-bottom: 8px; padding-left: 2px; }
+        .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .analytics-grid-btn {
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
-            background: var(--hp-surface);
-            color: var(--hp-ink); border: none; border-radius: var(--hp-radius-sm, 12px); cursor: pointer;
-            padding: 11px 4px; font-size: 10.5px; font-weight: 700; min-height: 58px;
+            background: var(--analytics-btn-color, #2c3e50);
+            color: #fff; border: none; border-radius: 6px; cursor: pointer;
+            padding: 12px 4px; font-size: 11px; font-weight: bold; min-height: 64px;
             width: 100%; margin: 0; box-sizing: border-box; text-align: center;
-            box-shadow: 0 1px 2px rgba(28,28,39,0.05);
         }
-        .analytics-grid-btn:hover { background: var(--hp-surface-alt-strong); filter: none; }
-        /* vBeta5 F1: was font-size:18px on a raw emoji glyph. Now a small
-           tinted circle (one shared color for every icon, per request)
-           with an inline-SVG line icon inside, set via data-vicon + JS —
-           see VISTA_GRID_ICONS / renderVistaGridIcons(). */
-        .analytics-grid-btn .ag-icon {
-            width: 32px; height: 32px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            background: var(--hp-blue-tint); flex-shrink: 0;
-        }
-        .analytics-grid-btn .ag-icon svg { width: 17px; height: 17px; color: var(--hp-blue-ink); }
+        .analytics-grid-btn .ag-icon { font-size: 20px; line-height: 1; }
+        /* Change any button's color later by editing the --analytics-btn-color custom
+           property on its specific id below — see comment block right above this rule. */
+        #btnAnalyticsLedger      { --analytics-btn-color: #2c3e50; }
+        #btnAnalyticsOutstanding { --analytics-btn-color: #2c3e50; }
+        #btnAnalyticsSummary     { --analytics-btn-color: #2c3e50; }
+        #btnAnalyticsAudit       { --analytics-btn-color: #2c3e50; }
+        #btnAnalyticsCashBook    { --analytics-btn-color: #2c3e50; }
+        #btnAnalyticsStock       { --analytics-btn-color: #2c3e50; }
 
         /* ============================================================
            v73a/v74c TRIAL — Blocks Calculator
-           vBeta6: restyled from its original hardcoded dark-dashboard
-           palette (#243342/#2c3e50/#34495e/#465c71 etc.) onto the shared
-           --hp-* Vista tokens, matching the rest of .editor-box (this
-           block is a descendant of .editor-box, so the tokens already
-           resolve here with no new alias block needed). ONLY colors,
-           borders and shadows changed below — every size/spacing/layout
-           value is untouched, so row structure, alignment and the
-           label-reservation comment above .bcalc-icon-col all still
-           apply exactly as before. The green/red "adds vs subtracts"
-           split and the violet/amber wastage/round-up split (both
-           deliberate visual-clue requests) are kept, just remapped onto
-           Vista's mint/danger and purple/amber pairs — the same 4-color
-           set already used everywhere else in Vista, so this no longer
-           reads as a different app bolted onto the homepage. */
-        .bcalc-row { background:var(--hp-surface); border:1px solid var(--hp-border); border-radius:6px; padding:8px; margin-bottom:8px; box-shadow:var(--hp-shadow); }
+        ============================================================ */
+        .bcalc-row { background:#243342; border:1px solid #34495e; border-radius:6px; padding:8px; margin-bottom:8px; }
         .bcalc-row-top { display:flex; gap:6px; align-items:flex-start; }
-        .bcalc-row-top input[type=number], .bcalc-row-top input[type=text] { background:var(--hp-surface-alt); border:1px solid var(--hp-border); color:var(--hp-ink); padding:8px 6px; border-radius:4px; font-size:13px; width:100%; box-sizing:border-box; margin:0; }
+        .bcalc-row-top input[type=number], .bcalc-row-top input[type=text] { background:#2c3e50; border:1px solid #465c71; color:#fff; padding:8px 6px; border-radius:4px; font-size:13px; width:100%; box-sizing:border-box; margin:0; }
         .bcalc-dim-group { flex:1; display:flex; flex-direction:column; gap:2px; }
-        .bcalc-dim-label { font-size:9px; color:var(--hp-ink-muted); text-transform:uppercase; font-weight:bold; height:22px; line-height:11px; overflow:hidden; display:block; }
+        .bcalc-dim-label { font-size:9px; color:#7f8c8d; text-transform:uppercase; font-weight:bold; height:22px; line-height:11px; overflow:hidden; display:block; }
         /* Icon buttons (duplicate/delete) sit beside Length/Height/Wall
            Count. Their column has no label of its own, so it must reserve
            the SAME 22px + 2px gap the other columns spend on their label
            before the input starts — otherwise the icons float up next to
            the labels instead of lining up with the input boxes. */
         .bcalc-icon-col { display:flex; flex-direction:column; gap:4px; margin-top:24px; }
-        .bcalc-x { align-self:center; color:var(--hp-ink-muted); font-weight:bold; padding-top:14px; }
+        .bcalc-x { align-self:center; color:#7f8c8d; font-weight:bold; padding-top:14px; }
         .bcalc-size-row { display:flex; gap:5px; margin-top:8px; }
-        .bcalc-size-btn { flex:1; margin:0; padding:7px 2px; font-size:12px; font-weight:bold; border-radius:4px; background:var(--hp-surface-alt); border:2px solid var(--hp-border); color:var(--hp-ink-muted); cursor:pointer; }
-        .bcalc-size-btn.active { background:var(--hp-ink); border-color:var(--hp-ink); color:#fff; }
-        .bcalc-row-result { font-size:11px; color:var(--hp-mint-ink); font-weight:bold; margin-top:6px; text-align:right; }
-        .bcalc-label-input { width:100%; box-sizing:border-box; background:transparent; border:none; border-bottom:1px dashed var(--hp-border); color:var(--hp-ink); font-size:12px; font-weight:bold; padding:2px 0 6px 0; margin-bottom:6px; }
-        .bcalc-label-input::placeholder { color:var(--hp-ink-muted); font-weight:normal; }
-        .bcalc-icon-btn { background:var(--hp-surface-alt); color:var(--hp-ink-muted); border:1px solid var(--hp-border); border-radius:4px; width:32px; height:16px; font-size:12px; cursor:pointer; padding:0; margin:0; }
-        .bcalc-icon-del { background:var(--hp-danger-tint); color:var(--hp-danger-ink); border-color:var(--hp-danger); }
+        .bcalc-size-btn { flex:1; margin:0; padding:7px 2px; font-size:12px; font-weight:bold; border-radius:4px; background:#2c3e50; border:2px solid #465c71; color:#aaa; cursor:pointer; }
+        .bcalc-size-btn.active { background:#3498db; border-color:#3498db; color:#fff; }
+        .bcalc-row-result { font-size:11px; color:#2ecc71; font-weight:bold; margin-top:6px; text-align:right; }
+        .bcalc-label-input { width:100%; box-sizing:border-box; background:transparent; border:none; border-bottom:1px dashed #465c71; color:#fff; font-size:12px; font-weight:bold; padding:2px 0 6px 0; margin-bottom:6px; }
+        .bcalc-label-input::placeholder { color:#5d7285; font-weight:normal; }
+        .bcalc-icon-btn { background:#2c3e50; color:#bdc3c7; border:1px solid #465c71; border-radius:4px; width:32px; height:16px; font-size:12px; cursor:pointer; padding:0; margin:0; }
+        .bcalc-icon-del { background:#c0392b; color:#fff; border-color:#c0392b; }
 
         /* v74c: green "wall details" and red "deductions" themed sub-boxes,
            giving each row a clear visual split between what ADDS to the
-           order and what SUBTRACTS from it — the "more visual clues" ask.
-           vBeta6: remapped onto Vista's mint/danger tint pair instead of
-           raw rgba(46,204,113,...)/rgba(231,76,60,...) — same soft-tint
-           card language already used for banners elsewhere (e.g.
-           .client-autofill-banner / .duplicate-warn-banner). */
-        .bcalc-section-green { background:var(--hp-mint-tint); border:1px solid transparent; border-radius:5px; padding:7px; margin-bottom:6px; }
-        .bcalc-section-red { background:var(--hp-danger-tint); border:1px solid transparent; border-radius:5px; padding:7px; }
+           order and what SUBTRACTS from it — the "more visual clues" ask. */
+        .bcalc-section-green { background:rgba(46,204,113,0.10); border:1px solid rgba(46,204,113,0.35); border-radius:5px; padding:7px; margin-bottom:6px; }
+        .bcalc-section-red { background:rgba(231,76,60,0.10); border:1px solid rgba(231,76,60,0.4); border-radius:5px; padding:7px; }
 
         /* Length field supports "20 16" (space-separated, auto-summed) —
            needs a plain text input (a native number input rejects spaces
            and would also hide the space key on many mobile keyboards). */
-        .bcalc-length-input { background:var(--hp-surface); border:1px solid var(--hp-border); color:var(--hp-ink); padding:8px 6px; border-radius:4px; font-size:13px; width:100%; box-sizing:border-box; margin:0; }
-        .bcalc-length-sum-hint { font-size:9px; color:var(--hp-mint-ink); margin-top:2px; min-height:11px; }
+        .bcalc-length-input { background:#2c3e50; border:1px solid #465c71; color:#fff; padding:8px 6px; border-radius:4px; font-size:13px; width:100%; box-sizing:border-box; margin:0; }
+        .bcalc-length-sum-hint { font-size:9px; color:#2ecc71; margin-top:2px; min-height:11px; }
 
         /* Inner/Outer dimension toggle — replaces the old freeform "extra
            length" field. Outer = no correction (as-measured). Inner = the
            block-thickness correction is applied automatically once a size
            is picked, so there is nothing to type or compute by hand. */
         .bcalc-io-row { display:flex; gap:5px; margin-top:6px; }
-        .bcalc-io-btn { flex:1; margin:0; padding:6px 2px; font-size:11px; font-weight:bold; border-radius:4px; background:var(--hp-surface); border:2px solid var(--hp-border); color:var(--hp-ink-muted); cursor:pointer; text-transform:uppercase; letter-spacing:0.3px; }
-        .bcalc-io-btn.active { background:var(--hp-mint); border-color:var(--hp-mint); color:var(--hp-mint-ink); }
-        .bcalc-io-hint { font-size:9px; color:var(--hp-ink-muted); margin-top:3px; }
+        .bcalc-io-btn { flex:1; margin:0; padding:6px 2px; font-size:11px; font-weight:bold; border-radius:4px; background:#2c3e50; border:2px solid #465c71; color:#aaa; cursor:pointer; text-transform:uppercase; letter-spacing:0.3px; }
+        .bcalc-io-btn.active { background:#27ae60; border-color:#27ae60; color:#fff; }
+        .bcalc-io-hint { font-size:9px; color:#7f8c8d; margin-top:3px; }
 
         /* v75: Deductions box is collapsed by default per row — a red
            toggle button reveals a single math-expression input (same
            grammar as Length). No separate "count" field anymore — the
            expression itself already handles repeats, e.g. "12x3 10". */
         .bcalc-ded-toggle { display:block; width:100%; margin:6px 0 0 0; padding:8px; font-size:11px; font-weight:bold; border-radius:5px; cursor:pointer; text-align:center;
-            background:var(--hp-danger-tint); border:1px dashed var(--hp-danger); color:var(--hp-danger-ink); }
-        .bcalc-ded-toggle-open { border-style:solid; background:var(--hp-danger-tint); }
-        .bcalc-ded-toggle-hasvalue { border-style:solid; background:var(--hp-danger-tint); }
-        .bcalc-deduct-input { border-color:var(--hp-danger) !important; }
+            background:rgba(231,76,60,0.12); border:1px dashed rgba(231,76,60,0.5); color:#e74c3c; }
+        .bcalc-ded-toggle-open { border-style:solid; background:rgba(231,76,60,0.18); }
+        .bcalc-ded-toggle-hasvalue { border-style:solid; background:rgba(231,76,60,0.22); }
+        .bcalc-deduct-input { border-color:rgba(231,76,60,0.5) !important; }
 
         /* v75: prominent "Add Wall Row" — bold gradient, larger touch
            target, soft glow. Was previously easy to miss; this should not
-           be missable. vBeta6: the gradient was the one piece of this UI
-           with no equivalent anywhere else in Vista (which doesn't use
-           gradients at all), so it's now a solid --hp-mint fill instead —
-           still the brightest, most saturated element in the section
-           (mint is Vista's brightest core color) and still reads as
-           "add/positive", just consistent with how every other Vista
-           surface renders. */
-        .bcalc-addrow-btn { flex:1.6; margin:0; padding:13px; font-size:14px; font-weight:900; letter-spacing:0.5px; color:var(--hp-mint-ink); border:none; border-radius:7px; cursor:pointer;
-            background:var(--hp-mint); box-shadow:0 3px 10px rgba(28,122,62,0.25); text-transform:uppercase; }
+           be missable. */
+        .bcalc-addrow-btn { flex:1.6; margin:0; padding:13px; font-size:14px; font-weight:900; letter-spacing:0.5px; color:#fff; border:none; border-radius:7px; cursor:pointer;
+            background:linear-gradient(135deg, #2ecc71, #27ae60); box-shadow:0 3px 10px rgba(46,204,113,0.5); text-transform:uppercase; }
         .bcalc-addrow-btn:active { transform:scale(0.97); }
 
         /* v75: Add Wastage / Round Up — each column is an explicit ON/OFF
            toggle switch (OFF by default) plus an "elegant" connected
            segmented control (not separate rounded pills) that dims when
            its switch is off. Distinct violet/amber palette so this whole
-           strip reads as a different KIND of control from the row cards.
-           vBeta6: violet -> --hp-purple, amber -> --hp-amber — both
-           already part of Vista's core token set, so no new color was
-           introduced to achieve the same "different kind of control"
-           distinction. */
+           strip reads as a different KIND of control from the row cards. */
         .bcalc-adjust-strip { display:flex; gap:8px; margin-top:10px; }
         .bcalc-adjust-col { flex:1; border-radius:8px; padding:7px 9px; }
-        .bcalc-adjust-wastage { background:var(--hp-purple-tint); border:1px solid transparent; }
-        .bcalc-adjust-round { background:var(--hp-amber-tint); border:1px solid transparent; }
+        .bcalc-adjust-wastage { background:rgba(108,92,231,0.10); border:1px solid rgba(108,92,231,0.35); }
+        .bcalc-adjust-round { background:rgba(243,156,18,0.10); border:1px solid rgba(243,156,18,0.35); }
         .bcalc-toggle-row { display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:6px; }
-        .bcalc-adjust-label { font-size:10px; font-weight:bold; color:var(--hp-ink); }
+        .bcalc-adjust-label { font-size:10px; font-weight:bold; color:#ddd; }
         .bcalc-toggle-switch { position:relative; display:inline-block; width:26px; height:15px; flex-shrink:0; }
         .bcalc-toggle-switch input { opacity:0; width:0; height:0; }
-        .bcalc-toggle-slider { position:absolute; inset:0; background:var(--hp-surface-alt-strong); border-radius:15px; transition:background 0.15s; }
+        .bcalc-toggle-slider { position:absolute; inset:0; background:#465c71; border-radius:15px; transition:background 0.15s; }
         .bcalc-toggle-slider::before { content:''; position:absolute; width:11px; height:11px; left:2px; top:2px; background:#fff; border-radius:50%; transition:transform 0.15s; }
-        .bcalc-adjust-wastage .bcalc-toggle-switch input:checked + .bcalc-toggle-slider { background:var(--hp-purple); }
-        .bcalc-adjust-round .bcalc-toggle-switch input:checked + .bcalc-toggle-slider { background:var(--hp-amber); }
+        .bcalc-adjust-wastage .bcalc-toggle-switch input:checked + .bcalc-toggle-slider { background:#6c5ce7; }
+        .bcalc-adjust-round .bcalc-toggle-switch input:checked + .bcalc-toggle-slider { background:#f39c12; }
         .bcalc-toggle-switch input:checked + .bcalc-toggle-slider::before { transform:translateX(11px); }
         /* Elegant connected segmented control — a single bordered strip
            with square-ish internal dividers rather than separate floating
            pills, which reads as more deliberate/refined. */
-        .bcalc-seg { display:flex; border:1px solid var(--hp-border); border-radius:6px; overflow:hidden; transition:opacity 0.15s; background:var(--hp-surface); }
+        .bcalc-seg { display:flex; border:1px solid #465c71; border-radius:6px; overflow:hidden; transition:opacity 0.15s; }
         .bcalc-seg.disabled { opacity:0.35; pointer-events:none; }
-        .bcalc-seg-btn { flex:1; margin:0; padding:6px 2px; font-size:11px; font-weight:bold; cursor:pointer; background:var(--hp-surface); color:var(--hp-ink-muted); border:none; border-right:1px solid var(--hp-border); }
+        .bcalc-seg-btn { flex:1; margin:0; padding:6px 2px; font-size:11px; font-weight:bold; cursor:pointer; background:#1a2f42; color:#aaa; border:none; border-right:1px solid #465c71; }
         .bcalc-seg-btn:last-child { border-right:none; }
-        .bcalc-adjust-wastage .bcalc-seg-btn.active { background:var(--hp-purple); color:var(--hp-purple-ink); }
-        .bcalc-adjust-round .bcalc-seg-btn.active { background:var(--hp-amber); color:var(--hp-amber-ink); }
+        .bcalc-adjust-wastage .bcalc-seg-btn.active { background:#6c5ce7; color:#fff; }
+        .bcalc-adjust-round .bcalc-seg-btn.active { background:#f39c12; color:#1a2f42; }
 
         /* v75: Save / Load panel */
-        .bcalc-saved-row { display:flex; align-items:center; gap:6px; padding:6px 4px; border-bottom:1px solid var(--hp-border); }
+        .bcalc-saved-row { display:flex; align-items:center; gap:6px; padding:6px 4px; border-bottom:1px solid #34495e; }
         .bcalc-saved-info { flex:1; min-width:0; }
-        .bcalc-saved-name { font-size:12px; font-weight:bold; color:var(--hp-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .bcalc-saved-meta { font-size:10px; color:var(--hp-ink-muted); }
-        .bcalc-saved-load { background:var(--hp-ink); color:#fff; border:none; border-radius:4px; padding:5px 10px; font-size:11px; font-weight:bold; cursor:pointer; margin:0; width:auto; }
-        .bcalc-saved-del { background:none; border:none; color:var(--hp-danger-ink); font-size:13px; cursor:pointer; padding:3px 6px; margin:0; width:auto; }
-        /* vBeta6: the old flat-color Convert buttons had no visible
-           disabled state beyond the browser's inconsistent default; the
-           new soft tint pills need one explicitly since a disabled pill
-           and an enabled pill would otherwise look identical. */
-        #btnBlocksToQuo:disabled, #btnBlocksToSal:disabled { opacity:0.45; cursor:not-allowed; }
+        .bcalc-saved-name { font-size:12px; font-weight:bold; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .bcalc-saved-meta { font-size:10px; color:#7f8c8d; }
+        .bcalc-saved-load { background:#2980b9; color:#fff; border:none; border-radius:4px; padding:5px 10px; font-size:11px; font-weight:bold; cursor:pointer; margin:0; width:auto; }
+        .bcalc-saved-del { background:none; border:none; color:#e74c3c; font-size:13px; cursor:pointer; padding:3px 6px; margin:0; width:auto; }
 
 
         /* ============================================================
@@ -512,7 +365,7 @@
         /* ============================================================
            U8: Doc number live-collision warning
         ============================================================ */
-        .docno-warning { display: none; background: var(--vista-danger-tint, #c0392b); color: var(--vista-danger-ink, #fff); font-size: 11px; padding: 8px 10px; border-radius: var(--vista-radius-sm, 4px); margin-top: 6px; font-weight: 700; border-left: 3px solid var(--vista-danger, transparent); }
+        .docno-warning { display: none; background: #c0392b; color: #fff; font-size: 11px; padding: 6px 10px; border-radius: 4px; margin-top: 4px; font-weight: bold; }
 
         /* ============================================================
            U3: Cloud Manager multi-select
@@ -542,42 +395,29 @@
         .btn-bulk-pdf { background: #8e44ad; }
         .btn-bulk.disabled-bulk { opacity: 0.4; cursor: not-allowed; pointer-events: none; box-shadow: none; }
         
-        /* Vista 4 font pass (2026-09-04): .bill-layout never had its own
-           font-family — it silently inherited whatever `body` was set to.
-           That was harmless while body used the same old system-font stack
-           as everything else, but body is now moving to Lato (see below).
-           Pinning the exact old stack here explicitly means the printed/
-           PDF-exported document's font is now completely decoupled from
-           body and stays byte-for-byte the same no matter what the rest of
-           the app's typography does — verified pixel-identical via the
-           usual .bill-layout screenshot diff. font-synthesis is reset to
-           the browser default too, for the same reason (see body's
-           font-synthesis:none below, which this must NOT inherit). */
-        .bill-layout { background: white; padding: 40px; color: #333; width: 100%; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.1); position: relative; overflow: hidden; min-height: 800px; display: flex; flex-direction: column; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-synthesis: weight style;}
+        .bill-layout { background: white; padding: 40px; color: #333; width: 100%; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.1); position: relative; overflow: hidden; min-height: 800px; display: flex; flex-direction: column;}
 
         .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 140px; color: rgba(231, 76, 60, 0.15); font-weight: 900; z-index: 50; pointer-events: none; display: none; letter-spacing: 5px; text-transform: uppercase;}
 
-        label { font-size: 11px; font-weight: bold; text-transform: uppercase; color: var(--hp-ink-muted, #bdc3c7); margin-top: 12px; display: block; }
+        label { font-size: 11px; font-weight: bold; text-transform: uppercase; color: #bdc3c7; margin-top: 12px; display: block; }
         /* v87 FIX: this rule used to match `input` of EVERY type, so checkboxes and
            radios were given width:100% and 10px padding too. Any checkbox that did not
            happen to override it inline rendered as a full-width block that pushed its own
            caption onto the next line - "Rates INCLUDE GST" and Summary's "All Time" were
            the visible cases, but it affected every un-overridden checkbox in the app.
            Text inputs and selects still fill their container; toggles size to themselves. */
-        input:not([type="checkbox"]):not([type="radio"]), select { width: 100%; padding: 10px; margin-top: 5px; background: var(--hp-surface, #34495e); border: none; box-shadow: inset 0 0 0 1.5px var(--hp-border, #465c71); color: var(--hp-ink, white); border-radius: var(--hp-radius-sm, 4px); box-sizing: border-box; font-size: 14px; font-weight: 600; }
-        .editor-box input:not([type="checkbox"]):not([type="radio"]):focus, .editor-box select:focus { outline: none; box-shadow: inset 0 0 0 2.5px var(--hp-purple); }
+        input:not([type="checkbox"]):not([type="radio"]), select { width: 100%; padding: 10px; margin-top: 5px; background: #34495e; border: 1px solid #465c71; color: white; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
         input[type="checkbox"], input[type="radio"] { width: auto; margin-top: 0; padding: 0; vertical-align: middle; flex: none; }
         
-        button { cursor: pointer; border: none; padding: 12px; border-radius: var(--hp-radius-sm, 4px); font-weight: bold; width: 100%; margin-top: 15px; font-size: 15px; color: white; transition: transform 0.1s ease, background-color 0.2s ease, filter 0.15s ease; }
-        .editor-box button:hover { filter: brightness(1.08); }
+        button { cursor: pointer; border: none; padding: 12px; border-radius: 4px; font-weight: bold; width: 100%; margin-top: 15px; font-size: 15px; color: white; transition: transform 0.1s ease, background-color 0.2s ease; }
         button:active, .action-trio-btn:active, .pressed-state { /* v84: .action-trio-btn added - the signature tile is a <div>, so it never got press feedback */ transform: scale(0.95); opacity: 0.85; box-shadow: inset 0 3px 5px rgba(0,0,0,0.4)!important; }
         .btn-add { background: #3498db; }
         .btn-mortar { background: #9b59b6; margin-top: 8px; }
         
-        .action-bar { position: fixed; bottom: 20px; left: 5%; width: 90%; display: flex; gap: 10px; z-index: 1000; font-family: var(--vista-font, inherit); }
-        .btn-print { flex: 1; background: var(--vista-surface-alt, #27ae60); color: var(--vista-ink, white); font-size: 16px; box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35); padding: 15px; border-radius: 16px; margin: 0;}
-        .btn-pdf { flex: 1; background: var(--vista-surface-alt, #e74c3c); color: var(--vista-ink, white); font-size: 16px; box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35); padding: 15px; border-radius: 16px; margin: 0;}
-        .btn-save { flex: 1; background: var(--vista-ink, #2980b9); color: white; font-size: 16px; box-shadow: 0 4px 14px -6px rgba(28,28,39,0.5); padding: 15px; border-radius: 16px; margin: 0;}
+        .action-bar { position: fixed; bottom: 20px; left: 5%; width: 90%; display: flex; gap: 10px; z-index: 1000; }
+        .btn-print { flex: 1; background: #27ae60; color: white; font-size: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; margin: 0;}
+        .btn-pdf { flex: 1; background: #e74c3c; color: white; font-size: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; margin: 0;}
+        .btn-save { flex: 1; background: #2980b9; color: white; font-size: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; margin: 0;}
 
         /* --- INVOICE AESTHETICS --- */
         .header { display: flex; justify-content: space-between; align-items: stretch; min-height: 160px; height: auto; padding-bottom: 15px; z-index: 1;}
@@ -942,62 +782,9 @@
 
         .inline-ux-modal { max-width: 450px; background: #fff; padding: 20px; border-radius: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
 
-        /* vBeta5 F4 FIX: was align-items:end. That aligns each grid CELL
-           (label+input+any helper text) to the row's bottom edge as one
-           block. Once v72 moved the "Unused unless..." caveat out of the
-           Wholesale label into a helper line under its input, that cell
-           became taller than the Retail Premium cell next to it — so
-           align-items:end pushed the whole shorter cell (label included)
-           down to match, misaligning the LABELS instead of fixing the
-           inputs (visible in the vBeta4 screenshot: Retail Premium's
-           label sits lower than Wholesale's). Both labels are one line
-           each now, so align-items:start (top-align) naturally lines up
-           both inputs at the same baseline, and the Wholesale helper
-           text just extends harmlessly below without affecting Retail
-           Premium's column at all. */
-        .engine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; align-items: start; }
+        .engine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; align-items: end; }
         .engine-grid label { color: #333; font-size: 12px; margin-top: 0; }
         .engine-grid input { background: #f4f6f7; color: #2c3e50; border: 1px solid #bdc3c7; margin-top: 5px; font-weight: bold; }
-
-        /* vBeta5 F3: Pricing & Item Manager modal wasn't part of the Vista
-           token migration yet (still plain hardcoded colors throughout).
-           Scoped local alias, same pattern as .editor-box/#tonnageModal,
-           applied only to the pieces of this modal being touched in this
-           pass (the brand chip row + compact tier table, and the
-           engine-grid boxes right above) — not a full modal reskin, so
-           the Brands/Item Defaults/Add New Product tabs are untouched and
-           carry zero risk from this change. */
-        #pricingModal {
-            --pm-ink: var(--vista-ink); --pm-ink-muted: var(--vista-ink-muted);
-            --pm-surface: var(--vista-surface); --pm-surface-alt: var(--vista-surface-alt);
-            --pm-border: var(--vista-border);
-            --pm-blue: var(--vista-blue); --pm-blue-tint: var(--vista-blue-tint); --pm-blue-ink: var(--vista-blue-ink);
-            --pm-radius-sm: var(--vista-radius-sm);
-        }
-        .brand-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
-        .brand-chip {
-            padding: 7px 14px; border-radius: 999px; margin: 0; width: auto;
-            border: 1.5px solid var(--pm-border, #ddd); background: var(--pm-surface, #fff);
-            color: var(--pm-ink, #333); font-size: 12px; font-weight: 700; cursor: pointer;
-        }
-        .brand-chip.active { background: var(--pm-ink, #1C1C27); border-color: var(--pm-ink, #1C1C27); color: #fff; }
-        .btg-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        /* explicit background needed: a global bare "th { background:
-           #2c3e50; color: white; }" rule (for the invoice/quotation
-           preview table) otherwise wins on this property alone, since
-           this class rule never contested it — table headers were
-           rendering with a dark navy background here even though the
-           (higher-specificity, correctly-overridden) text color was
-           already the intended muted gray. */
-        .btg-table th { text-align: left; padding: 6px 8px; border-bottom: 2px solid var(--pm-border, #ddd); border-left: none; border-right: none; font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--pm-ink-muted, #7f8c8d); background: var(--pm-surface, #fff); }
-        .btg-table th:last-child, .btg-table td:last-child { text-align: right; }
-        .btg-tier-cell { padding: 10px 8px; font-weight: 700; font-size: 13px; border-bottom: 1px solid var(--pm-border, #eee); color: var(--pm-ink, #2c3e50); }
-        .btg-rate-cell { padding: 6px 8px; border-bottom: 1px solid var(--pm-border, #eee); text-align: right; }
-        .btg-rate-cell input {
-            width: 96px; text-align: center; padding: 9px 4px; font-size: 14px; font-weight: bold;
-            border-radius: var(--pm-radius-sm, 6px); border: 1px solid var(--pm-border, #bdc3c7);
-            background: var(--pm-surface-alt, #f4f6f7); color: var(--pm-ink, #2c3e50);
-        }
 
         /* --- PDF GENERATION ENGINE OVERRIDES --- */
         /* Locks the container to exactly A4 dimensions for perfect scaling */
@@ -1023,23 +810,23 @@
         /* F17: Item notes */
         .item-notes-print { font-size: 11px; color: #777; font-style: italic; margin-top: 3px; }
         /* F16: Client autofill suggestion pill */
-        .client-autofill-banner { background:var(--vista-mint-tint,#1a6e3c); color:var(--vista-mint-text,#fff); font-size:12px; font-weight:600; padding:9px 13px; border-radius:var(--vista-radius-sm,4px); border-left:3px solid var(--vista-mint-text,transparent); margin-top:8px; display:none; cursor:pointer; }
-        .client-autofill-banner:hover { filter: brightness(0.97); }
+        .client-autofill-banner { background:#1a6e3c; color:#fff; font-size:12px; padding:7px 12px; border-radius:4px; margin-top:6px; display:none; cursor:pointer; }
+        .client-autofill-banner:hover { background:#1e8449; }
         /* A7: custom client suggestions dropdown — no native <select>/<datalist>
            arrow, scales cleanly past hundreds of clients since it's just a
            filtered, scrollable list. */
-        .client-suggestions-box { display:none; position:absolute; top:100%; left:0; right:0; z-index:50; background:var(--vista-surface,#1a252f); border:none; box-shadow: inset 0 0 0 1.5px var(--vista-border,#465c71), 0 12px 24px -10px rgba(28,28,39,0.25); border-radius:0 0 var(--vista-radius-sm,6px) var(--vista-radius-sm,6px); max-height:220px; overflow-y:auto; margin-top:-2px; }
-        .client-suggestion-row { padding:10px 13px; cursor:pointer; font-size:13px; font-weight:600; color:var(--vista-ink,#ecf0f1); border-bottom:1px solid var(--vista-border,#2c3e50); display:flex; justify-content:space-between; align-items:center; gap:8px; }
+        .client-suggestions-box { display:none; position:absolute; top:100%; left:0; right:0; z-index:50; background:#1a252f; border:1px solid #465c71; border-radius:0 0 6px 6px; max-height:220px; overflow-y:auto; box-shadow:0 6px 16px rgba(0,0,0,0.4); margin-top:-2px; }
+        .client-suggestion-row { padding:9px 12px; cursor:pointer; font-size:13px; color:#ecf0f1; border-bottom:1px solid #2c3e50; display:flex; justify-content:space-between; align-items:center; gap:8px; }
         .client-suggestion-row:last-child { border-bottom:none; }
-        .client-suggestion-row:hover, .client-suggestion-row.active-suggestion { background:var(--vista-surface-alt,#2c3e50); }
-        .client-suggestion-id { background:var(--vista-purple-tint,#8e44ad); color:var(--vista-purple-ink,#fff); padding:2px 7px; border-radius:9px; font-size:11px; font-weight:bold; flex-shrink:0; }
-        .client-suggestion-meta { font-size:11px; color:var(--vista-ink-muted,#7f8c8d); }
+        .client-suggestion-row:hover, .client-suggestion-row.active-suggestion { background:#2c3e50; }
+        .client-suggestion-id { background:#8e44ad; color:#fff; padding:2px 7px; border-radius:9px; font-size:11px; font-weight:bold; flex-shrink:0; }
+        .client-suggestion-meta { font-size:11px; color:#7f8c8d; }
         /* F2: Duplicate guard banner */
-        .duplicate-warn-banner { background:var(--vista-danger-tint,#922b21); color:var(--vista-danger-ink,#fff); font-size:12px; font-weight:600; padding:9px 13px; border-radius:var(--vista-radius-sm,4px); border-left:3px solid var(--vista-danger,transparent); margin-top:8px; display:none; }
+        .duplicate-warn-banner { background:#922b21; color:#fff; font-size:12px; padding:7px 12px; border-radius:4px; margin-top:6px; display:none; }
         /* v80 (item 20): credit-period warning. Deliberately amber, not the
            red of the stock/below-cost banners — being past terms is a
            judgement call about a customer, not an error in the document. */
-        .credit-warn-banner { background:var(--vista-amber-tint,#b9770e); color:var(--vista-amber-ink,#fff); font-size:12px; font-weight:600; padding:9px 13px; border-radius:var(--vista-radius-sm,4px); border-left:3px solid var(--vista-amber,transparent); margin-top:8px; display:none; }
+        .credit-warn-banner { background:#b9770e; color:#fff; font-size:12px; padding:7px 12px; border-radius:4px; margin-top:6px; display:none; }
         /* F12: Custom GST row in edit modal */
         .gst-custom-row { display:flex; gap:8px; margin-top:8px; align-items:center; }
         /* Batch 4 analytics modals */
@@ -1148,15 +935,15 @@
         /* --- BATCH 5 STYLES --- */
         /* F22: Multi-advance table */
         .adv-link-table { width:100%; border-collapse:collapse; margin-top:8px; font-size:12px; }
-        .adv-link-table th { background:transparent; color:var(--hp-danger-ink); padding:6px 8px; text-align:left; font-weight:700; }
-        .adv-link-table td { padding:5px 8px; border-bottom:1px solid rgba(163,42,46,0.15); color:var(--hp-ink); vertical-align:middle; }
-        .adv-link-table input { background:var(--hp-surface); border:1px solid rgba(163,42,46,0.25); color:var(--hp-ink); padding:5px 7px; font-size:12px; margin:0; border-radius:6px; }
-        .adv-link-table input::placeholder { color:var(--hp-ink-muted); }
-        .btn-adv-add-row { background:var(--hp-surface); color:var(--hp-danger-ink); border:none; padding:4px 10px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:bold; width:auto; margin:0; }
+        .adv-link-table th { background:#c0392b; color:#fff; padding:6px 8px; text-align:left; font-weight:600; }
+        .adv-link-table td { padding:5px 8px; border-bottom:1px solid rgba(255,255,255,0.15); color:#fff; vertical-align:middle; }
+        .adv-link-table input { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:#fff; padding:5px 7px; font-size:12px; margin:0; }
+        .adv-link-table input::placeholder { color:rgba(255,255,255,0.5); }
+        .btn-adv-add-row { background:rgba(255,255,255,0.2); color:#fff; border:none; padding:4px 10px; border-radius:3px; cursor:pointer; font-size:12px; font-weight:bold; width:auto; margin:0; }
         .btn-adv-del-row { background:rgba(231,76,60,0.7); color:#fff; border:none; padding:3px 7px; border-radius:3px; cursor:pointer; font-size:11px; width:auto; margin:0; }
         /* ADV: direct amount box */
-        .adv-amount-box { background:var(--hp-amber-tint); border:none; border-radius:var(--hp-radius-sm); padding:12px 15px; margin-top:10px; }
-        .adv-amount-box label { color:var(--hp-amber-ink); margin-top:0; }
+        .adv-amount-box { background:#1a252f; border:2px solid #f39c12; border-radius:6px; padding:12px 15px; margin-top:10px; }
+        .adv-amount-box label { color:#f39c12; margin-top:0; }
         /* F23: Cash Book */
         .cash-entry-row { display:flex; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid #eee; font-size:13px; }
         .cash-in-row { background:#f0fff4; }
@@ -1336,7 +1123,7 @@
                 position: relative; top: 0; max-height: none;
                 overflow-y: visible; border-radius: 0;
                 padding: 14px 12px;
-                border-bottom: none;
+                border-bottom: 3px solid #e67e22;
             }
             .preview-box { padding: 12px 8px 8px 8px; }
 
@@ -1391,14 +1178,7 @@
                continuing to rely on fragile positional selectors, which
                is what produced this bug and the one just below it in the
                first place. */
-            /* vBeta5 F5: was flex-direction:column (force full stack).
-               Doc No. and Date now pair on one line per request — their
-               inline flex ratio (1.6/1) plus flex-wrap on the row (added
-               directly on #docNoDateRow below) already handles an
-               unusually narrow screen gracefully, so no forced stacking
-               is needed here any more. */
-            #docNoDateRow { flex-wrap: wrap !important; gap: 8px !important; }
-            #docNoDateRow > div { min-width: 130px; }
+            #docNoDateRow { flex-direction: column !important; gap: 8px !important; }
 
             /* v71 CRITICAL FIX: this said "Client Name / Location / Phone —
                3 columns stacks to 1" but targeted nth-child(2), which is
@@ -1416,11 +1196,7 @@
                the Doc No/Date row fix right above this one had to be
                reasoned through independently since #salesInputs' child
                order isn't obvious from the CSS alone. */
-            /* vBeta5 F5: this used to hit a single 4-column row (Title/
-               Client Name/Billing Location/Contact No.) — now split into
-               #titleClientRow + #billingContactRow (see markup), each
-               already a 2-up row with its own flex-wrap safety net, so
-               the old forced full-stack override is no longer needed. */
+            #salesInputs > div:first-child { flex-direction: column !important; gap: 8px !important; }
 
             /* GSTIN / Vehicle / E-Way — 3 columns stacks to 1 */
             #dispatchSettingsBox > div:first-child { flex-direction: column !important; gap: 8px !important; }
@@ -1453,7 +1229,7 @@
             /* --- ANALYTICS GRID --- */
             .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
             .analytics-grid-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
-            .analytics-grid-btn .ag-icon { width: 28px; height: 28px; } .analytics-grid-btn .ag-icon svg { width: 15px; height: 15px; }
+            .analytics-grid-btn .ag-icon { font-size: 18px; }
             .analytics-section { padding: 10px; }
 
             /* --- BOTTOM ACTION BAR --- */
@@ -1462,14 +1238,14 @@
                 border-radius: 0;
                 padding: 8px 10px;
                 gap: 8px;
-                background: var(--vista-surface, rgba(26,37,47,0.97));
-                box-shadow: 0 -2px 16px rgba(28,28,39,0.12);
+                background: rgba(26,37,47,0.97);
+                box-shadow: 0 -2px 12px rgba(0,0,0,0.3);
                 box-sizing: border-box;
             }
             .btn-print, .btn-pdf, .btn-save {
                 font-size: 13px !important;
                 padding: 12px 6px !important;
-                border-radius: 12px !important;
+                border-radius: 8px !important;
             }
 
             /* --- CART ITEM ACTION BUTTONS (▲▼ Edit X) ---
@@ -1653,9 +1429,8 @@
         }
         body.force-mobile-main .editor-box input::placeholder { font-size: 14px; }
 
-        body.force-mobile-main #docNoDateRow { flex-wrap: wrap !important; gap: 8px !important; }
-        body.force-mobile-main #docNoDateRow > div { min-width: 130px; }
-        /* vBeta5 F5: superseded by #titleClientRow/#billingContactRow's own inline flex-wrap — see the non-force-mobile block above for the full explanation. */
+        body.force-mobile-main #docNoDateRow { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #salesInputs > div:first-child { flex-direction: column !important; gap: 8px !important; }
         body.force-mobile-main #dispatchSettingsBox > div:first-child { flex-direction: column !important; gap: 8px !important; }
         body.force-mobile-main #dispatchSettingsBox > div:nth-child(2) { flex-direction: column !important; gap: 8px !important; }
         body.force-mobile-main #salesInputs .add-product-row { flex-wrap: wrap !important; }
@@ -1674,7 +1449,7 @@
 
         body.force-mobile-main .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
         body.force-mobile-main .analytics-grid-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
-        body.force-mobile-main .analytics-grid-btn .ag-icon { width: 28px; height: 28px; } .analytics-grid-btn .ag-icon svg { width: 15px; height: 15px; }
+        body.force-mobile-main .analytics-grid-btn .ag-icon { font-size: 18px; }
         body.force-mobile-main .analytics-section { padding: 10px; }
 
         body.force-mobile-main .action-bar {
@@ -1813,7 +1588,7 @@
                 position: relative; top: 0; max-height: none;
                 overflow-y: visible; border-radius: 0;
                 padding: 14px 12px;
-                border-bottom: none; }
+                border-bottom: 3px solid #e67e22; }
         body.force-mobile-main .preview-box { padding: 12px 8px 8px 8px; }
         body.force-mobile-main .doctype-spotlight select { font-size: 15px; padding: 12px 10px; }
         body.force-mobile-main .doctype-spotlight label { font-size: 9px; }
@@ -1831,9 +1606,8 @@
                 font-size: 15px; 
                 border-radius: 6px; }
         body.force-mobile-main input::placeholder { font-size: 14px; }
-        body.force-mobile-main #docNoDateRow { flex-wrap: wrap !important; gap: 8px !important; }
-        body.force-mobile-main #docNoDateRow > div { min-width: 130px; }
-        /* vBeta5 F5: superseded by #titleClientRow/#billingContactRow's own inline flex-wrap — see the non-force-mobile block above for the full explanation. */
+        body.force-mobile-main #docNoDateRow { flex-direction: column !important; gap: 8px !important; }
+        body.force-mobile-main #salesInputs > div:first-child { flex-direction: column !important; gap: 8px !important; }
         body.force-mobile-main #dispatchSettingsBox > div:first-child { flex-direction: column !important; gap: 8px !important; }
         body.force-mobile-main #dispatchSettingsBox > div:nth-child(2) { flex-direction: column !important; gap: 8px !important; }
         body.force-mobile-main #salesInputs .add-product-row { flex-wrap: wrap !important; }
@@ -1850,14 +1624,14 @@
         body.force-mobile-main .action-trio-btn .trio-icon { font-size: 18px; }
         body.force-mobile-main .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
         body.force-mobile-main .analytics-grid-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
-        body.force-mobile-main .analytics-grid-btn .ag-icon { width: 28px; height: 28px; } .analytics-grid-btn .ag-icon svg { width: 15px; height: 15px; }
+        body.force-mobile-main .analytics-grid-btn .ag-icon { font-size: 18px; }
         body.force-mobile-main .analytics-section { padding: 10px; }
         body.force-mobile-main .action-bar { bottom: 0; left: 0; width: 100%;
                 border-radius: 0;
                 padding: 8px 10px;
                 gap: 8px;
-                background: var(--vista-surface, rgba(26,37,47,0.97));
-                box-shadow: 0 -2px 16px rgba(28,28,39,0.12);
+                background: rgba(26,37,47,0.97);
+                box-shadow: 0 -2px 12px rgba(0,0,0,0.3);
                 box-sizing: border-box; }
         body.force-mobile-main .btn-print, body.force-mobile-main .btn-pdf, body.force-mobile-main .btn-save { font-size: 13px !important;
                 padding: 12px 6px !important;
@@ -2074,250 +1848,207 @@
          is byte-for-byte unchanged from the pre-v90 version. Only the visual
          treatment of those same elements changed. */ -->
     <style>
-        /* ══════════════════════════════════════════════════════════════════
-           VISTA DESIGN SYSTEM (beta v2) — replaces the exploratory dark
-           "Liquid Glass" direction as the app's committed visual language,
-           named and approved 2026-09-01. Modeled directly on a reference
-           SaaS dashboard: Onest font, a 4-color brand palette (purple/
-           blue/mint plus near-black ink), white opaque cards with soft
-           shadows instead of frosted dark glass, sentence-case labels,
-           pill badges, and solid "hero" black tiles for headline figures.
-
-           These --vista-* tokens are separate from the old --glass-*
-           tokens (still defined further down, still driving Cash Book's
-           existing dark-glass look) so this migration cannot affect any
-           screen other than the one being actively rebuilt. Tonnage
-           Calculator is Vista's first real consumer; Cash Book gets its
-           own dedicated Vista pass next, at which point --glass-* can
-           eventually retire.
-
-           Never applied to the print/PDF output path — unchanged as ever. */
-        :root {
-            --vista-ink: #1C1C27;
-            /* Contrast fix (2026-09-01): #8B8A9B measured ~3.4:1 on white —
-               fails WCAG AA for the small bold labels it's used on (grid
-               headers, sub-labels, quick-pick text). Darkened to ~5.1:1. */
-            --vista-ink-muted: #6E6C80;
-            --vista-surface: #FFFFFF;
-            /* Contrast fix: row/box backgrounds read as barely-tinted white.
-               Deepened both steps of the purple-gray surface a notch so the
-               "light purple" panels are visibly distinct from white cards.
-               Updated 2026-09-03: switched from a lavender tint to a neutral
-               muted gray per explicit hex request (#EDEDF1). */
-            --vista-surface-alt: #EDEDF1;
-            --vista-surface-alt-strong: #E1E1E6;
-            --vista-border: rgba(28,28,39,0.07);
-            --vista-purple: #C38CFA;
-            --vista-purple-tint: #F1E7FE;
-            --vista-blue: #2AA7FF;
-            --vista-blue-tint: #E8F5FF;
-            --vista-mint: #B4F9B7;
-            --vista-mint-text: #1C7A3E;
-            --vista-mint-tint: #EBFCEC;
-            /* Semantic-only, not part of the 4-color brand set — needed
-               wherever a screen has a genuine negative/danger concept the
-               reference dashboard never had to represent. */
-            --vista-danger: #E5484D;
-            --vista-danger-tint: #FDECEC;
-            /* Added for Vista 4 (Document Editor homepage pass, 2026-09-03):
-               ink/tint pairs so tinted backgrounds can carry readable
-               colored text (buttons, banners), plus an amber warning tier
-               the Tonnage-only palette never needed. Purely additive —
-               nothing already shipped references these, so Tonnage is
-               unaffected. */
-            --vista-purple-ink: #6B3FA0;
-            --vista-blue-ink: #0B5A94;
-            --vista-danger-ink: #A32A2E;
-            --vista-amber: #F5A524;
-            --vista-amber-ink: #92400E;
-            --vista-amber-tint: #FEF3E0;
-            --vista-radius-lg: 22px;
-            --vista-radius-sm: 16px;
-            --vista-shadow: 0 1px 2px rgba(28,28,39,0.03), 0 16px 34px -18px rgba(28,28,39,0.18);
-            /* Locked 2026-09-03: Vista font switched from Onest to Lato.
-               See head comment above for how to switch back later. */
-            --vista-font: 'Lato', -apple-system, 'Segoe UI', sans-serif;
-        }
         #tonnageModal {
-            --tng-glass: var(--vista-surface-alt);
-            --tng-glass-strong: var(--vista-surface-alt-strong);
-            --tng-border: var(--vista-border);
-            --tng-ink: var(--vista-ink);
-            --tng-muted: var(--vista-ink-muted);
-            --tng-input-bg: var(--vista-surface);
-            --tng-accent: var(--vista-purple);
-            --tng-accent-bg: var(--vista-purple-tint);
-            --tng-accent-text: var(--vista-ink);
-            --tng-success: var(--vista-mint-text);
-            --tng-danger: var(--vista-danger);
-            --tng-warn: #E8930C;
-            --tng-radius: var(--vista-radius-lg);
-            --tng-radius-sm: var(--vista-radius-sm);
+            --tng-glass: rgba(255,255,255,0.09);
+            --tng-glass-strong: rgba(255,255,255,0.16);
+            --tng-border: rgba(255,255,255,0.16);
+            --tng-ink: #F5F7FA;
+            --tng-muted: rgba(245,247,250,0.62);
+            --tng-input-bg: rgba(255,255,255,0.07);
+            --tng-accent: #0A84FF;
+            --tng-accent-bg: rgba(10,132,255,0.16);
+            /* Text-on-glass needs more contrast than a filled button does —
+               #0A84FF read as low-contrast blue-on-blue over the tinted
+               glass backdrop. This lighter, higher-luminance blue is used
+               specifically where the accent colours plain text (labels,
+               the gross-weight figure) rather than filling a solid button
+               or chip, where the darker --tng-accent still reads fine
+               against white text. */
+            --tng-accent-text: #5AC8FA;
+            --tng-success: #30D158;
+            --tng-danger: #FF453A;
+            --tng-warn: #FF9F0A;
+            --tng-radius: 28px;
+            --tng-radius-sm: 16px;
         }
         #tonnageModal.modal-overlay {
             align-items: center;
-            background: rgba(28,28,39,0.4);
+            background:
+                radial-gradient(at 18% 8%, rgba(10,132,255,0.30) 0%, transparent 55%),
+                radial-gradient(at 88% 92%, rgba(191,90,242,0.24) 0%, transparent 55%),
+                rgba(5,8,16,0.90);
         }
         #tonnageModal .tng-container {
             width: 100%; max-width: 550px; color: var(--tng-ink);
-            background: var(--vista-surface);
-            border: none; border-radius: var(--tng-radius);
-            box-shadow: var(--vista-shadow);
-            padding: 24px; box-sizing: border-box; position: relative;
+            background: linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.05));
+            backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border: 1px solid var(--tng-border); border-radius: var(--tng-radius);
+            box-shadow: 0 1px 1px rgba(255,255,255,0.16) inset, 0 24px 60px -20px rgba(0,0,0,0.65);
+            padding: 22px; box-sizing: border-box; position: relative;
             max-height: 90vh; overflow-y: auto;
-            font-family: var(--vista-font);
+            font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
         }
         #tonnageModal .tng-header-wrapper { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--tng-border); padding-bottom: 16px; margin-bottom: 20px; }
-        #tonnageModal .tng-header h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.01em; color: var(--tng-ink); text-transform: none; display: flex; align-items: center; gap: 8px; }
+        #tonnageModal .tng-header h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.01em; color: var(--tng-ink); text-transform: none; display: flex; align-items: center; gap: 8px; }
         #tonnageModal .tng-header h1 svg { stroke: var(--tng-accent); flex-shrink: 0; }
-        #tonnageModal .tng-header p { margin: 4px 0 0 28px; font-size: 12.5px; color: var(--tng-muted); text-transform: none; letter-spacing: normal; font-weight: 500; }
+        #tonnageModal .tng-header p { margin: 4px 0 0 28px; font-size: 11px; color: var(--tng-muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
         #tonnageModal .tng-btn-settings, #tonnageModal .tng-btn-close {
-            border: none; border-radius: 999px; font-weight: 700; font-size: 12.5px; cursor: pointer;
+            border: 1px solid var(--tng-border); border-radius: 999px; font-weight: 700; font-size: 12px; cursor: pointer;
             text-transform: none; display: flex; align-items: center; gap: 6px; padding: 9px 15px; margin: 0; width: auto;
-            background: var(--tng-glass); transition: background 0.15s ease, transform 0.05s ease;
+            background: var(--tng-glass); backdrop-filter: blur(16px); transition: background 0.15s ease, transform 0.05s ease;
         }
         #tonnageModal .tng-btn-settings { color: var(--tng-ink); }
         #tonnageModal .tng-btn-settings svg { stroke: var(--tng-accent); }
         #tonnageModal .tng-btn-settings:hover { background: var(--tng-glass-strong); }
         #tonnageModal .tng-btn-close { color: var(--tng-danger); font-weight: 800; padding: 9px 13px; }
-        #tonnageModal .tng-btn-close:hover { background: var(--vista-danger-tint); }
+        #tonnageModal .tng-btn-close:hover { background: rgba(255,69,58,0.18); border-color: rgba(255,69,58,0.4); }
         #tonnageModal .tng-btn-settings:active, #tonnageModal .tng-btn-close:active { transform: scale(0.96); }
         #tonnageModal .tng-target-box {
-            background: var(--tng-glass); border: none; border-radius: var(--tng-radius-sm);
-            padding: 18px; margin-bottom: 20px;
+            background: var(--tng-glass); border: 1px solid var(--tng-border); border-radius: var(--tng-radius-sm);
+            padding: 16px; margin-bottom: 20px; backdrop-filter: blur(16px);
         }
         #tonnageModal .tng-flex-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        #tonnageModal .tng-toggle-container { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 700; font-size: 13.5px; letter-spacing: normal; color: var(--tng-ink); }
-        /* Native checkbox → Vista switch. Pure CSS on the existing
+        #tonnageModal .tng-toggle-container { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 700; font-size: 13px; letter-spacing: 0.2px; color: var(--tng-ink); }
+        /* Native checkbox → Liquid Glass switch. Pure CSS on the existing
            #tngTargetModeToggle checkbox — id, onchange, and DOM position are
            all unchanged, so tngToggleTargetMode() keeps working untouched. */
         #tonnageModal .tng-toggle-container input#tngTargetModeToggle {
             appearance: none; -webkit-appearance: none; position: relative; flex-shrink: 0;
             width: 42px; height: 25px; border-radius: 999px; margin: 0;
-            background: #DEDCEC; border: none;
+            background: rgba(255,255,255,0.16); border: 1px solid var(--tng-border);
             cursor: pointer; transition: background 0.2s ease;
         }
         #tonnageModal .tng-toggle-container input#tngTargetModeToggle::before {
-            content: ''; position: absolute; top: 2.5px; left: 2.5px; width: 20px; height: 20px; border-radius: 50%;
-            background: #fff; box-shadow: 0 1px 3px rgba(28,28,39,0.25); transition: left 0.2s ease;
+            content: ''; position: absolute; top: 2px; left: 2px; width: 19px; height: 19px; border-radius: 50%;
+            background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.4); transition: left 0.2s ease;
         }
         #tonnageModal .tng-toggle-container input#tngTargetModeToggle:checked { background: var(--tng-accent); }
-        #tonnageModal .tng-toggle-container input#tngTargetModeToggle:checked::before { left: 19.5px; }
-        #tonnageModal .tng-grid-header { display: grid; grid-template-columns: 1.9fr 1.05fr 1.35fr; gap: 8px; font-size: 11.5px; font-weight: 600; text-transform: none; letter-spacing: normal; color: var(--tng-muted); padding-bottom: 8px; border-bottom: 1px solid var(--tng-border); margin-bottom: 12px; text-align: center; }
+        #tonnageModal .tng-toggle-container input#tngTargetModeToggle:checked::before { left: 19px; }
+        #tonnageModal .tng-grid-header { display: grid; grid-template-columns: 1.9fr 1.05fr 1.35fr; gap: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--tng-muted); padding-bottom: 8px; border-bottom: 1px solid var(--tng-border); margin-bottom: 12px; text-align: center; }
         #tonnageModal .tng-grid-header div:first-child { text-align: left; }
-        #tonnageModal .tng-item-row { display: grid; grid-template-columns: 1.9fr 1.05fr 1.35fr; gap: 8px; align-items: center; margin-bottom: 10px; background: var(--vista-surface-alt); border-radius: var(--tng-radius-sm); padding: 10px 12px; }
-        #tonnageModal .tng-item-row label { font-size: 14px; font-weight: 700; color: var(--tng-ink); }
-        #tonnageModal .tng-item-row label span { display: block; font-size: 11.5px; color: var(--tng-muted); font-weight: 500; }
+        #tonnageModal .tng-item-row { display: grid; grid-template-columns: 1.9fr 1.05fr 1.35fr; gap: 8px; align-items: center; margin-bottom: 12px; }
+        #tonnageModal .tng-item-row label { font-size: 14px; font-weight: 600; color: var(--tng-ink); }
+        #tonnageModal .tng-item-row label span { display: block; font-size: 11px; color: var(--tng-muted); font-weight: 400; }
         #tonnageModal input[type="number"] {
-            width: 100%; padding: 11px; background: var(--tng-input-bg); border: none; box-shadow: inset 0 0 0 1.5px rgba(28,28,39,0.06);
-            color: var(--tng-ink); border-radius: 14px; box-sizing: border-box; font-size: 15px; text-align: center; font-weight: 800;
-            -moz-appearance: textfield; transition: box-shadow 0.15s ease;
+            width: 100%; padding: 11px; background: var(--tng-input-bg); border: 1px solid var(--tng-border);
+            color: var(--tng-ink); border-radius: 14px; box-sizing: border-box; font-size: 15px; text-align: center; font-weight: 700;
+            -moz-appearance: textfield; transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
         }
         #tonnageModal input[type="number"]::-webkit-outer-spin-button,
         #tonnageModal input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        #tonnageModal input[type="number"]:focus { outline: none; box-shadow: 0 0 0 2.5px var(--tng-accent); }
-        /* Bare switch per row (unchanged mechanism from v93 — see the JS
-           functions this markup calls). Vista just recolors the track. */
+        #tonnageModal input[type="number"]:focus { outline: none; border-color: var(--tng-accent); background: rgba(255,255,255,0.11); box-shadow: 0 0 0 3px var(--tng-accent-bg); }
+        /* v93: bare iOS-style switch per row (replacing the v92 "AUTO" +
+           radio pill, which didn't line up with the quantity box and
+           repeated the word "AUTO" five times). The grid header now reads
+           "Auto" once, so nothing needs to say it again inline. Same
+           mechanism underneath: the hidden #tngLock4-style checkbox stays
+           the single source of truth for tngHandleLockChange()'s guard and
+           tngToggleTargetMode()'s disabled state; the visible switch calls
+           the pre-existing tngSetRowMode(lockId, manual) helper on toggle,
+           and tngSyncModeButtons() (already run at the end of every
+           tngCalculateWeights()) keeps the switch's on/off + disabled state
+           truthful to that checkbox. Unlike the v92 radio group, a plain
+           checkbox switch CAN be clicked off directly by the user even when
+           it's the sole AUTO row — that path still hits the "at least one
+           must stay AUTO" guard and reverts the hidden checkbox, so the
+           guard now also re-syncs the visible switch on that revert (see
+           tngHandleLockChange) instead of leaving it visually stuck off. */
         #tonnageModal .tng-lock-btn { display: none; }
         #tonnageModal .tng-radio-group { display: flex; justify-content: center; align-items: center; height: 44px; }
         #tonnageModal input[type="number"] { height: 44px; }
+        /* !important on display/margin: the app has a global bare `label {
+           display:block; margin-top:12px; }` rule, and this element is a
+           <label>. This pins the switch's own box model regardless of that
+           (or any other future generic label rule) rather than relying on
+           a specificity race. */
         #tonnageModal .ios-switch { position: relative; display: inline-block !important; margin: 0 !important; width: 46px; height: 27px; flex-shrink: 0; }
         #tonnageModal .ios-switch.is-disabled { opacity: 0.4; }
         #tonnageModal .ios-switch input.tng-auto-switch { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; z-index: 2; }
         #tonnageModal .ios-switch input.tng-auto-switch:disabled { cursor: not-allowed; }
         #tonnageModal .ios-track {
-            position: absolute; inset: 0; background: #DEDCEC; border: none;
-            border-radius: 999px; transition: background 0.2s ease;
+            position: absolute; inset: 0; background: rgba(255,255,255,0.16); border: 1px solid var(--tng-border);
+            border-radius: 999px; transition: background 0.2s ease, border-color 0.2s ease;
         }
-        #tonnageModal .ios-switch input.tng-auto-switch:checked ~ .ios-track { background: var(--vista-purple); }
+        #tonnageModal .ios-switch input.tng-auto-switch:checked ~ .ios-track { background: var(--tng-success); border-color: var(--tng-success); }
         #tonnageModal .ios-thumb {
-            position: absolute; top: 2.5px; left: 2.5px; width: 21px; height: 21px; background: #fff; border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(28,28,39,0.25); transition: left 0.2s ease; pointer-events: none;
+            position: absolute; top: 2px; left: 2px; width: 21px; height: 21px; background: #fff; border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.35); transition: left 0.2s ease; pointer-events: none;
         }
         #tonnageModal .ios-switch input.tng-auto-switch:checked ~ .ios-thumb { left: 21px; }
-        #tonnageModal .tng-stepper { display: flex; align-items: stretch; gap: 0; border: none; border-radius: var(--tng-radius-sm); overflow: hidden; background: var(--tng-input-bg); box-shadow: inset 0 0 0 1.5px rgba(28,28,39,0.06); }
+        #tonnageModal .tng-stepper { display: flex; align-items: stretch; gap: 0; border: 1px solid var(--tng-border); border-radius: var(--tng-radius-sm); overflow: hidden; background: var(--tng-input-bg); }
         #tonnageModal .tng-step-btn {
             width: 38px; margin: 0; padding: 0; border: none; background: transparent; color: var(--tng-accent);
-            font-size: 20px; font-weight: 800; line-height: 1; cursor: pointer; flex-shrink: 0; transition: background 0.15s ease;
+            font-size: 20px; font-weight: 700; line-height: 1; cursor: pointer; flex-shrink: 0; transition: background 0.15s ease;
         }
-        #tonnageModal .tng-step-btn:hover { background: var(--vista-purple-tint); }
+        #tonnageModal .tng-step-btn:hover { background: rgba(255,255,255,0.08); }
         #tonnageModal .tng-step-btn:active { background: var(--tng-accent); color: #fff; }
         #tonnageModal .tng-stepper input[type="number"] {
-            width: 92px; border: none; border-radius: 0; text-align: center; font-size: 18px; padding: 10px 4px; background: transparent; box-shadow: none;
+            width: 92px; border: none; border-radius: 0; text-align: center; font-size: 17px; padding: 10px 4px; background: transparent;
         }
-        #tonnageModal .tng-stepper input[type="number"]:focus { outline: none; background: var(--vista-surface-alt); box-shadow: none; }
+        #tonnageModal .tng-stepper input[type="number"]:focus { outline: none; background: rgba(255,255,255,0.08); box-shadow: none; }
         #tonnageModal .tng-preset-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
-        #tonnageModal .tng-preset-label { font-size: 11px; font-weight: 600; color: var(--tng-muted); letter-spacing: normal; margin-right: 2px; text-transform: none; }
+        #tonnageModal .tng-preset-label { font-size: 10px; font-weight: 700; color: var(--tng-muted); letter-spacing: 0.5px; margin-right: 2px; text-transform: uppercase; }
         #tonnageModal .tng-preset-btn {
-            width: auto; margin: 0; background: var(--vista-surface); color: var(--tng-muted); border: none; box-shadow: inset 0 0 0 1.5px rgba(28,28,39,0.06);
+            width: auto; margin: 0; background: var(--tng-glass); color: var(--tng-ink); border: 1px solid var(--tng-border);
             border-radius: 999px; padding: 7px 15px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s ease;
         }
-        #tonnageModal .tng-preset-btn:hover { background: var(--vista-purple-tint); }
-        #tonnageModal .tng-preset-btn.active { background: var(--vista-ink); color: #fff; box-shadow: none; }
+        #tonnageModal .tng-preset-btn:hover { background: var(--tng-glass-strong); }
+        #tonnageModal .tng-preset-btn.active { background: var(--tng-accent); color: #fff; border-color: var(--tng-accent); box-shadow: 0 4px 14px -4px rgba(10,132,255,0.7); }
         #tonnageModal .tng-item-row.tng-active-row {
-            background: var(--vista-purple-tint); border-radius: var(--tng-radius-sm); box-shadow: none;
-            padding: 10px 12px; margin-left: 0; margin-right: 0;
+            background: var(--tng-accent-bg); border-radius: var(--tng-radius-sm); box-shadow: inset 0 0 0 1px rgba(10,132,255,0.45);
+            padding: 4px 6px; margin-left: -6px; margin-right: -6px;
         }
-        #tonnageModal .tng-readonly-banner { background: var(--vista-mint-tint); padding: 11px 13px; border-radius: 12px; border-left: 3px solid var(--vista-mint-text); margin-bottom: 8px; font-size: 13px; }
-        /* Headline summary becomes a solid "hero" tile — Vista's signature
-           pattern for the one number that matters most on a screen. */
+        #tonnageModal .tng-readonly-banner { background: var(--tng-glass); backdrop-filter: blur(12px); padding: 11px 13px; border-radius: 12px; border-left: 3px solid var(--tng-success); margin-bottom: 8px; font-size: 13px; }
         #tonnageModal .tng-summary-card {
-            background: var(--vista-ink); color: #fff;
-            border: none; border-radius: var(--tng-radius-sm); padding: 18px; margin-top: 24px;
-            box-shadow: none;
+            background: var(--tng-glass-strong); backdrop-filter: blur(20px) saturate(160%);
+            border: 1px solid var(--tng-border); border-radius: var(--tng-radius-sm); padding: 16px; margin-top: 24px;
+            box-shadow: 0 1px 1px rgba(255,255,255,0.18) inset, 0 12px 30px -16px rgba(0,0,0,0.55);
         }
-        #tonnageModal .tng-weight-line { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: rgba(255,255,255,0.8); }
-        #tonnageModal .tng-weight-line span:last-child { color: #fff; }
-        #tonnageModal .tng-gross-total { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.14); font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.75); }
-        #tonnageModal .tng-gross-total #tngGrossTonnage { font-size: 24px; font-weight: 800; color: #fff; }
-        /* Vista 2 (locked 2026-09-01): button SHAPE takes the "lifted
-           shadow" treatment (rounded-rect + soft drop shadow instead of a
-           flat pill) while keeping Vista 1's exact colors (ink/tint) —
-           the one deliberate change out of the "Pick your Vista 2" pass. */
+        #tonnageModal .tng-weight-line { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: var(--tng-ink); }
+        #tonnageModal .tng-gross-total { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--tng-border); font-size: 20px; font-weight: 900; color: var(--tng-accent-text); }
         #tonnageModal .tng-btn-reset {
-            background: var(--vista-surface-alt); color: var(--tng-muted); border: none; padding: 13px; border-radius: 12px; font-weight: 700;
-            width: 100%; margin-top: 16px; font-size: 14px; cursor: pointer; text-transform: none;
-            box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35);
-            transition: background 0.2s ease, color 0.2s ease, box-shadow 0.15s ease;
+            background: var(--tng-glass); color: var(--tng-ink); border: 1px solid var(--tng-border); padding: 13px; border-radius: 999px; font-weight: 700;
+            width: 100%; margin-top: 16px; font-size: 14px; cursor: pointer; text-transform: none; transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
         }
-        #tonnageModal .tng-btn-reset:hover { background: var(--vista-danger-tint); color: var(--vista-danger); box-shadow: 0 1px 2px rgba(229,72,77,0.08), 0 6px 16px -8px rgba(229,72,77,0.35); }
+        #tonnageModal .tng-btn-reset:hover { background: rgba(255,69,58,0.16); color: var(--tng-danger); border-color: rgba(255,69,58,0.4); }
 
         /* Settings sub-modal — nested above #tonnageModal (z-index set inline) */
         #tonnageSettingsModal {
-            --tng-glass: var(--vista-surface-alt); --tng-border: var(--vista-border); --tng-ink: var(--vista-ink);
-            --tng-muted: var(--vista-ink-muted); --tng-accent: var(--vista-purple); --tng-accent-text: var(--vista-ink); --tng-success: var(--vista-mint-text);
-            background: rgba(28,28,39,0.4);
+            --tng-glass: rgba(255,255,255,0.09); --tng-border: rgba(255,255,255,0.16); --tng-ink: #F5F7FA;
+            --tng-muted: rgba(245,247,250,0.62); --tng-accent: #0A84FF; --tng-accent-text: #5AC8FA; --tng-success: #30D158;
+            background:
+                radial-gradient(at 18% 8%, rgba(10,132,255,0.28) 0%, transparent 55%),
+                radial-gradient(at 88% 92%, rgba(191,90,242,0.22) 0%, transparent 55%),
+                rgba(5,8,16,0.90);
         }
         #tonnageSettingsModal .tng-settings-modal {
-            background: var(--vista-surface);
-            color: var(--tng-ink); width: 90%; max-width: 420px; border-radius: 22px; padding: 22px;
-            box-shadow: var(--vista-shadow);
-            border: none; font-family: var(--vista-font);
+            background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+            backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
+            color: var(--tng-ink); width: 90%; max-width: 420px; border-radius: 24px; padding: 22px;
+            box-shadow: 0 1px 1px rgba(255,255,255,0.16) inset, 0 24px 60px -20px rgba(0,0,0,0.65);
+            border: 1px solid var(--tng-border); font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
         }
-        #tonnageSettingsModal .tng-modal-header { font-size: 18px; font-weight: 800; color: var(--tng-ink); margin-bottom: 16px; border-bottom: 1px solid var(--tng-border); padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        #tonnageSettingsModal .tng-modal-header { font-size: 17px; font-weight: 800; color: var(--tng-ink); margin-bottom: 16px; border-bottom: 1px solid var(--tng-border); padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
         #tonnageSettingsModal .tng-modal-header span { display: flex; align-items: center; gap: 8px; }
         #tonnageSettingsModal .tng-modal-header svg { stroke: var(--tng-accent); flex-shrink: 0; }
         #tonnageSettingsModal .tng-modal-close { background: transparent; border: none; color: var(--tng-muted); font-size: 20px; cursor: pointer; width: auto; margin: 0; }
-        #tonnageSettingsModal .tng-target-box { background: var(--tng-glass); border: none; border-radius: 16px; padding: 15px; }
+        #tonnageSettingsModal .tng-target-box { background: var(--tng-glass); border: 1px solid var(--tng-border); border-radius: 16px; padding: 15px; backdrop-filter: blur(16px); }
         #tonnageSettingsModal .tng-setting-field-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 15px; }
-        #tonnageSettingsModal .tng-setting-field-row label { font-size: 13.5px; color: var(--tng-ink); font-weight: 600; }
+        #tonnageSettingsModal .tng-setting-field-row label { font-size: 13px; color: var(--tng-ink); }
         #tonnageSettingsModal input[type="number"] {
-            padding: 9px 10px; background: var(--vista-surface); border: none; box-shadow: inset 0 0 0 1.5px rgba(28,28,39,0.06); color: var(--tng-ink);
+            padding: 9px 10px; background: rgba(255,255,255,0.07); border: 1px solid var(--tng-border); color: var(--tng-ink);
             border-radius: 12px; box-sizing: border-box; font-size: 14px; text-align: center; font-weight: 700; -moz-appearance: textfield;
-            transition: box-shadow 0.15s ease;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
-        #tonnageSettingsModal input[type="number"]:focus { outline: none; box-shadow: 0 0 0 2.5px var(--tng-accent); }
+        #tonnageSettingsModal input[type="number"]:focus { outline: none; border-color: var(--tng-accent); box-shadow: 0 0 0 3px rgba(10,132,255,0.18); }
         #tonnageSettingsModal input[type="number"]::-webkit-outer-spin-button,
         #tonnageSettingsModal input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        /* Vista 2: same lifted-shadow shape as .tng-btn-reset above, ink
-           fill kept exactly as Vista 1 — see note there. */
         #tonnageSettingsModal .tng-btn-save-settings {
-            background: var(--vista-ink); color: #fff; border: none; padding: 12px; border-radius: 12px; width: 100%;
-            font-weight: 700; cursor: pointer; margin-top: 16px; text-transform: none;
-            box-shadow: 0 4px 14px -6px rgba(28,28,39,0.5);
-            transition: filter 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+            background: var(--tng-accent); color: #fff; border: none; padding: 12px; border-radius: 999px; width: 100%;
+            font-weight: 700; cursor: pointer; margin-top: 16px; text-transform: none; box-shadow: 0 8px 20px -8px rgba(10,132,255,0.6);
+            transition: filter 0.15s ease, transform 0.05s ease;
         }
-        #tonnageSettingsModal .tng-btn-save-settings:hover { filter: brightness(1.3); box-shadow: 0 6px 18px -6px rgba(28,28,39,0.6); }
+        #tonnageSettingsModal .tng-btn-save-settings:hover { filter: brightness(1.08); }
         #tonnageSettingsModal .tng-btn-save-settings:active { transform: scale(0.98); }
         @media (max-width: 480px) {
             #tonnageModal .tng-container { padding: 14px; }
@@ -2339,119 +2070,6 @@
             #tonnageModal .tng-gross-total > span { flex: 1; }
             #tonnageModal .tng-gross-total > div { white-space: nowrap; }
             #tonnageModal #tngGrossTonnage { font-size: 20px; }
-        }
-    </style>
-    <style>
-        /* ══════════════════════════════════════════════════════════════════
-           LIQUID GLASS DESIGN SYSTEM — CASH BOOK (beta, second consumer)
-           Scoped entirely under #cashBookModal so nothing here touches the
-           7 other modals that share .modal-content/.modal-header/
-           .analytics-table/.analytics-modal (Ledger, Outstanding, Bulk
-           Statements, Amend Diff, Summary, Auditor, All Projects Overview)
-           or any other screen. Reads from the shared --glass-* tokens
-           defined at :root (see the Tonnage Calculator's design-system
-           block above) rather than hardcoding its own values.
-
-           Many of Cash Book's original inputs/selects had their light-theme
-           colors set via inline style="" attributes, which always beat a
-           stylesheet rule regardless of ID/class specificity. Rather than
-           reach for !important, those inline background/color/border
-           declarations were removed from the markup below (their
-           margin/padding/width declarations were left in place) so this
-           stylesheet can style them cleanly, the same way v90-v93 did for
-           the Tonnage Calculator. Every id, name, onclick/onchange/oninput
-           handler is byte-for-byte unchanged — only presentation moved from
-           inline attributes to CSS. */
-        #cashBookModal {
-            --cb-glass: var(--glass-bg);
-            --cb-glass-strong: var(--glass-bg-strong);
-            --cb-border: var(--glass-border);
-            --cb-ink: var(--glass-ink);
-            --cb-muted: var(--glass-muted);
-            --cb-input-bg: var(--glass-input-bg);
-            --cb-accent: var(--glass-accent);
-            --cb-accent-text: var(--glass-accent-text);
-            --cb-success: var(--glass-success);
-            --cb-danger: var(--glass-danger);
-            --cb-warn: var(--glass-warn);
-            --cb-radius: var(--glass-radius-lg);
-            --cb-radius-sm: var(--glass-radius-sm);
-        }
-        #cashBookModal.modal-overlay {
-            background:
-                radial-gradient(at 18% 8%, rgba(10,132,255,0.30) 0%, transparent 55%),
-                radial-gradient(at 88% 92%, rgba(191,90,242,0.24) 0%, transparent 55%),
-                rgba(5,8,16,0.90);
-        }
-        #cashBookModal .modal-content {
-            background: linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.05));
-            backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
-            border: 1px solid var(--cb-border); box-shadow: 0 1px 1px rgba(255,255,255,0.16) inset, 0 24px 60px -20px rgba(0,0,0,0.65);
-            color: var(--cb-ink);
-            font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
-        }
-        #cashBookModal .modal-header { border-bottom-color: var(--cb-border); }
-        #cashBookModal .modal-header h2 { color: var(--cb-ink); }
-        #cashBookModal label { color: var(--cb-muted) !important; }
-        #cashBookModal .period-select-row label { color: var(--cb-muted); }
-        #cashBookModal input, #cashBookModal select, #cashBookModal textarea {
-            background: var(--cb-input-bg); color: var(--cb-ink); border: 1px solid var(--cb-border);
-            border-radius: 10px;
-        }
-        #cashBookModal input::placeholder, #cashBookModal select { color: var(--cb-ink); }
-        #cashBookModal input:focus, #cashBookModal select:focus, #cashBookModal textarea:focus {
-            outline: none; border-color: var(--cb-accent); box-shadow: 0 0 0 3px var(--glass-accent-bg);
-        }
-        /* Quick-entry form + voice review panel become one glass card instead
-           of the old flat light-grey box. */
-        #cashBookModal .cash-entry-form {
-            background: var(--cb-glass); border: 1px solid var(--cb-border); border-radius: var(--cb-radius-sm);
-            backdrop-filter: blur(16px);
-        }
-        #cashBookModal .cash-entry-form > div > div[style*="color:#2c3e50"] { color: var(--cb-ink) !important; }
-        #cashBookModal #cbVoiceReviewPanel { background: rgba(191,90,242,0.14) !important; border-color: rgba(191,90,242,0.4) !important; }
-        #cashBookModal #cbVoiceReviewPanel > div[style*="background:#fff"] { background: var(--cb-glass) !important; border-color: var(--cb-border) !important; }
-        #cashBookModal #cbVoiceTranscript { color: var(--cb-muted) !important; }
-        #cashBookModal #cbVoiceDir, #cashBookModal #cbVoiceAmt, #cashBookModal #cbVoiceCat, #cashBookModal #cbVoiceParty { color: var(--cb-ink) !important; }
-        /* Summary cards — same glass-card treatment as the Tonnage summary
-           card, keeping the meaningful green/red/blue accent colors as
-           left-border + figure color rather than a solid light fill (which
-           would look like a broken white card floating on dark glass). */
-        #cashBookModal .cash-book-card {
-            background: var(--cb-glass); border: 1px solid var(--cb-border); border-radius: var(--cb-radius-sm);
-            backdrop-filter: blur(16px); border-left-width: 4px;
-        }
-        #cashBookModal .cash-book-card .cb-label { color: var(--cb-muted); }
-        #cashBookModal .cb-in { border-left-color: var(--cb-success); }
-        #cashBookModal .cb-out { border-left-color: var(--cb-danger); }
-        #cashBookModal .cb-bal { border-left-color: var(--cb-accent); }
-        /* Category-spend chips (built inline in JS with light-theme colors) */
-        #cashBookModal #cashBookCategoryTotals > div:first-child { color: var(--cb-muted) !important; }
-        #cashBookModal #cashBookCategoryTotals div[style*="background:#fdedec"] {
-            background: rgba(255,69,58,0.14) !important; border-color: rgba(255,69,58,0.4) !important; color: var(--cb-ink) !important;
-        }
-        /* Invoice picker dropdown floats above everything with its own
-           light card — keep it glass too so it doesn't look like a
-           different app when it opens. */
-        #cashBookModal ~ #invoicePickerDropdown, #invoicePickerDropdown {
-            background: rgba(20,24,34,0.92); backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid var(--glass-border); color: var(--glass-ink);
-        }
-        #invoicePickerDropdown > div:first-child { background: rgba(255,255,255,0.05) !important; border-bottom-color: var(--glass-border) !important; }
-        /* Ledger table — scoped override of the shared .analytics-table so
-           Ledger/Outstanding/Auditor/etc. keep their existing light look. */
-        #cashBookModal .analytics-table th { background: var(--cb-glass-strong); color: var(--cb-ink); }
-        #cashBookModal .analytics-table td { color: var(--cb-ink); border-bottom-color: var(--cb-border); }
-        #cashBookModal .analytics-table tr:hover td { background: var(--cb-glass); }
-        #cashBookModal .analytics-table tr.cb-row-in td { background: rgba(48,209,88,0.10); }
-        #cashBookModal .analytics-table tr.cb-row-out td { background: rgba(255,69,58,0.10); }
-        /* staleDataBanner() is a shared app-wide utility (used on many
-           screens outside Cash Book too) that returns a hardcoded
-           light-theme div. Left untouched everywhere else — only
-           overridden here, scoped to when it renders inside this modal. */
-        #cashBookModal div[style*="background:#fdedec"][style*="border-left:4px solid #c0392b"] {
-            background: rgba(255,69,58,0.14) !important; border-color: rgba(255,69,58,0.4) !important;
-            border-left-color: var(--cb-danger) !important; color: var(--cb-ink) !important;
         }
     </style>
     <style>
@@ -2694,28 +2312,18 @@
 <div class="container">
     
     <div class="editor-box">
-        <!-- BETA channel banner — this copy lives at /beta/ and is only for
-             previewing UI work-in-progress before it's promoted to the main
-             app. It shares the same real backend/localStorage data as
-             production by design (per owner's explicit confirmation), so
-             the badge below exists purely so no one mistakes this build for
-             production. -->
-        <div style="text-align:center; font-size:11px; font-weight:bold; letter-spacing:0.5px; color:#1a1a1a; background:#FF9F0A; border-radius:6px; padding:6px 10px; margin-bottom:8px;">
-            🧪 BETA BUILD — UI preview only
-        </div>
-
         <!-- APP_VERSION badge — always visible so anyone (you, staff, your
              sister) can glance and confirm which build they're running.
              Tap to force-check for updates. Update this string (and the
              matching APP_VERSION const in the script block) on every release. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:rgba(255,255,255,0.35); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta8</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">v93</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- v73a: passive unsynced warning. Hidden by default and only
              shown when something actually hasn't reached the cloud —
              no per-save toast, no interruption when things are fine. -->
-        <div id="unsyncedIndicator" onclick="handleUnsyncedIndicatorTap()" style="display:none; background:var(--hp-danger-tint); color:var(--hp-danger-ink); text-align:center; font-size:11px; font-weight:bold; padding:8px 10px; border-radius:var(--hp-radius-sm); margin-bottom:8px; cursor:pointer;"></div>
+        <div id="unsyncedIndicator" onclick="handleUnsyncedIndicatorTap()" style="display:none; background:#c0392b; color:#fff; text-align:center; font-size:11px; font-weight:bold; padding:7px 10px; border-radius:5px; margin-bottom:8px; cursor:pointer;"></div>
 
         <!-- v73: FORCE MOBILE LAYOUT toggle — some installed-as-Android-app
              (PWA) shells report a wider viewport than the same page gets in
@@ -2731,52 +2339,50 @@
              remembered (localStorage) so it doesn't need to be set again
              next time the app opens. -->
         <div style="text-align:center; margin-bottom:10px;">
-            <button type="button" id="btnForceMobileToggle" onclick="toggleForceMobileMain()" style="width:auto; margin:0; background:var(--hp-surface-alt); color:var(--hp-ink-muted); border:none; box-shadow:inset 0 0 0 1.5px var(--hp-border); padding:6px 12px; border-radius:20px; font-size:11px; font-weight:bold; cursor:pointer;">📱 Force Mobile Layout: OFF</button>
+            <button type="button" id="btnForceMobileToggle" onclick="toggleForceMobileMain()" style="width:auto; margin:0; background:#34495e; color:#bdc3c7; border:1px solid #465c71; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:bold; cursor:pointer;">📱 Force Mobile Layout: OFF</button>
         </div>
 
-        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-            <button onclick="createNewDocSafe()" style="flex: 1; margin: 0; background: var(--hp-ink); font-size: 15px; padding: 12px; box-shadow: 0 4px 14px -6px rgba(28,28,39,0.5);">✨ New Doc</button>
-            <button class="btn-list" onclick="openSavedDocs()" style="flex: 1; margin: 0; background: var(--hp-purple-tint); color: var(--hp-purple-ink); font-size: 15px; padding: 12px; box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35);">📂 View List</button>
+        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <button onclick="createNewDocSafe()" style="flex: 1; margin: 0; background: #2ecc71; font-size: 16px; padding: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">✨ NEW DOC</button>
+            <button class="btn-list" onclick="openSavedDocs()" style="flex: 1; margin: 0; background: #8e44ad; font-size: 16px; padding: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">📂 VIEW LIST</button>
         </div>
         <!-- v80 (item 21): every invoice currently starts from an empty cart,
              even for a regular who orders close to the same thing each time.
              Uses this client's last invoice when a name is typed, otherwise the
              most recent one. Block rates are recalculated at current tier and
-             tonnage rather than frozen from the old document.
-             VISTA 4: Repeat Last Invoice + Project Manager combined into one
-             2-column row (previously two stacked full-width buttons) — same
-             actions, less vertical space. -->
-        <div style="display:flex; gap:8px; margin-bottom: 10px;">
-            <button onclick="repeatLastInvoice()" style="flex:1; margin:0; background:var(--hp-surface-alt); color:var(--hp-ink); font-size:13px; padding:11px 6px; box-shadow:0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35);">🔁 Repeat Last Invoice</button>
-            <button onclick="openProjectManager()" style="flex:1; margin:0; background:var(--hp-surface-alt); color:var(--hp-ink); font-size:13px; padding:11px 6px; box-shadow:0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35);">🏗️ Project Manager</button>
+             tonnage rather than frozen from the old document. -->
+        <div style="margin-bottom: 15px;">
+            <button onclick="repeatLastInvoice()" style="width:100%; margin:0; background:#d35400; font-size:14px; padding:10px; box-shadow:0 4px 10px rgba(0,0,0,0.2);">🔁 REPEAT LAST INVOICE</button>
         </div>
-        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-            <button id="btnConvertToInv" onclick="convertDocument('INV')" style="flex:1; margin:0; background:var(--hp-mint-tint); color:var(--hp-mint-ink); font-size:12.5px; padding:9px 4px; box-shadow:none; display:none;">⚡ → Tax Invoice</button>
-            <button id="btnConvertToSal" onclick="convertDocument('SAL')" style="flex:1; margin:0; background:var(--hp-mint-tint); color:var(--hp-mint-ink); font-size:12.5px; padding:9px 4px; box-shadow:none; display:none;">⚡ → Sales Invoice</button>
-            <button id="btnAmendDoc" onclick="amendDocument()" style="flex:1; margin:0; background:var(--hp-amber-tint); color:var(--hp-amber-ink); font-size:12.5px; padding:9px 4px; box-shadow:none; display:none;">✏️ Amend (Supersede)</button>
-            <button id="btnWhatsApp" onclick="shareOnWhatsApp()" style="flex:1; margin:0; background:#25D366; font-size:12.5px; padding:9px 4px; box-shadow:none;">📲 WhatsApp</button>
+        <!-- Site Manager (renamed from "Sites") promoted to a standalone,
+             full-width section. Stock lives only in the Reports & Tools grid
+             below — having a second Stock button here was redundant. -->
+        <div style="margin-bottom: 15px;">
+            <button onclick="openProjectManager()" style="width: 100%; margin: 0; background: #1a3c5e; font-size: 15px; padding: 11px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">🏗️ PROJECT MANAGER</button>
         </div>
-        <!-- U4: Analytics — dedicated section, 2 rows x 3 columns, icon above label.
-             VISTA 4: now collapsible, same chevron-header mechanic as Blocks
-             Calculator (toggleAnalyticsSection() below) — defaults OPEN since
-             this is core daily navigation, remembers the user's choice. -->
-        <div class="analytics-section open" id="analyticsSection">
-            <div class="analytics-section-title" onclick="toggleAnalyticsSection()"><span>📊 Reports &amp; Tools</span><span class="analytics-section-chevron" id="analyticsSectionChevron">›</span></div>
-            <div id="analyticsSectionBody">
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <button id="btnConvertToInv" onclick="convertDocument('INV')" style="flex:1; margin:0; background:#16a085; font-size:13px; padding:9px; display:none;">⚡ → Tax Invoice</button>
+            <button id="btnConvertToSal" onclick="convertDocument('SAL')" style="flex:1; margin:0; background:#1abc9c; font-size:13px; padding:9px; display:none;">⚡ → Sales Invoice</button>
+            <button id="btnAmendDoc" onclick="amendDocument()" style="flex:1; margin:0; background:#d35400; font-size:13px; padding:9px; display:none;">✏️ Amend (Supersede)</button>
+            <button id="btnWhatsApp" onclick="shareOnWhatsApp()" style="flex:1; margin:0; background:#25D366; font-size:13px; padding:9px;">📲 WhatsApp</button>
+        </div>
+        <!-- U4: Analytics — dedicated section, 2 rows x 3 columns, icon above label -->
+        <div class="analytics-section">
+            <div class="analytics-section-title">📊 Reports & Tools</div>
             <div class="analytics-grid">
-                <button id="btnAnalyticsLedger" class="analytics-grid-btn" onclick="openLedger()"><span class="ag-icon" data-vicon="ledger"></span><span>Ledger</span></button>
-                <button id="btnAnalyticsOutstanding" class="analytics-grid-btn" onclick="openOutstanding()"><span class="ag-icon" data-vicon="outstanding"></span><span>Outstanding</span></button>
-                <button id="btnAnalyticsSummary" class="analytics-grid-btn" onclick="openMonthlySummary()"><span class="ag-icon" data-vicon="summary"></span><span>Summary</span></button>
-                <button id="btnAnalyticsAudit" class="analytics-grid-btn" onclick="openAuditorExport()"><span class="ag-icon" data-vicon="audit"></span><span>Audit</span></button>
-                <button id="btnAnalyticsCashBook" class="analytics-grid-btn" onclick="openCashBook()"><span class="ag-icon" data-vicon="cashbook"></span><span>Cash Book</span></button>
-                <button id="btnAnalyticsStock" class="analytics-grid-btn" onclick="openStockManager()"><span class="ag-icon" data-vicon="stock"></span><span>Stock</span></button>
-                <button id="btnAnalyticsSyncHealth" class="analytics-grid-btn" onclick="openSyncHealth()"><span class="ag-icon" data-vicon="sync"></span><span>Data &amp; Sync</span></button>
-                <button id="btnAnalyticsAdvPool" class="analytics-grid-btn" onclick="openUnregisteredAdvancePoolSearch()"><span class="ag-icon" data-vicon="advpool"></span><span>Advance Pool</span></button>
-                <button id="btnAnalyticsTrips" class="analytics-grid-btn" onclick="openTrips()"><span class="ag-icon" data-vicon="trips"></span><span>Trips</span></button>
-                <button id="btnAnalyticsClients" class="analytics-grid-btn" onclick="openClientList()"><span class="ag-icon" data-vicon="clients"></span><span>Clients</span></button>
-                <button id="btnAnalyticsSites" class="analytics-grid-btn" onclick="openSitesManager()"><span class="ag-icon" data-vicon="sites"></span><span>Sites</span></button>
-                <button id="btnAnalyticsBrandAssets" class="analytics-grid-btn" onclick="openBrandAssets()"><span class="ag-icon" data-vicon="brand"></span><span>Brand Assets</span></button>
-                <button id="btnAnalyticsAllProjects" class="analytics-grid-btn" onclick="openAllProjectsOverview()"><span class="ag-icon" data-vicon="allprojects"></span><span>All Projects</span></button>
+                <button id="btnAnalyticsLedger" class="analytics-grid-btn" onclick="openLedger()"><span class="ag-icon">👤</span><span>Ledger</span></button>
+                <button id="btnAnalyticsOutstanding" class="analytics-grid-btn" onclick="openOutstanding()"><span class="ag-icon">⏰</span><span>Outstanding</span></button>
+                <button id="btnAnalyticsSummary" class="analytics-grid-btn" onclick="openMonthlySummary()"><span class="ag-icon">📊</span><span>Summary</span></button>
+                <button id="btnAnalyticsAudit" class="analytics-grid-btn" onclick="openAuditorExport()"><span class="ag-icon">📋</span><span>Audit</span></button>
+                <button id="btnAnalyticsCashBook" class="analytics-grid-btn" onclick="openCashBook()"><span class="ag-icon">💵</span><span>Cash Book</span></button>
+                <button id="btnAnalyticsStock" class="analytics-grid-btn" onclick="openStockManager()"><span class="ag-icon">📦</span><span>Stock</span></button>
+                <button id="btnAnalyticsSyncHealth" class="analytics-grid-btn" onclick="openSyncHealth()"><span class="ag-icon">🛟</span><span>Data &amp; Sync</span></button>
+                <button id="btnAnalyticsAdvPool" class="analytics-grid-btn" onclick="openUnregisteredAdvancePoolSearch()"><span class="ag-icon">💰</span><span>Advance Pool</span></button>
+                <button id="btnAnalyticsTrips" class="analytics-grid-btn" onclick="openTrips()"><span class="ag-icon">🚚</span><span>Trips</span></button>
+                <button id="btnAnalyticsClients" class="analytics-grid-btn" onclick="openClientList()"><span class="ag-icon">📇</span><span>Clients</span></button>
+                <button id="btnAnalyticsSites" class="analytics-grid-btn" onclick="openSitesManager()"><span class="ag-icon">📍</span><span>Sites</span></button>
+                <button id="btnAnalyticsBrandAssets" class="analytics-grid-btn" onclick="openBrandAssets()"><span class="ag-icon">🎨</span><span>Brand Assets</span></button>
+                <button id="btnAnalyticsAllProjects" class="analytics-grid-btn" onclick="openAllProjectsOverview()"><span class="ag-icon">📊</span><span>All Projects</span></button>
                 <!-- v68: Search Everything disabled per request — not working
                      right now and not currently needed. Kept commented out,
                      not deleted, so it can be re-enabled later. Removing this
@@ -2792,21 +2398,20 @@
                 <!-- v82: Audit Lock moved into the Audit modal as its own tab
                      (switchAuditTab('lock')) — this slot now opens the
                      Tonnage & Load Balancer calculator instead. -->
-                <button id="btnAnalyticsTonnage" class="analytics-grid-btn" onclick="openTonnageCalc()"><span class="ag-icon" data-vicon="tonnage"></span><span>Tonnage</span></button>
-                <button id="btnAnalyticsProjects" class="analytics-grid-btn" onclick="openContracts()"><span class="ag-icon" data-vicon="letterpad"></span><span>Letterpad</span></button>
+                <button id="btnAnalyticsTonnage" class="analytics-grid-btn" onclick="openTonnageCalc()"><span class="ag-icon">⚖️</span><span>Tonnage</span></button>
+                <button id="btnAnalyticsProjects" class="analytics-grid-btn" onclick="openContracts()"><span class="ag-icon">📋</span><span>Letterpad</span></button>
             </div>
             <!-- Improvement #1: full data backup/export — deliberately understated
                  (text link, not a button) since this is a safety-net action rather
                  than a daily workflow step. -->
             <div style="text-align:center; margin-top:10px;">
-                <button onclick="downloadFullBackup()" style="width:auto; margin:0; background:none; border:none; color:var(--hp-ink-muted); font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">💾 Download full data backup (.json)</button>
-                <span style="color:var(--hp-ink-muted); font-size:11px;"> · </span>
-                <!-- G1: Restore from backup. A different (warmer/amber) color
+                <button onclick="downloadFullBackup()" style="width:auto; margin:0; background:none; border:none; color:#7f8c8d; font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">💾 Download full data backup (.json)</button>
+                <span style="color:#ccc; font-size:11px;"> · </span>
+                <!-- G1: Restore from backup. A different (warmer/orange) color
                      than the export link, signaling this is a different KIND
                      of action — destructive, not just informational — even
                      though both sit in the same understated row. -->
-                <button onclick="openRestoreModal()" style="width:auto; margin:0; background:none; border:none; color:var(--hp-amber-ink); font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">📥 Restore from backup</button>
-            </div>
+                <button onclick="openRestoreModal()" style="width:auto; margin:0; background:none; border:none; color:#d35400; font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">📥 Restore from backup</button>
             </div>
         </div>
 
@@ -2825,19 +2430,16 @@
              selectBlockSize()/qtyInput path a human tap would use. Deleting
              this whole block (HTML here + the paired JS block + CSS block)
              fully removes the feature with zero side effects on v73. -->
-        <!-- vBeta5 F2: now shares the exact analytics-section/-title/-chevron
-             classes Reports & Tools uses, instead of its own one-off inline
-             styles — same header height/font-weight, same rotating "›"
-             chevron instead of the old ▸/▾ text-swap. See
-             toggleBlocksCalcCollapse() for the matching JS-side unification
-             (open class + CSS display, mirroring toggleAnalyticsSection()). -->
-        <div class="analytics-section" id="blocksCalcSection">
+        <div id="blocksCalcSection" style="background:#1a2f42; border:2px solid #3498db; border-radius:8px; padding:14px; margin-bottom:20px;">
             <!-- v74c: the ENTIRE header row is now the tap target (not just
                  the small chevron) — tap anywhere across the title/badge/
                  chevron to expand or collapse. -->
-            <div class="analytics-section-title" onclick="toggleBlocksCalcCollapse()"><span>🧱 Blocks Calculator</span><span class="analytics-section-chevron" id="btnBlocksCalcCollapse">›</span></div>
-            <div class="analytics-section-body" id="blocksCalcBody">
-                <div style="font-size:11px; color:var(--hp-ink-muted); margin-bottom:10px;">Quick rough estimate.</div>
+            <div onclick="toggleBlocksCalcCollapse()" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; cursor:pointer;">
+                <div style="font-weight:bold; color:#3498db; font-size:14px; letter-spacing:0.5px;">🧱 BLOCKS CALCULATOR</div>
+                <span id="btnBlocksCalcCollapse" style="color:#7f8c8d; font-size:18px; padding:2px 8px;">▸</span>
+            </div>
+            <div id="blocksCalcBody" style="display:none;">
+                <div style="font-size:11px; color:#7f8c8d; margin-bottom:10px;">Quick rough estimate.</div>
 
                 <div id="blocksCalcRows"></div>
 
@@ -2846,12 +2448,12 @@
                      glow — per feedback that it was too easy to overlook. -->
                 <div style="display:flex; gap:8px; margin-top:10px;">
                     <button type="button" onclick="addBlocksCalcRow()" class="bcalc-addrow-btn">➕ ADD WALL ROW</button>
-                    <button type="button" onclick="clearBlocksCalcAll()" style="flex:0.6; margin:0; background:var(--hp-surface); border:1px solid var(--hp-danger); color:var(--hp-danger-ink); padding:9px; font-size:11px; border-radius:5px;">Clear All</button>
+                    <button type="button" onclick="clearBlocksCalcAll()" style="flex:0.6; margin:0; background:#2c3e50; border:1px solid #c0392b; color:#e74c3c; padding:9px; font-size:11px; border-radius:5px;">Clear All</button>
                 </div>
 
-                <div id="blocksCalcUndoBar" style="display:none; margin-top:8px; background:var(--hp-surface-alt-strong); padding:8px 10px; border-radius:5px; font-size:12px; color:var(--hp-ink); align-items:center; justify-content:space-between;">
+                <div id="blocksCalcUndoBar" style="display:none; margin-top:8px; background:#34495e; padding:8px 10px; border-radius:5px; font-size:12px; color:#ecf0f1; align-items:center; justify-content:space-between;">
                     <span>Wall row removed.</span>
-                    <a href="javascript:void(0)" onclick="undoBlocksCalcRemove()" style="color:var(--hp-blue-ink); font-weight:bold; text-decoration:underline;">Undo</a>
+                    <a href="javascript:void(0)" onclick="undoBlocksCalcRemove()" style="color:#3498db; font-weight:bold; text-decoration:underline;">Undo</a>
                 </div>
 
                 <!-- v75: Wastage / Round-Up — each is now an explicit ON/OFF
@@ -2860,9 +2462,9 @@
                      separate floating pill buttons. -->
                 <div class="bcalc-adjust-strip" id="bcalcAdjustStrip"></div>
 
-                <div id="blocksCalcSummary" style="margin-top:14px; background:var(--hp-surface-alt); border-radius:6px; padding:10px;">
-                    <div style="font-size:10px; font-weight:bold; color:var(--hp-ink-muted); text-transform:uppercase; margin-bottom:6px;">Totals by Size</div>
-                    <div id="blocksCalcSummaryBody" style="font-size:12px; color:var(--hp-ink);">No rows added yet.</div>
+                <div id="blocksCalcSummary" style="margin-top:14px; background:#243342; border-radius:6px; padding:10px;">
+                    <div style="font-size:10px; font-weight:bold; color:#7f8c8d; text-transform:uppercase; margin-bottom:6px;">Totals by Size</div>
+                    <div id="blocksCalcSummaryBody" style="font-size:12px; color:#ddd;">No rows added yet.</div>
                 </div>
 
                 <!-- v75: Save / Load a named calculation, sitting above the
@@ -2870,22 +2472,16 @@
                      (Config store) since a deliberately-named save is a
                      real record, unlike the ephemeral autosaved draft. -->
                 <div style="display:flex; gap:8px; margin-top:12px;">
-                    <button type="button" onclick="saveBlocksCalcCalculation()" style="flex:1; margin:0; background:var(--hp-surface-alt-strong); color:var(--hp-ink); font-size:12px; padding:9px;">💾 Save</button>
-                    <button type="button" id="btnBlocksCalcLoad" onclick="toggleBlocksCalcLoadPanel()" style="flex:1; margin:0; background:var(--hp-surface-alt-strong); color:var(--hp-ink); border:1px solid var(--hp-border); font-size:12px; padding:9px;">📂 Load ▼</button>
+                    <button type="button" onclick="saveBlocksCalcCalculation()" style="flex:1; margin:0; background:#2980b9; font-size:12px; padding:9px;">💾 Save</button>
+                    <button type="button" id="btnBlocksCalcLoad" onclick="toggleBlocksCalcLoadPanel()" style="flex:1; margin:0; background:#34495e; border:1px solid #465c71; font-size:12px; padding:9px;">📂 Load ▼</button>
                 </div>
-                <div id="bcalcLoadPanel" style="display:none; margin-top:8px; background:var(--hp-surface); border:1px solid var(--hp-border); border-radius:6px; padding:8px; max-height:200px; overflow-y:auto;"></div>
+                <div id="bcalcLoadPanel" style="display:none; margin-top:8px; background:#1a2f42; border:1px solid #34495e; border-radius:6px; padding:8px; max-height:200px; overflow-y:auto;"></div>
 
-                <!-- vBeta6: Quotation/Sales Invoice convert buttons now use
-                     the same tint-pill treatment as the homepage's own
-                     "⚡ → Tax Invoice"/"⚡ → Sales Invoice" buttons (mint
-                     tint) — Quotation gets the equivalent purple tint,
-                     reusing an already-established Vista pattern instead
-                     of the old flat purple/teal fills. -->
                 <div style="display:flex; gap:8px; margin-top:10px;">
-                    <button type="button" id="btnBlocksToQuo" onclick="convertBlocksCalcToDoc('QUO')" style="flex:1; margin:0; background:var(--hp-purple-tint); color:var(--hp-purple-ink); font-size:12px; padding:10px;" disabled>📝 Convert to Quotation</button>
-                    <button type="button" id="btnBlocksToSal" onclick="convertBlocksCalcToDoc('SAL')" style="flex:1; margin:0; background:var(--hp-mint-tint); color:var(--hp-mint-ink); font-size:12px; padding:10px;" disabled>🧾 Convert to Sales Invoice</button>
+                    <button type="button" id="btnBlocksToQuo" onclick="convertBlocksCalcToDoc('QUO')" style="flex:1; margin:0; background:#8e44ad; font-size:12px; padding:10px;" disabled>📝 Convert to Quotation</button>
+                    <button type="button" id="btnBlocksToSal" onclick="convertBlocksCalcToDoc('SAL')" style="flex:1; margin:0; background:#16a085; font-size:12px; padding:10px;" disabled>🧾 Convert to Sales Invoice</button>
                 </div>
-                <div id="blocksCalcQueueBanner" style="display:none; margin-top:10px; background:var(--hp-amber-tint); color:var(--hp-amber-ink); padding:8px 10px; border-radius:5px; font-size:12px; font-weight:bold; text-align:center;"></div>
+                <div id="blocksCalcQueueBanner" style="display:none; margin-top:10px; background:#e67e22; color:#fff; padding:8px 10px; border-radius:5px; font-size:12px; font-weight:bold; text-align:center;"></div>
             </div>
         </div>
 
@@ -2914,7 +2510,7 @@
              in the app now look and behave the same way. Customer is the
              default tier, matching the confirmed design. -->
         <div style="margin-bottom:10px;">
-            <label style="margin-top:0; margin-bottom:6px; color:var(--hp-blue-ink);">💰 Pricing Tier</label>
+            <label style="margin-top:0; margin-bottom:6px; color:#3498db;">💰 Pricing Tier</label>
             <div id="tierBar" style="display:flex; gap:6px;">
                 <button type="button" class="tier-bar-btn" data-tier="Customer" onclick="selectTier('Customer')" style="flex:1; margin:0; padding:10px 4px; font-size:12px; font-weight:bold; border-radius:5px;">Customer</button>
                 <button type="button" class="tier-bar-btn" data-tier="Engineer" onclick="selectTier('Engineer')" style="flex:1; margin:0; padding:10px 4px; font-size:12px; font-weight:bold; border-radius:5px;">Engineer</button>
@@ -3014,7 +2610,7 @@
             <div style="flex:1.6;">
                 <label style="margin-top:0; display:flex; justify-content:space-between; align-items:center;">
                     <span>Document No.</span>
-                    <span onclick="useNextDocNo()" style="cursor:pointer; text-transform:none; font-weight:normal; color:var(--hp-blue-ink); text-decoration:underline; font-size:11px;" title="Fill in the next available number for this document type">🔢 Use Next</span>
+                    <span onclick="useNextDocNo()" style="cursor:pointer; text-transform:none; font-weight:normal; color:#3498db; text-decoration:underline; font-size:11px;" title="Fill in the next available number for this document type">🔢 Use Next</span>
                 </label>
                 <input type="text" id="docNoIn" onkeyup="updateInfo(); checkDocNoCollision();" style="margin-top:5px; font-size:15px; font-weight:bold; letter-spacing:0.3px;">
                 <div id="docNoWarning" class="docno-warning">⚠️ This document number already exists — saving may overwrite it.</div>
@@ -3026,44 +2622,9 @@
         </div>
 
         <div id="salesInputs">
-            <!-- Vista 4: Customer/Product/Payment sticky jump-nav + isolated
-                 section cards, scoped to the sales/quotation flow only.
-                 Scrollspy (see docSectionObserver in JS) keeps the active
-                 pill in sync with scroll position; clicking a pill jumps
-                 straight there. Purely a visual/navigation layer — no
-                 existing IDs, onclicks or field logic were touched, so
-                 nothing downstream needed to change. -->
-            <div class="doc-jumpnav-wrap">
-                <div class="doc-jumpnav" id="docJumpNav">
-                    <div class="doc-jumpnav-item active" data-target="docSectionCustomer" onclick="jumpToDocSection('docSectionCustomer')">Customer</div>
-                    <div class="doc-jumpnav-item" data-target="docSectionProduct" onclick="jumpToDocSection('docSectionProduct')">Product</div>
-                    <div class="doc-jumpnav-item" data-target="docSectionPayment" onclick="jumpToDocSection('docSectionPayment')">Payment</div>
-                </div>
-            </div>
-
-            <!-- Tinted backdrop so the white section cards actually read as
-                 separate boxes rather than blending into .editor-box's own
-                 white background — matches the reviewed mockup's grey
-                 page / white card contrast. -->
-            <div class="doc-sections-wrap">
-            <div class="doc-section" id="docSectionCustomer">
-            <!-- vBeta5 F5: previously one 4-column row (Title/Client Name/
-                 Billing Location/Contact No.), forced to fully stack on
-                 mobile via "#salesInputs > div:first-child { flex-direction:
-                 column !important }" (v71) because 4 columns squeezed onto
-                 one phone-width line collided. Split into two explicit
-                 2-up rows instead — Title+Client Name, then Billing
-                 Location+Contact No. — each narrow enough to sit side by
-                 side on a real phone without the old collision, cutting
-                 two stacked-field rows' worth of vertical space. Both new
-                 rows keep the same flex ratios (0.6/1.5 and 1.5/1) used on
-                 desktop, plus flex-wrap so an unusually narrow device
-                 still wraps gracefully instead of overflowing — see the
-                 v76 "MOBILE LAYOUT SAFETY NET" comment on why nothing here
-                 forces a rigid alignment. -->
-            <div id="titleClientRow" style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div style="display:flex; gap:10px;">
                 <!-- A7: Title selector — empty/blank is the default and always available -->
-                <div style="flex:0.6; min-width:76px;">
+                <div style="flex:0.6;">
                     <label>Title</label>
                     <select id="clientTitleIn" onchange="updateInfo()">
                         <option value="">—</option>
@@ -3073,14 +2634,14 @@
                         <option value="M/s">M/s</option>
                         <option value="Ms.">Ms.</option>
                         <option value="Dr.">Dr.</option>
-
+                        
                     </select>
                 </div>
                 <!-- A7: Client Name — custom live-suggestion autocomplete replaces the
                      native <datalist> dropdown (which forces an arrow icon and doesn't
                      scale past a handful of entries). Matches by name substring OR by
                      client ID number (typing "22" surfaces C22, C220, etc.) -->
-                <div style="flex:1.5; min-width:140px; position:relative;">
+                <div style="flex:1.5; position:relative;">
                     <label>Client Name</label>
                     <input type="text" id="clientNameIn" autocomplete="off" onkeyup="updateInfo(); handleClientAutofill(); updateMakeRepeatClientVisibility();" onkeydown="handleClientSuggestionKeydown(event)" onchange="handleClientShortcut(); updateMakeRepeatClientVisibility(); try{renderClientCreditWarning(true);}catch(e){}" onblur="setTimeout(closeClientSuggestions, 150)">
                     <div id="clientSuggestionsBox" class="client-suggestions-box"></div>
@@ -3090,19 +2651,17 @@
                          assigns the next C-number AND retroactively tags
                          every past document with this exact name, so their
                          whole history becomes visible under one ID at once. -->
-                    <button id="btnMakeRepeatClient" onclick="makeRepeatClient()" style="display:none; margin-top:4px; background:var(--hp-amber); color:#fff; border:none; padding:6px 10px; border-radius:var(--hp-radius-sm); cursor:pointer; font-size:11px; font-weight:bold; width:auto;">⭐ Make Repeat Client</button>
+                    <button id="btnMakeRepeatClient" onclick="makeRepeatClient()" style="display:none; margin-top:4px; background:#f39c12; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold; width:auto;">⭐ Make Repeat Client</button>
                 </div>
-            </div>
-            <div id="billingContactRow" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
-                <div style="flex:1.5; min-width:140px;"><label>Billing Location</label><input type="text" id="locIn" value="Udumalpet" placeholder="e.g. Udumalpet" onkeyup="updateInfo()"></div>
-                <div style="flex:1; min-width:100px;"><label>Contact No.</label><input type="text" id="phoneIn" onkeyup="updateInfo()"></div>
+                <div style="flex:1.5;"><label>Billing Location</label><input type="text" id="locIn" value="Udumalpet" placeholder="e.g. Udumalpet" onkeyup="updateInfo()"></div>
+                <div style="flex:1;"><label>Contact No.</label><input type="text" id="phoneIn" onkeyup="updateInfo()"></div>
             </div>
             <!-- F16: Returning client autofill suggestion -->
             <div id="clientAutofillBanner" class="client-autofill-banner" onclick="applyClientAutofill()">
                 💡 Returning client detected — tap to auto-fill GSTIN, location & tier
             </div>
             <!-- v79: In-progress document draft restore -->
-            <div id="docDraftRestoreBanner" class="client-autofill-banner" style="display:none; background:var(--hp-blue-tint); border-left:3px solid var(--hp-blue-ink); color:var(--hp-blue-ink);">
+            <div id="docDraftRestoreBanner" class="client-autofill-banner" style="display:none; background:#1a5276; border-color:#2980b9; color:#eaf2f8;">
                 <span id="docDraftRestoreText"></span>
                 <span onclick="dismissDocDraftBanner(event)" style="float:right; font-weight:bold; padding:0 4px; cursor:pointer;">✕</span>
             </div>
@@ -3156,19 +2715,16 @@
                     </div>
                 </div>
             </div>
-            </div><!-- /docSectionCustomer -->
-
-            <div class="doc-section" id="docSectionProduct">
-            <div id="taxToggleDiv" style="background: var(--hp-amber-tint); padding: 10px 13px; border-radius: var(--hp-radius-sm); margin-top: 12px; border: none;">
-                <label style="color: var(--hp-amber-ink); margin-top: 0; cursor: pointer; text-transform: none;">
+            <div id="taxToggleDiv" style="background: #34495e; padding: 10px; border-radius: 4px; margin-top: 15px; border: 1px solid #f1c40f;">
+                <label style="color: #f1c40f; margin-top: 0; cursor: pointer; text-transform: none;">
                     <input type="checkbox" id="inclusiveTax" onchange="renderTable()" checked style="vertical-align: middle;"> <b style="vertical-align: middle;">Rates INCLUDE GST</b>
                 </label>
             </div>
-            <hr style="border-color:var(--hp-border); margin: 14px 0;">
+            <hr style="border-color:#465c71; margin: 15px 0;">
             
-            <label style="color:var(--hp-blue-ink); display:flex; justify-content: space-between; margin-top:0; margin-bottom: 8px;">
+            <label style="color:#3498db; display:flex; justify-content: space-between; margin-top:0; margin-bottom: 8px;">
                 <span>Add Product / Advance</span>
-                <span id="liveTonnageTracker" style="color:var(--hp-amber-ink); font-weight:normal;">Cart Tonnage: 0.00 T</span>
+                <span id="liveTonnageTracker" style="color:#f1c40f; font-weight:normal;">Cart Tonnage: 0.00 T</span>
             </label>
 
             <!-- Retail vs Full Load — manual choice, no dropdown, defaults
@@ -3180,8 +2736,8 @@
                  price in cart" is explicitly turned on in Pricing settings
                  (off by default). -->
             <div style="display:flex; gap:8px; margin-bottom:10px;">
-                <button type="button" id="btnDeliveryRetail" onclick="setDeliveryMode('Retail')" style="flex:1; margin:0; padding:9px; font-size:13px; background:var(--hp-ink); border:2px solid var(--hp-ink); color:#fff; font-weight:bold; border-radius:var(--hp-radius-sm);">🏬 Retail</button>
-                <button type="button" id="btnDeliveryLoad" onclick="setDeliveryMode('Wholesale')" style="flex:1; margin:0; padding:9px; font-size:13px; background:var(--hp-surface-alt-strong); border:2px solid transparent; color:var(--hp-ink-muted); font-weight:bold; border-radius:var(--hp-radius-sm);">🚛 Full Load</button>
+                <button type="button" id="btnDeliveryRetail" onclick="setDeliveryMode('Retail')" style="flex:1; margin:0; padding:9px; font-size:13px; background:#3498db; border:2px solid #3498db; color:#fff; font-weight:bold; border-radius:5px;">🏬 Retail</button>
+                <button type="button" id="btnDeliveryLoad" onclick="setDeliveryMode('Wholesale')" style="flex:1; margin:0; padding:9px; font-size:13px; background:#2c3e50; border:2px solid #465c71; color:#aaa; font-weight:bold; border-radius:5px;">🚛 Full Load</button>
             </div>
             
             <!-- v70: SIZE GRID + BRAND PICKER — replaces scrolling through
@@ -3202,21 +2758,21 @@
                  deleted — see "Use old dropdown instead" — hidden by
                  default, one click to bring back for a full, instant
                  rollback. -->
-            <div id="blockPickerBox" style="background:var(--hp-surface-alt); border:none; border-radius:var(--hp-radius-md,16px); padding:12px 14px; margin-bottom:10px;">
+            <div id="blockPickerBox" style="background:#243342; border:1px solid #34495e; border-radius:6px; padding:10px; margin-bottom:10px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <label style="margin:0; color:var(--hp-ink-muted);">🧱 AAC Block — Size &amp; Brand</label>
-                    <a href="javascript:void(0)" onclick="toggleLegacyProductUI(true)" style="font-size:10px; color:var(--hp-ink-muted); text-decoration:underline;">Use old dropdown instead</a>
+                    <label style="margin:0; color:#3498db;">🧱 AAC Block — Size &amp; Brand</label>
+                    <a href="javascript:void(0)" onclick="toggleLegacyProductUI(true)" style="font-size:10px; color:#7f8c8d; text-decoration:underline;">Use old dropdown instead</a>
                 </div>
                 <div id="blockSizeGrid" style="display:flex; gap:6px; margin-bottom:8px;">
-                    <button type="button" class="size-grid-btn" data-size="4" onclick="selectBlockSize(4)" style="flex:1; margin:0; padding:10px 4px; font-size:14px; font-weight:bold; border-radius:var(--hp-radius-sm); background:var(--hp-surface); border:2px solid var(--hp-border); color:var(--hp-ink-muted);">4"</button>
-                    <button type="button" class="size-grid-btn" data-size="6" onclick="selectBlockSize(6)" style="flex:1; margin:0; padding:10px 4px; font-size:14px; font-weight:bold; border-radius:var(--hp-radius-sm); background:var(--hp-surface); border:2px solid var(--hp-border); color:var(--hp-ink-muted);">6"</button>
-                    <button type="button" class="size-grid-btn" data-size="8" onclick="selectBlockSize(8)" style="flex:1; margin:0; padding:10px 4px; font-size:14px; font-weight:bold; border-radius:var(--hp-radius-sm); background:var(--hp-surface); border:2px solid var(--hp-border); color:var(--hp-ink-muted);">8"</button>
-                    <button type="button" class="size-grid-btn" data-size="9" onclick="selectBlockSize(9)" style="flex:1; margin:0; padding:10px 4px; font-size:14px; font-weight:bold; border-radius:var(--hp-radius-sm); background:var(--hp-surface); border:2px solid var(--hp-border); color:var(--hp-ink-muted);">9"</button>
+                    <button type="button" class="size-grid-btn" data-size="4" onclick="selectBlockSize(4)" style="flex:1; margin:0; padding:10px 4px; font-size:14px; font-weight:bold; border-radius:5px; background:#2c3e50; border:2px solid #465c71; color:#aaa;">4"</button>
+                    <button type="button" class="size-grid-btn" data-size="6" onclick="selectBlockSize(6)" style="flex:1; margin:0; padding:10px 4px; font-size:14px; font-weight:bold; border-radius:5px; background:#2c3e50; border:2px solid #465c71; color:#aaa;">6"</button>
+                    <button type="button" class="size-grid-btn" data-size="8" onclick="selectBlockSize(8)" style="flex:1; margin:0; padding:10px 4px; font-size:14px; font-weight:bold; border-radius:5px; background:#2c3e50; border:2px solid #465c71; color:#aaa;">8"</button>
+                    <button type="button" class="size-grid-btn" data-size="9" onclick="selectBlockSize(9)" style="flex:1; margin:0; padding:10px 4px; font-size:14px; font-weight:bold; border-radius:5px; background:#2c3e50; border:2px solid #465c71; color:#aaa;">9"</button>
                 </div>
                 <select id="blockBrandSelect" onchange="handleBlockBrandChange()" style="margin-top:0;">
                     <option value="">(No Brand)</option>
                 </select>
-                <div id="blockPickerPreview" style="font-size:11px; color:var(--hp-ink-muted); margin-top:6px; min-height:14px;"></div>
+                <div id="blockPickerPreview" style="font-size:11px; color:#7f8c8d; margin-top:6px; min-height:14px;"></div>
             </div>
 
                         <!-- LEGACY PRODUCT DROPDOWN — v70: hidden by default (the Size+Brand
@@ -3271,8 +2827,8 @@
             </div>
 
             <!-- F9: Supersedes reference — shown on INV and SAL when amending -->
-            <div id="supersedesBox" style="display:none; background:var(--hp-amber-tint); padding:10px 13px; border-radius:var(--hp-radius-sm); margin-top:10px; border:none;">
-                <label style="color:var(--hp-amber-ink); margin-top:0; text-transform:none;">✏️ This document supersedes (amends):</label>
+            <div id="supersedesBox" style="display:none; background:#34495e; padding:10px; border-radius:4px; margin-top:10px; border:1px solid #d35400;">
+                <label style="color:#e67e22; margin-top:0; text-transform:none;">✏️ This document supersedes (amends):</label>
                 <div style="display:flex; gap:8px; align-items:center;">
                     <div style="flex:1; position:relative;">
                         <input type="text" id="supersedesRef" placeholder="Search doc no. or client..." autocomplete="off"
@@ -3281,13 +2837,13 @@
                             style="margin-top:5px; width:100%;">
                         <div id="supersedesRefSuggestBox" class="client-suggestions-box" style="top:100%;"></div>
                     </div>
-                    <button onclick="openAmendmentDiff()" style="width:auto; margin:5px 0 0 0; background:var(--hp-amber); color:#fff; padding:8px 12px; font-size:11px; border-radius:var(--hp-radius-sm);">🔍 View Changes</button>
+                    <button onclick="openAmendmentDiff()" style="width:auto; margin:5px 0 0 0; background:#e67e22; padding:8px 12px; font-size:11px;">🔍 View Changes</button>
                 </div>
             </div>
 
             <!-- F17: Item notes field — prints under item name on document -->
             <div style="margin-top:8px;">
-                <input type="text" id="itemNotesIn" placeholder="📝 Optional note for this item (prints on document)..." style="font-size:12px; padding:8px 11px; background:var(--hp-surface-alt); border:1px dashed var(--hp-border); color:var(--hp-ink-muted); box-shadow:none;">
+                <input type="text" id="itemNotesIn" placeholder="📝 Optional note for this item (prints on document)..." style="font-size:12px; padding:7px 10px; background:#1a252f; border:1px dashed #465c71; color:#bdc3c7;">
             </div>
             <!-- v79: live cart-wide stock shortfall warning -->
             <div id="cartStockWarning" class="duplicate-warn-banner" style="display:none;"></div>
@@ -3309,25 +2865,23 @@
                  directly so the balance genuinely goes to zero, rather than
                  a payment receipt trick that would leave the amount showing
                  as outstanding in every report. Leave blank for no discount. -->
-            <div id="discountBox" style="background:var(--hp-danger-tint); border:none; padding:12px 15px; border-radius:var(--hp-radius-sm); margin-top:12px; display:none;">
-                <label style="color:var(--hp-danger-ink); margin-top:0; font-size:11px;">✂️ Discount / Round-Off (₹)</label>
+            <div id="discountBox" style="background:#f9ebea; border:1px solid #e74c3c; padding:12px 15px; border-radius:6px; margin-top:12px; display:none;">
+                <label style="color:#c0392b; margin-top:0; font-size:11px;">✂️ Discount / Round-Off (₹)</label>
                 <div style="display:flex; gap:10px; align-items:center; margin-top:4px;">
                     <input type="number" id="discountAmt" placeholder="e.g. 30 or 130" min="0" onkeyup="renderTable()" style="flex:1;">
                     <input type="text" id="discountLabel_in" placeholder="Label (optional)" onkeyup="renderTable()" style="flex:2; font-size:13px;">
                 </div>
                 <div style="font-size:10px; color:#888; margin-top:4px;">Leave blank = no discount. Subtracted from grand total before amount-in-words.</div>
             </div>
-            </div><!-- /docSectionProduct -->
 
-            <div class="doc-section" id="docSectionPayment">
-            <div id="advAdjustBox" style="background:var(--hp-danger-tint); padding:15px; border-radius:var(--hp-radius-sm); margin-top:12px; display:none;">
-                <label style="color:var(--hp-danger-ink); margin-top:0;">🔗 Link Advance Receipts</label>
+            <div id="advAdjustBox" style="background:#c0392b; padding:15px; border-radius:6px; margin-top:15px; display:none;">
+                <label style="color:#fff; margin-top:0;">🔗 Link Advance Receipts</label>
                 <table class="adv-link-table" id="advLinkTable">
                     <thead><tr><th style="width:45%">Receipt No.</th><th style="width:35%">Amount (₹)</th><th style="width:20%"></th></tr></thead>
                     <tbody id="advLinkBody"></tbody>
                 </table>
                 <button class="btn-adv-add-row" onclick="addAdvLinkRow()" style="margin-top:8px;">+ Add Another Receipt</button>
-                <div style="margin-top:8px; padding:8px 10px; background:var(--hp-surface); border-radius:6px; font-size:13px; color:var(--hp-danger-ink); font-weight:700;">
+                <div style="margin-top:8px; padding:8px 10px; background:rgba(0,0,0,0.2); border-radius:4px; font-size:13px; color:#fff;">
                     Total Linked: <b id="advLinkTotal">₹0</b> &nbsp;|&nbsp; Balance: <b id="advLinkBalance">₹0</b>
                 </div>
             </div>
@@ -3341,13 +2895,13 @@
             <div id="advDirectBox" style="display:none;">
                 <div class="adv-amount-box">
                     <label id="advAmtLabel">💰 Advance Amount Received (₹)</label>
-                    <input type="number" id="advDirectAmt" placeholder="e.g. 14000" onkeyup="renderTable(); updateAdvPrint();" style="font-size:18px; font-weight:bold; color:var(--hp-amber-ink); background:var(--hp-surface); border:none; box-shadow:inset 0 0 0 2px var(--hp-amber); margin-top:6px;">
+                    <input type="number" id="advDirectAmt" placeholder="e.g. 14000" onkeyup="renderTable(); updateAdvPrint();" style="font-size:18px; font-weight:bold; color:#f39c12; background:#1a252f; border:2px solid #f39c12; margin-top:6px;">
                 </div>
-                <div style="background:var(--hp-surface-alt); padding:12px 15px; border-radius:var(--hp-radius-sm); margin-top:10px; border:none;">
-                    <label style="color:var(--hp-blue-ink); margin-top:0;">📝 Purpose / Description</label>
+                <div style="background:#1a252f; padding:12px 15px; border-radius:6px; margin-top:10px; border:1px solid #465c71;">
+                    <label style="color:#3498db; margin-top:0;">📝 Purpose / Description</label>
                     <input type="text" id="advDirectDesc" placeholder="e.g. Advance for Block Supply — Mani Site" onkeyup="updateAdvPrint()" style="margin-top:5px;">
                     <div id="advQuoLinkSection">
-                        <label style="color:var(--hp-purple-ink); margin-top:10px;">🔗 Link to Quotation (Optional)</label>
+                        <label style="color:#8e44ad; margin-top:10px;">🔗 Link to Quotation (Optional)</label>
                         <div style="display:flex; gap:8px; margin-top:5px; position:relative;">
                             <div style="flex:1.5; position:relative;">
                                 <input type="text" id="advQuoRef" placeholder="Search quotation no..." autocomplete="off"
@@ -3359,7 +2913,7 @@
                         </div>
                     </div>
                     <div id="rcpInvoiceRefSection" style="display:none;">
-                        <label style="color:var(--hp-blue-ink); margin-top:10px;">🧾 Against Invoice (Optional — for your reference only, not linked)</label>
+                        <label style="color:#1a5276; margin-top:10px;">🧾 Against Invoice (Optional — for your reference only, not linked)</label>
                         <div style="position:relative;">
                             <input type="text" id="rcpInvoiceRef" placeholder="Search invoice no. or client..." autocomplete="off"
                                 oninput="handleRcpInvoiceRefSearch(); updateAdvPrint();" onfocus="handleRcpInvoiceRefSearch()"
@@ -3369,8 +2923,8 @@
                         </div>
                     </div>
                 </div>
-                <div style="background:var(--hp-mint-tint); padding:15px; border-radius:var(--hp-radius-sm); margin-top:10px;">
-                    <label style="color:var(--hp-mint-ink); margin-top:0;">💳 Payment Method</label>
+                <div style="background:#1abc9c; padding:15px; border-radius:6px; margin-top:10px;">
+                    <label style="color:#fff; margin-top:0;">💳 Payment Method</label>
                     <select id="advPayMode" onchange="toggleAdvPayFields(); updateAdvPrint();" style="margin-top:5px;">
                         <option value="">Select Method...</option>
                         <option value="Cash">Cash</option>
@@ -3384,8 +2938,8 @@
                 </div>
             </div>
 
-            <div id="paymentLogBox" style="background: var(--hp-mint-tint); padding: 15px; border-radius: var(--hp-radius-sm); margin-top: 16px;">
-                <label style="color: var(--hp-mint-ink); margin-top: 0;">Log Payment (Internal Record)</label>
+            <div id="paymentLogBox" style="background: #1abc9c; padding: 15px; border-radius: 6px; margin-top: 20px;">
+                <label style="color: #fff; margin-top: 0;">Log Payment (Internal Record)</label>
                 <select id="salesPayMode" onchange="toggleSalesPayFields(); renderTable();">
                     <option value="">Select Method...</option>
                     <option value="Cash">Cash</option>
@@ -3396,10 +2950,8 @@
                 <div id="salesUpiFields" style="display:none; margin-top:10px;"><input type="text" id="salesUpiDetails" placeholder="Transaction ID" onkeyup="renderTable()"></div>
                 <div id="salesBankFields" style="display:none; margin-top:10px;"><input type="text" id="salesBankDetails" placeholder="Reference Number" onkeyup="renderTable()"></div>
             </div>
-            </div><!-- /docSectionPayment -->
-            </div><!-- /doc-sections-wrap -->
         </div>
-
+        
         <div id="voucherInputs" style="display:none;">
             <div style="display:flex; gap:10px;">
                 <div style="flex:2;"><label>Paid To</label><input type="text" id="vPaidTo" onkeyup="updateInfo()"></div>
@@ -3407,8 +2959,8 @@
             </div>
             <label>Towards (Description)</label><input type="text" id="vDesc" onkeyup="updateInfo()">
             <!-- F4-fix: RCM GST Rate Selector -->
-            <div id="rcmGstBox" style="display:none; background:var(--hp-amber-tint); padding:10px 13px; border-radius:var(--hp-radius-sm); margin-top:10px; border:none;">
-                <label style="color:var(--hp-amber-ink); margin-top:0; text-transform:none;">RCM Tax Liability</label>
+            <div id="rcmGstBox" style="display:none; background:#34495e; padding:10px; border-radius:4px; margin-top:10px; border:1px solid #e67e22;">
+                <label style="color:#e67e22; margin-top:0; text-transform:none;">RCM Tax Liability</label>
                 <div style="display:flex; gap:10px; margin-top:5px;">
                     <div style="flex:1;">
                         <select id="rcmGstRate" onchange="updateInfo()" style="margin-top:0;">
@@ -3418,12 +2970,12 @@
                             <option value="18">18% GST (Services)</option>
                         </select>
                     </div>
-                    <div style="flex:1; display:flex; align-items:center; padding:10px; background:var(--hp-surface); border-radius:var(--hp-radius-sm); font-size:13px; color:var(--hp-amber-ink); font-weight:bold;" id="rcmTaxDisplay">RCM Tax: ₹0.00</div>
+                    <div style="flex:1; display:flex; align-items:center; padding:10px; background:#1a252f; border-radius:4px; font-size:13px; color:#f1c40f; font-weight:bold;" id="rcmTaxDisplay">RCM Tax: ₹0.00</div>
                 </div>
             </div>
             <!-- F7: Credit Note reference field -->
-            <div id="crnRefBox" style="display:none; background:var(--hp-danger-tint); padding:10px 13px; border-radius:var(--hp-radius-sm); margin-top:10px; border:none;">
-                <label style="color:var(--hp-danger-ink); margin-top:0; text-transform:none;">↩️ Credit Note — Original Invoice Reference</label>
+            <div id="crnRefBox" style="display:none; background:#34495e; padding:10px; border-radius:4px; margin-top:10px; border:1px solid #e74c3c;">
+                <label style="color:#e74c3c; margin-top:0; text-transform:none;">↩️ Credit Note — Original Invoice Reference</label>
                 <div style="position:relative;">
                     <input type="text" id="crnOrigRef" placeholder="Search invoice no. or client..." autocomplete="off"
                         oninput="handleCrnOrigRefSearch(); updateInfo();" onfocus="handleCrnOrigRefSearch()"
@@ -3948,24 +3500,33 @@
             <div style="color: #7f8c8d; font-size: 13px; margin-bottom: 15px;">
                 Set the per-inch rate for each tier, broken down by brand. Load vs Retail is chosen manually with the buttons next to Add Product — it's no longer guessed automatically from cart tonnage.
             </div>
-            <!-- vBeta5 F3: v70/v71's approach was a table with one column
-                 per brand plus "No Brand" — fine for 2-3 brands, but grew
-                 wider than any phone screen with more, forcing the
-                 horizontal-scroll-on-a-data-table pattern that's genuinely
-                 hard to use on mobile (easy to miss that more columns
-                 exist, easy to lose your place while swiping). Replaced
-                 with a brand SELECTOR (chips) above a single compact
-                 Tier x Rate table for whichever brand is currently
-                 selected — brand becomes a filter, not a column, so the
-                 table is always exactly 2 columns and never needs to
-                 scroll, no matter how many brands get added later.
-                 selectBrandForGrid() commits the visible tier rates into
-                 pricingConfig.tiers before switching brands, so an
-                 in-progress edit is never lost when the table re-renders
-                 for the newly chosen brand. Entirely rendered by
-                 renderBrandTierGrid() — see that function for the chip
-                 row + table markup. -->
-            <div id="brandTierGridWrap"></div>
+            <!-- v70: BRAND-AWARE TIER GRID — replaces the old flat 4-input
+                 layout (one number per tier, shared across every brand) with
+                 a table: one row per tier, one column per configured brand,
+                 plus a "No Brand" column for the fallback rate used when a
+                 block is added with brand left blank. Rendered dynamically
+                 by renderBrandTierGrid() since the brand list can grow at
+                 any time from the Brands tab — no code change needed to
+                 add a 6th, 7th, etc. brand. -->
+            <div id="brandTierGridWrap" style="overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -4px;">
+                <!-- v71 CRITICAL FIX: the table previously had width:100%,
+                     which forces the browser to compress every column to
+                     fit inside the viewport no matter how many brands
+                     exist — that's what was squeezing "Meghalite" into
+                     "MEGHA/LITE" across two lines and making each rate
+                     input (fixed at 70px) overflow its own compressed
+                     cell, producing the overlapping/misaligned look on
+                     mobile. overflow-x:auto on the wrapper was already
+                     correct but had nothing to actually scroll to, since
+                     the table itself was never allowed to be wider than
+                     the screen. Removing the 100% width lets the table
+                     size itself naturally (wide enough for every column
+                     to keep its real width) and the wrapper's horizontal
+                     scroll now does real work — swipe sideways to see
+                     more brands, exactly like the Document Manager's
+                     table already does elsewhere in the app. -->
+                <table id="brandTierGrid" style="border-collapse:collapse; font-size:12px; white-space:nowrap;"></table>
+            </div>
 
             <!-- LEGACY FLAT TIER INPUTS — v70: kept fully intact, not deleted,
                  purely for instant rollback. Hidden by default since the
@@ -4848,7 +4409,7 @@
         <!-- Quick entry form -->
         <div class="cash-entry-form">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-                <div style="font-size:13px; font-weight:bold;">➕ New Entry</div>
+                <div style="font-size:13px; font-weight:bold; color:#2c3e50;">➕ New Entry</div>
                 <!-- Voice entry button — uses Web Speech API (free, built into
                      Chrome on Android and Safari on iOS 14.5+). On Android this
                      works in both browser and PWA mode. On iOS it requires Safari
@@ -4865,19 +4426,19 @@
                 <div id="cbVoiceTranscript" style="font-size:13px; color:#555; font-style:italic; margin-bottom:10px;"></div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
                     <div style="background:#fff; border:1px solid #d2b4de; border-radius:6px; padding:8px 12px; font-size:12px; flex:1;">
-                        <div style="color:var(--cb-muted,#888); font-size:10px; text-transform:uppercase;">Direction</div>
+                        <div style="color:#888; font-size:10px; text-transform:uppercase;">Direction</div>
                         <div id="cbVoiceDir" style="font-weight:bold; color:#2c3e50; margin-top:2px;"></div>
                     </div>
                     <div style="background:#fff; border:1px solid #d2b4de; border-radius:6px; padding:8px 12px; font-size:12px; flex:1;">
-                        <div style="color:var(--cb-muted,#888); font-size:10px; text-transform:uppercase;">Amount</div>
+                        <div style="color:#888; font-size:10px; text-transform:uppercase;">Amount</div>
                         <div id="cbVoiceAmt" style="font-weight:bold; color:#2c3e50; margin-top:2px;"></div>
                     </div>
                     <div style="background:#fff; border:1px solid #d2b4de; border-radius:6px; padding:8px 12px; font-size:12px; flex:1;">
-                        <div style="color:var(--cb-muted,#888); font-size:10px; text-transform:uppercase;">Category</div>
+                        <div style="color:#888; font-size:10px; text-transform:uppercase;">Category</div>
                         <div id="cbVoiceCat" style="font-weight:bold; color:#2c3e50; margin-top:2px;"></div>
                     </div>
                     <div style="background:#fff; border:1px solid #d2b4de; border-radius:6px; padding:8px 12px; font-size:12px; flex:2;">
-                        <div style="color:var(--cb-muted,#888); font-size:10px; text-transform:uppercase;">Description</div>
+                        <div style="color:#888; font-size:10px; text-transform:uppercase;">Description</div>
                         <div id="cbVoiceParty" style="font-weight:bold; color:#2c3e50; margin-top:2px;"></div>
                     </div>
                 </div>
@@ -4890,18 +4451,18 @@
             <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px; align-items:end;">
                 <div>
                     <label style="color:#555; font-size:11px; margin:0;">Direction</label>
-                    <select id="cbDirection" style="margin-top:4px; padding:8px;">
+                    <select id="cbDirection" style="background:#fff; color:#333; border:1px solid #ccc; margin-top:4px; padding:8px;">
                         <option value="IN">💚 IN (Received)</option>
                         <option value="OUT">🔴 OUT (Paid)</option>
                     </select>
                 </div>
                 <div>
                     <label style="color:#555; font-size:11px; margin:0;">Amount (₹)</label>
-                    <input type="number" id="cbAmount" placeholder="0" style="margin-top:4px; padding:8px;">
+                    <input type="number" id="cbAmount" placeholder="0" style="background:#fff; color:#333; border:1px solid #ccc; margin-top:4px; padding:8px;">
                 </div>
                 <div>
                     <label style="color:#555; font-size:11px; margin:0;">Category</label>
-                    <select id="cbCategory" onchange="toggleCustomCategory()" style="margin-top:4px; padding:8px;">
+                    <select id="cbCategory" onchange="toggleCustomCategory()" style="background:#fff; color:#333; border:1px solid #ccc; margin-top:4px; padding:8px;">
                         <option value="Sale">Sale (Blocks)</option>
                         <option value="Advance">Advance Received</option>
                         <option value="Labour Income">Labour Income</option>
@@ -4917,17 +4478,17 @@
                         <option value="Other Expense">Other Expense</option>
                         <option value="CUSTOM">[+] Custom Category...</option>
                     </select>
-                    <input type="text" id="cbCustomCategory" style="display:none; margin-top:6px; padding:8px;" placeholder="Enter category name...">
+                    <input type="text" id="cbCustomCategory" style="display:none; margin-top:6px; background:#fff; color:#333; border:1px solid #ccc; padding:8px;" placeholder="Enter category name...">
                 </div>
                 <div>
                     <label style="color:#555; font-size:11px; margin:0;">Date</label>
-                    <input type="date" id="cbDate" style="margin-top:4px; padding:8px;">
+                    <input type="date" id="cbDate" style="background:#fff; color:#333; border:1px solid #ccc; margin-top:4px; padding:8px;">
                 </div>
             </div>
             <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:8px; margin-top:8px; align-items:end;">
                 <div>
                     <label style="color:#555; font-size:11px; margin:0;">Party / Description</label>
-                    <input type="text" id="cbParty" placeholder="Who paid / who was paid, for what..." style="margin-top:4px; padding:8px;">
+                    <input type="text" id="cbParty" placeholder="Who paid / who was paid, for what..." style="background:#fff; color:#333; border:1px solid #ccc; margin-top:4px; padding:8px;">
                 </div>
                 <div style="position:relative;">
                     <label style="color:#555; font-size:11px; margin:0;">Link to Document (optional)</label>
@@ -4935,7 +4496,7 @@
                          Covers any document type (INV, SAL, RCP, ADV, RCM, EXP),
                          not just invoices. Stores the selected docNo in
                          cbLinkedDoc (hidden), displays a human-readable pill. -->
-                    <div id="cbInvoicePickerDisplay" onclick="openInvoicePicker()" style="margin-top:4px; padding:8px; border-radius:4px; cursor:pointer; font-size:13px; min-height:36px; display:flex; align-items:center; justify-content:space-between;">
+                    <div id="cbInvoicePickerDisplay" onclick="openInvoicePicker()" style="background:#fff; color:#333; border:1px solid #ccc; margin-top:4px; padding:8px; border-radius:4px; cursor:pointer; font-size:13px; min-height:36px; display:flex; align-items:center; justify-content:space-between;">
                         <span id="cbInvoicePickerLabel" style="color:#aaa;">🔍 Search document...</span>
                         <span id="cbInvoiceClearBtn" onclick="clearInvoicePicker(event)" style="display:none; color:#e74c3c; font-weight:bold; padding:0 4px;">✕</span>
                     </div>
@@ -4946,7 +4507,7 @@
             </div>
             <div style="margin-top:8px;">
                 <label style="color:#555; font-size:11px; margin:0;">Tag to Project (optional)</label>
-                <select id="cbProjectTag" style="margin-top:4px; padding:8px; width:100%;">
+                <select id="cbProjectTag" style="background:#fff; color:#333; border:1px solid #ccc; margin-top:4px; padding:8px; width:100%;">
                     <option value="">— No project —</option>
                 </select>
             </div>
@@ -4982,16 +4543,16 @@
              on a phone. The jump link fixes discoverability; the three
              dropdowns fix the "need filters and sorting" ask directly. -->
         <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
-            <input type="text" id="cbSearch" placeholder="🔍  Filter by party, category, or amount…" onkeyup="renderCashBook()" style="flex:2; min-width:180px; box-sizing:border-box; padding:9px 14px; font-size:13px; border-radius:6px; margin:0;">
-            <select id="cbDirectionFilter" onchange="renderCashBook()" style="flex:1; min-width:100px; margin:0; padding:9px; font-size:13px; border-radius:6px;">
+            <input type="text" id="cbSearch" placeholder="🔍  Filter by party, category, or amount…" onkeyup="renderCashBook()" style="flex:2; min-width:180px; box-sizing:border-box; padding:9px 14px; font-size:13px; color:#333; background:#fff; border:2px solid #bdc3c7; border-radius:6px; margin:0;">
+            <select id="cbDirectionFilter" onchange="renderCashBook()" style="flex:1; min-width:100px; margin:0; padding:9px; font-size:13px; color:#333; background:#fff; border:2px solid #bdc3c7; border-radius:6px;">
                 <option value="">All (In &amp; Out)</option>
                 <option value="IN">Cash In only</option>
                 <option value="OUT">Cash Out only</option>
             </select>
-            <select id="cbCategoryFilter" onchange="renderCashBook()" style="flex:1; min-width:120px; margin:0; padding:9px; font-size:13px; border-radius:6px;">
+            <select id="cbCategoryFilter" onchange="renderCashBook()" style="flex:1; min-width:120px; margin:0; padding:9px; font-size:13px; color:#333; background:#fff; border:2px solid #bdc3c7; border-radius:6px;">
                 <option value="">All Categories</option>
             </select>
-            <select id="cbSortOrder" onchange="renderCashBook()" style="flex:1; min-width:120px; margin:0; padding:9px; font-size:13px; border-radius:6px;">
+            <select id="cbSortOrder" onchange="renderCashBook()" style="flex:1; min-width:120px; margin:0; padding:9px; font-size:13px; color:#333; background:#fff; border:2px solid #bdc3c7; border-radius:6px;">
                 <option value="date_asc">Oldest first</option>
                 <option value="date_desc">Newest first</option>
                 <option value="amount_desc">Highest amount</option>
@@ -6301,12 +5862,7 @@
     // This is what the version badge displays and what checkForAppUpdate()
     // compares against. Keeping this in sync is what makes the badge
     // trustworthy — if forgotten, the badge silently shows a stale number.
-    // Naming convention changed 2026-09-03: beta builds are now numbered on
-    // their own independent counter (vBeta1, vBeta2, ...) instead of being
-    // prefixed with a guessed future production version number (the old
-    // "v96-beta*" scheme) — that guess was never meaningful since beta
-    // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta8";
+    const APP_VERSION = "v93";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -8100,23 +7656,16 @@
     // effect on anything already in the cart.
     let currentDeliveryMode = 'Retail'; // 'Retail' or 'Wholesale' — defaults to Retail per the confirmed design
 
-    // vBeta5: was 'var(--hp-blue)' (#2AA7FF), a solid saturated fill that
-    // stood out louder than every other "selected" state in Vista — the
-    // active Customer/Engineer/Builder/Sub-Dealer pricing tier and the
-    // Document Type dropdown both use near-black (--hp-ink) for "this is
-    // selected", with --hp-blue reserved elsewhere as a lighter accent/
-    // tint, not a solid CTA-strength fill. Switched to --hp-ink so the
-    // Retail/Full Load toggle matches that established pattern.
     function setDeliveryMode(mode) {
         currentDeliveryMode = mode;
         let retailBtn = document.getElementById('btnDeliveryRetail');
         let loadBtn = document.getElementById('btnDeliveryLoad');
         if (mode === 'Retail') {
-            retailBtn.style.background = 'var(--hp-ink)'; retailBtn.style.borderColor = 'var(--hp-ink)'; retailBtn.style.color = '#fff';
-            loadBtn.style.background = 'var(--hp-surface-alt-strong)'; loadBtn.style.borderColor = 'transparent'; loadBtn.style.color = 'var(--hp-ink-muted)';
+            retailBtn.style.background = '#3498db'; retailBtn.style.borderColor = '#3498db'; retailBtn.style.color = '#fff';
+            loadBtn.style.background = '#2c3e50'; loadBtn.style.borderColor = '#465c71'; loadBtn.style.color = '#aaa';
         } else {
-            loadBtn.style.background = 'var(--hp-ink)'; loadBtn.style.borderColor = 'var(--hp-ink)'; loadBtn.style.color = '#fff';
-            retailBtn.style.background = 'var(--hp-surface-alt-strong)'; retailBtn.style.borderColor = 'transparent'; retailBtn.style.color = 'var(--hp-ink-muted)';
+            loadBtn.style.background = '#e67e22'; loadBtn.style.borderColor = '#e67e22'; loadBtn.style.color = '#fff';
+            retailBtn.style.background = '#2c3e50'; retailBtn.style.borderColor = '#465c71'; retailBtn.style.color = '#aaa';
         }
         triggerRateAutoFill(); // refresh the suggested rate immediately for whatever's currently selected
     }
@@ -8141,9 +7690,9 @@
         currentBlockSize = size;
         document.querySelectorAll('.size-grid-btn').forEach(btn => {
             let isActive = parseInt(btn.dataset.size, 10) === size;
-            btn.style.background = isActive ? 'var(--hp-purple)' : 'var(--hp-surface)';
-            btn.style.borderColor = isActive ? 'var(--hp-purple)' : 'var(--hp-border)';
-            btn.style.color = isActive ? '#fff' : 'var(--hp-ink-muted)';
+            btn.style.background = isActive ? '#3498db' : '#2c3e50';
+            btn.style.borderColor = isActive ? '#3498db' : '#465c71';
+            btn.style.color = isActive ? '#fff' : '#aaa';
         });
         applyBlockPickerSelection();
     }
@@ -8499,133 +8048,13 @@
             </div>`;
     }
 
-    // vBeta5 F2: unified with toggleAnalyticsSection()'s mechanism — toggle
-    // an "open" class on the section, let CSS (.analytics-section.open
-    // .analytics-section-chevron / .analytics-section-body) handle both the
-    // chevron rotation and the show/hide, instead of this function
-    // separately flipping inline display + swapping ▾/▸ glyphs by hand.
     function toggleBlocksCalcCollapse() {
-        document.getElementById('blocksCalcSection').classList.toggle('open');
+        let body = document.getElementById('blocksCalcBody');
+        let btn = document.getElementById('btnBlocksCalcCollapse');
+        let collapsed = body.style.display === 'none';
+        body.style.display = collapsed ? 'block' : 'none';
+        btn.innerText = collapsed ? '▾' : '▸';
     }
-
-    // VISTA 4 (2026-09-03): Reports & Tools collapse — same mechanic as
-    // toggleBlocksCalcCollapse() above, but this one defaults OPEN (these 15
-    // buttons are core daily navigation) and remembers the user's last choice
-    // via localStorage, since forcing an extra tap on every page load would
-    // cost more than the scroll space it saves for a section people open
-    // constantly. restoreAnalyticsSectionState() runs once on page load.
-    function toggleAnalyticsSection() {
-        let section = document.getElementById('analyticsSection');
-        let isOpen = section.classList.toggle('open');
-        try { localStorage.setItem('ken_analyticsSectionOpen', isOpen ? '1' : '0'); } catch(e) {}
-    }
-    function restoreAnalyticsSectionState() {
-        let section = document.getElementById('analyticsSection');
-        if (!section) return;
-        let saved = null;
-        try { saved = localStorage.getItem('ken_analyticsSectionOpen'); } catch(e) {}
-        if (saved === '0') section.classList.remove('open');
-        else section.classList.add('open'); // default OPEN — includes saved === '1' and first-ever load
-    }
-    // Script sits at the very end of <body>, so the DOM (including
-    // #analyticsSection) already exists — no need to wait for an onload event.
-    restoreAnalyticsSectionState();
-
-    // vBeta5 F1: Reports & Tools grid previously used raw emoji for its 15
-    // icons — each brings its own OS-dependent color/style, reading as
-    // visual noise rather than a designed set. Replaced with one cohesive
-    // set of inline-SVG line icons (Feather-style: 24x24 viewBox, round
-    // caps, currentColor stroke) sharing a single ink color and a single
-    // tinted circle background (--hp-blue-ink on --hp-blue-tint), defined
-    // here as plain strings rather than hand-edited into the markup 15
-    // times over — one source of truth, far less risk of a stray
-    // unclosed tag breaking the page. Markup side: each button's
-    // <span class="ag-icon" data-vicon="key"></span> gets its innerHTML
-    // set below, once, on load.
-    const VISTA_GRID_ICONS = {
-        ledger: '<path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/>',
-        outstanding: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>',
-        summary: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
-        audit: '<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="8" y="3" width="8" height="4" rx="1"/><path d="m9 14 2 2 4-4"/>',
-        cashbook: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/>',
-        stock: '<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.73Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/>',
-        sync: '<path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
-        advpool: '<circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M9.5 9.3c0-1.1 1.1-1.8 2.5-1.8s2.5.8 2.5 1.9-1.1 1.6-2.5 1.6-2.5.6-2.5 1.7 1.1 1.9 2.5 1.9 2.5-.7 2.5-1.8"/>',
-        trips: '<rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
-        clients: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
-        sites: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/>',
-        brand: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>',
-        allprojects: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>',
-        tonnage: '<path d="M12 3v18"/><path d="M9 3h6"/><path d="M5 7h6M13 7h6"/><path d="M5 7l-3 7a3 3 0 0 0 6 0z"/><path d="M19 7l-3 7a3 3 0 0 0 6 0z"/>',
-        letterpad: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/>'
-    };
-    function renderVistaGridIcons() {
-        document.querySelectorAll('.ag-icon[data-vicon]').forEach(function(el) {
-            let key = el.getAttribute('data-vicon');
-            let paths = VISTA_GRID_ICONS[key];
-            if (!paths) return;
-            el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg>';
-        });
-    }
-    renderVistaGridIcons();
-
-    // ---------- VISTA 4: Customer/Product/Payment jump-nav scrollspy ----------
-    // Purely presentational — reads scroll position, toggles a class,
-    // scrolls on click. Never touches form state, so it's safe to run
-    // regardless of which document type is currently active (it simply
-    // does nothing useful while #voucherInputs is showing, since none of
-    // its target ids are visible then).
-    function jumpToDocSection(id) {
-        let el = document.getElementById(id);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    (function initDocSectionScrollspy() {
-        let navItems = document.querySelectorAll('#docJumpNav .doc-jumpnav-item');
-        let sections = Array.from(navItems).map(it => document.getElementById(it.getAttribute('data-target'))).filter(Boolean);
-        if (!sections.length) return;
-        let obs = new IntersectionObserver(function(entries) {
-            entries.forEach(function(entry) {
-                if (!entry.isIntersecting) return;
-                let idx = sections.indexOf(entry.target);
-                if (idx === -1) return;
-                navItems.forEach(it => it.classList.remove('active'));
-                navItems[idx].classList.add('active');
-            });
-        }, { rootMargin: '-56px 0px -55% 0px', threshold: 0 });
-        sections.forEach(s => obs.observe(s));
-    })();
-
-    // Every document type shows a different subset of fields inside these
-    // cards (e.g. QUO hides Log Payment; ADV/RCP hide the product cart) —
-    // exactly the "each document will vary on what section it has" case
-    // discussed for this redesign. Rather than hardcode a per-type map
-    // (which would silently drift out of sync the next time a field's
-    // visibility rule changes), this just checks empirically whether a
-    // card still has any visible content after switchAppMode() runs, and
-    // collapses the card + its nav pill if not — so a Quotation's Payment
-    // card doesn't sit there as an empty white box.
-    function syncDocSectionVisibility() {
-        ['docSectionCustomer', 'docSectionProduct', 'docSectionPayment'].forEach(function(id) {
-            let sec = document.getElementById(id);
-            if (!sec) return;
-            let hasVisibleChild = Array.prototype.some.call(sec.children, function(ch) {
-                return getComputedStyle(ch).display !== 'none';
-            });
-            sec.style.display = hasVisibleChild ? '' : 'none';
-            let pill = document.querySelector('.doc-jumpnav-item[data-target="' + id + '"]');
-            if (pill) pill.style.display = hasVisibleChild ? '' : 'none';
-        });
-    }
-    // Non-invasive wrap — switchAppMode() itself is untouched, this just
-    // runs the sync after every call to it (the single place doc-type
-    // visibility changes), including its very first call further down.
-    (function() {
-        let originalSwitchAppMode = switchAppMode;
-        switchAppMode = function() {
-            originalSwitchAppMode.apply(this, arguments);
-            syncDocSectionVisibility();
-        };
-    })();
 
     // ---------- DRAFT PERSISTENCE ----------
     // Deliberately a plain localStorage read/write, NOT routed through
@@ -8733,7 +8162,7 @@
                     <div class="bcalc-dim-group">
                         <span class="bcalc-dim-label">Deduct (sq.ft)</span>
                         <input type="text" class="bcalc-length-input bcalc-deduct-input" value="${esc(row.deductSqft)}" oninput="updateBlocksCalcRow(${row.id},'deductSqft',this.value)" placeholder="e.g. 10 10 20 or 12x3+10">
-                        <div class="bcalc-length-sum-hint" id="bcalcDedHint_${row.id}" style="color:var(--hp-danger-ink);">${dedHint}</div>
+                        <div class="bcalc-length-sum-hint" id="bcalcDedHint_${row.id}" style="color:#e74c3c;">${dedHint}</div>
                     </div>
                 </div>` : '';
 
@@ -8774,7 +8203,7 @@
 
                 <div class="bcalc-row-result">${netEach.toFixed(2)} sq.ft each${row.count>1 ? ` × ${row.count} = ${totalArea.toFixed(2)} sq.ft` : ''} ${row.size ? '→ ' + blocks.toFixed(1) + ' blocks (' + row.size + '")' : '(pick a size)'}</div>
             </div>`;
-        }).join('') || '<div style="font-size:12px; color:var(--hp-ink-muted); text-align:center; padding:10px;">No wall rows yet — tap "+ Add Wall Row" below.</div>';
+        }).join('') || '<div style="font-size:12px; color:#7f8c8d; text-align:center; padding:10px;">No wall rows yet — tap "+ Add Wall Row" below.</div>';
         renderBlocksCalcSummary();
     }
 
@@ -8869,7 +8298,7 @@
         if (!blocksCalcLoadPanelOpen) return;
 
         if (blocksCalcSavedList.length === 0) {
-            panel.innerHTML = '<div style="font-size:12px; color:var(--hp-ink-muted); text-align:center; padding:8px;">No saved calculations yet.</div>';
+            panel.innerHTML = '<div style="font-size:12px; color:#7f8c8d; text-align:center; padding:8px;">No saved calculations yet.</div>';
             return;
         }
         panel.innerHTML = blocksCalcSavedList.slice().reverse().map(s => {
@@ -8927,7 +8356,7 @@
 
         if (sizes.length === 0) {
             body.innerHTML = untaggedArea > 0
-                ? `<span style="color:var(--hp-amber-ink);">${untaggedArea.toFixed(2)} sq.ft entered but no size picked yet on those rows.</span>`
+                ? `<span style="color:#e67e22;">${untaggedArea.toFixed(2)} sq.ft entered but no size picked yet on those rows.</span>`
                 : 'No rows added yet.';
             quoBtn.disabled = true; salBtn.disabled = true;
             return;
@@ -8938,23 +8367,23 @@
             let sqft = totals[sz];
             let { raw, final } = blocksCalcAdjustedCount(sqft);
             grandBlocks += final;
-            let adjustedNote = final !== raw ? ` <span style="color:var(--hp-ink-muted); font-weight:normal;">(net ${raw})</span>` : '';
-            return `<div style="display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid var(--hp-border);">
+            let adjustedNote = final !== raw ? ` <span style="color:#7f8c8d; font-weight:normal;">(net ${raw})</span>` : '';
+            return `<div style="display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid #34495e;">
                 <span>${sz}" Block — ${sqft.toFixed(2)} sq.ft</span>
-                <span style="font-weight:bold; color:var(--hp-mint-ink);">${final} blocks${adjustedNote}</span>
+                <span style="font-weight:bold; color:#2ecc71;">${final} blocks${adjustedNote}</span>
             </div>`;
         }).join('');
         if (untaggedArea > 0) {
-            rowsHtml += `<div style="color:var(--hp-amber-ink); font-size:11px; margin-top:4px;">+ ${untaggedArea.toFixed(2)} sq.ft on rows with no size picked (excluded from totals)</div>`;
+            rowsHtml += `<div style="color:#e67e22; font-size:11px; margin-top:4px;">+ ${untaggedArea.toFixed(2)} sq.ft on rows with no size picked (excluded from totals)</div>`;
         }
-        rowsHtml += `<div style="display:flex; justify-content:space-between; padding:6px 0 0 0; margin-top:4px; border-top:1px solid var(--hp-border); font-weight:bold;">
-            <span>Total blocks (all sizes)</span><span style="color:var(--hp-mint-ink);">${grandBlocks}</span>
+        rowsHtml += `<div style="display:flex; justify-content:space-between; padding:6px 0 0 0; margin-top:4px; border-top:1px solid #465c71; font-weight:bold;">
+            <span>Total blocks (all sizes)</span><span style="color:#2ecc71;">${grandBlocks}</span>
         </div>`;
         let adjustParts = [];
         if (blocksCalcWastageEnabled) adjustParts.push(`+${blocksCalcWastagePct}% wastage`);
         if (blocksCalcRoundEnabled) adjustParts.push(`rounded up to nearest ${blocksCalcRoundTo}`);
         if (adjustParts.length > 0) {
-            rowsHtml += `<div style="font-size:10px; color:var(--hp-ink-muted); margin-top:3px;">Includes ${adjustParts.join(', ')}</div>`;
+            rowsHtml += `<div style="font-size:10px; color:#7f8c8d; margin-top:3px;">Includes ${adjustParts.join(', ')}</div>`;
         }
         body.innerHTML = rowsHtml;
         quoBtn.disabled = false; salBtn.disabled = false;
@@ -9071,9 +8500,9 @@
     function selectTier(tier) {
         document.querySelectorAll('.tier-bar-btn').forEach(btn => {
             let isActive = btn.dataset.tier === tier;
-            btn.style.background = isActive ? 'var(--hp-ink)' : 'var(--hp-surface)';
-            btn.style.border = isActive ? '2px solid var(--hp-ink)' : '2px solid var(--hp-border)';
-            btn.style.color = isActive ? '#fff' : 'var(--hp-ink-muted)';
+            btn.style.background = isActive ? '#e67e22' : '#2c3e50';
+            btn.style.border = isActive ? '2px solid #e67e22' : '2px solid #465c71';
+            btn.style.color = isActive ? '#fff' : '#aaa';
         });
         document.getElementById('tierBarActive').value = tier;
         let legacySel = document.getElementById('globalTierSelect');
@@ -12433,65 +11862,38 @@
     // v70: BRAND MANAGEMENT — brand list + per-brand tier pricing grid.
     const TIER_NAMES = ["Customer", "Engineer", "Builder", "Sub-Dealer"];
 
-    // vBeta5 F3: which brand's rates the compact table currently shows —
-    // '__default' means the "No Brand" fallback column. Reset to
-    // '__default' whenever the modal opens (see openPricingEngine()).
-    let currentGridBrand = '__default';
-
-    // Renders the Block Tiers tab: a brand-selector chip row (was a
-    // horizontally-scrolling one-column-per-brand table — see the
-    // brandTierGridWrap comment above for why that didn't work well on
-    // mobile) plus a single compact Tier x Rate table for whichever brand
-    // is currently selected. Brand is a FILTER now, not a table column, so
-    // the table is always exactly 2 columns regardless of brand count.
-    // Rebuilt from scratch on modal open, brand add/remove, and every
-    // chip click (selectBrandForGrid()).
+    // Renders the tier x brand rate table on the Block Tiers tab. One row
+    // per tier (fixed 4), one column per brand PLUS a leading "No Brand"
+    // column for the __default fallback rate. Rebuilt from scratch every
+    // time the modal opens or a brand is added/removed, since the column
+    // count itself changes with the brand list.
     function renderBrandTierGrid() {
-        let wrap = document.getElementById('brandTierGridWrap');
+        let table = document.getElementById('brandTierGrid');
         let brands = pricingConfig.brands || [];
-        let chipKeys = ['__default'].concat(brands);
-        if (!chipKeys.includes(currentGridBrand)) currentGridBrand = '__default';
+        // v71: fixed min-width per column (rather than letting cramped
+        // columns wrap brand names like "Meghalite" into two lines) now
+        // that the table scrolls horizontally instead of compressing —
+        // see the brandTierGridWrap fix above.
+        let headCells = `<th style="text-align:left; padding:6px 10px; border-bottom:2px solid #ddd; font-size:10px; text-transform:uppercase; color:#7f8c8d; min-width:70px;">Tier</th>`
+            + `<th style="text-align:center; padding:6px 10px; border-bottom:2px solid #ddd; font-size:10px; text-transform:uppercase; color:#7f8c8d; min-width:90px;">No Brand</th>`
+            + brands.map(b => `<th style="text-align:center; padding:6px 10px; border-bottom:2px solid #ddd; font-size:10px; text-transform:uppercase; color:#7f8c8d; min-width:90px;">${esc(b)}</th>`).join('');
 
-        let chipsHtml = chipKeys.map(key => {
-            let label = key === '__default' ? 'No Brand' : esc(key);
-            let activeCls = key === currentGridBrand ? ' active' : '';
-            return `<button type="button" class="brand-chip${activeCls}" data-chip-brand="${esc(key)}">${label}</button>`;
-        }).join('');
-
-        let isDefault = currentGridBrand === '__default';
-        let idSuffix = isDefault ? 'default' : currentGridBrand.replace(/[^a-zA-Z0-9]/g, '_');
-        let dataBrandAttr = isDefault ? '' : ` data-brand="${esc(currentGridBrand)}"`;
-        let rowsHtml = TIER_NAMES.map(tier => {
+        let bodyRows = TIER_NAMES.map(tier => {
             let rates = pricingConfig.tiers[tier] || {};
             let safeTier = tier.replace(/[^a-zA-Z0-9]/g, '_');
-            let val = isDefault ? (rates['__default'] ?? 0) : (rates[currentGridBrand] ?? 0);
-            return `<tr><td class="btg-tier-cell">${esc(tier)}</td><td class="btg-rate-cell"><input type="number" step="0.25" id="brandRate_${safeTier}___${idSuffix}"${dataBrandAttr} value="${val}"></td></tr>`;
+            let defaultCell = `<td style="text-align:center; padding:5px 8px; border-bottom:1px solid #eee;">
+                <input type="number" step="0.25" id="brandRate_${safeTier}___default" value="${rates['__default'] ?? 0}" style="width:72px; text-align:center; background:#fdf6ec; border:1px solid #f0c987; padding:6px 4px; font-size:13px;">
+            </td>`;
+            let brandCells = brands.map(b => {
+                let safeBrand = b.replace(/[^a-zA-Z0-9]/g, '_');
+                return `<td style="text-align:center; padding:5px 8px; border-bottom:1px solid #eee;">
+                    <input type="number" step="0.25" id="brandRate_${safeTier}___${safeBrand}" data-brand="${esc(b)}" value="${rates[b] ?? 0}" style="width:72px; text-align:center; padding:6px 4px; font-size:13px;">
+                </td>`;
+            }).join('');
+            return `<tr><td style="padding:5px 10px; font-weight:bold; font-size:12px; border-bottom:1px solid #eee; white-space:nowrap;">${tier}</td>${defaultCell}${brandCells}</tr>`;
         }).join('');
 
-        wrap.innerHTML = `<div class="brand-chip-row" id="brandChipRow">${chipsHtml}</div>`
-            + `<table id="brandTierGrid" class="btg-table"><thead><tr><th>Tier</th><th>Rate (per inch)</th></tr></thead><tbody>${rowsHtml}</tbody></table>`;
-
-        // Event delegation on the freshly-inserted chip row — innerHTML
-        // above already discarded any previous chip row (and its
-        // listener) along with the old nodes, so this never stacks up
-        // duplicate handlers across renders.
-        document.getElementById('brandChipRow').addEventListener('click', function(e) {
-            let chip = e.target.closest('.brand-chip');
-            if (!chip) return;
-            selectBrandForGrid(chip.getAttribute('data-chip-brand'));
-        });
-    }
-
-    // Switches which brand's rates the table shows. Commits the currently
-    // visible tier inputs into pricingConfig.tiers FIRST (same read used
-    // by the main Save button — see readBrandTierGridIntoConfig() below)
-    // so a rate you just typed for the brand you're leaving isn't lost
-    // when the table re-renders for the newly chosen brand.
-    function selectBrandForGrid(brand) {
-        if (brand === currentGridBrand) return;
-        readBrandTierGridIntoConfig();
-        currentGridBrand = brand;
-        renderBrandTierGrid();
+        table.innerHTML = `<thead><tr>${headCells}</tr></thead><tbody>${bodyRows}</tbody>`;
     }
 
     // Reads the brand-tier grid's current input values back into
@@ -12543,10 +11945,6 @@
         if ((pricingConfig.brands || []).some(b => b.toLowerCase() === name.toLowerCase())) {
             alert(`"${name}" is already in the brand list.`); return;
         }
-        // vBeta5 F3: commit whatever's currently visible in the (now
-        // single-brand) tier grid before this re-renders it for the new
-        // brand list, so an in-progress rate edit isn't silently dropped.
-        readBrandTierGridIntoConfig();
         pricingConfig.brands.push(name);
         TIER_NAMES.forEach(tier => {
             if (!pricingConfig.tiers[tier]) pricingConfig.tiers[tier] = {};
@@ -12572,9 +11970,6 @@
         let name = brands[idx];
         if (!name) return;
         if (!confirm(`Remove "${name}" from the brand list? Existing documents that used it are not affected.`)) return;
-        // vBeta5 F3: same reasoning as addBrand() above — commit any
-        // visible in-progress edit before the chip list changes under it.
-        readBrandTierGridIntoConfig();
         brands.splice(idx, 1);
         renderBrandList();
         renderBrandTierGrid();
@@ -12583,9 +11978,6 @@
     }
 
     function openPricingEngine() {
-        // vBeta5 F3: always open the tier grid on "No Brand" so the modal
-        // starts from a predictable, consistent state every time.
-        currentGridBrand = '__default';
         // v70: legacy flat inputs are kept populated (from each brand's
         // Meghalite-equivalent-ish first value isn't meaningful anymore, so
         // these now just mirror the "__default" rate per tier) purely so
@@ -21804,7 +21196,7 @@
             let running = balanceById[e.id];
             let isIn = e.direction === 'IN';
             let dtDisp = formatDateDisplay(e.date) || e.date;
-            html += `<tr class="${isIn?'cb-row-in':'cb-row-out'}">
+            html += `<tr style="background:${isIn?'#f0fff4':'#fff5f5'}">
                 <td>${dtDisp}</td>
                 <td><span style="background:${isIn?'#27ae60':'#e74c3c'};color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:bold;">${isIn?'IN':'OUT'}</span></td>
                 <td style="font-size:12px;">${esc(e.category)}</td>
