@@ -140,6 +140,50 @@
             padding: 20px; box-shadow: var(--hp-shadow); position: sticky; top: 20px; max-height: 94vh;
             overflow-y: auto; z-index: 10; border-radius: var(--hp-radius-lg); box-sizing: border-box;
         }
+        /* ============================================================
+           VISTA 4 — Customer/Product/Payment sticky jump-nav + isolated
+           section cards. Scoped entirely inside .editor-box (uses the
+           --hp-* aliases above), so it inherits the palette automatically
+           and never touches anything outside the editor form. Only wraps
+           #salesInputs' own children (INV/SAL/QUO/CRN/ADV/RCP) — #voucherInputs
+           (Payment Voucher) is a separate, unrelated flow and is untouched.
+           Locked 2026-09-04. */
+        .doc-jumpnav-wrap {
+            position: sticky; top: 0; z-index: 15;
+            background: var(--hp-surface); padding: 0 0 10px 0; margin: 0 0 14px 0;
+            border-bottom: 1px solid var(--hp-border);
+        }
+        .doc-jumpnav {
+            display: flex; gap: 6px; background: var(--hp-surface-alt-strong);
+            border-radius: 14px; padding: 4px;
+        }
+        .doc-jumpnav-item {
+            flex: 1; text-align: center; padding: 9px 4px; border-radius: 11px;
+            font-size: 12.5px; font-weight: 700; color: var(--hp-ink-muted);
+            cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none;
+            transition: background .18s ease, color .18s ease;
+        }
+        .doc-jumpnav-item.active { background: var(--hp-ink); color: #fff; }
+        .doc-sections-wrap {
+            background: var(--hp-surface-alt); border-radius: var(--hp-radius-lg);
+            padding: 14px 14px 2px; margin: 0 -6px 4px;
+        }
+        .doc-section {
+            background: var(--hp-surface); border-radius: var(--hp-radius-lg);
+            border: 1px solid var(--hp-border); box-shadow: var(--hp-shadow);
+            padding: 16px 16px 18px; margin-bottom: 16px; scroll-margin-top: 62px;
+        }
+        .doc-section-title {
+            font-size: 13px; font-weight: 800; letter-spacing: -0.2px; color: var(--hp-ink);
+            margin: 0 0 12px 0; display: flex; align-items: center; gap: 7px;
+        }
+        @media (max-width: 1100px) {
+            /* On mobile .editor-box loses its own scroll container (becomes
+               position:relative/overflow-visible — see the 1100px breakpoint
+               above), so the nav sticks to the page viewport instead. Give
+               it a touch more breathing room there. */
+            .doc-jumpnav-wrap { top: 0; padding-top: 6px; margin: -6px -6px 14px; padding-left: 6px; padding-right: 6px; }
+        }
         .preview-box { flex: 1; background: transparent; padding: 0; width: 100%; display: block; box-sizing: border-box; }
         
         @media (max-width: 1100px) {
@@ -2634,7 +2678,7 @@
              Tap to force-check for updates. Update this string (and the
              matching APP_VERSION const in the script block) on every release. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:rgba(255,255,255,0.35); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta6</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta7</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- v73a: passive unsynced warning. Hidden by default and only
@@ -2951,6 +2995,27 @@
         </div>
 
         <div id="salesInputs">
+            <!-- Vista 4: Customer/Product/Payment sticky jump-nav + isolated
+                 section cards, scoped to the sales/quotation flow only.
+                 Scrollspy (see docSectionObserver in JS) keeps the active
+                 pill in sync with scroll position; clicking a pill jumps
+                 straight there. Purely a visual/navigation layer — no
+                 existing IDs, onclicks or field logic were touched, so
+                 nothing downstream needed to change. -->
+            <div class="doc-jumpnav-wrap">
+                <div class="doc-jumpnav" id="docJumpNav">
+                    <div class="doc-jumpnav-item active" data-target="docSectionCustomer" onclick="jumpToDocSection('docSectionCustomer')">Customer</div>
+                    <div class="doc-jumpnav-item" data-target="docSectionProduct" onclick="jumpToDocSection('docSectionProduct')">Product</div>
+                    <div class="doc-jumpnav-item" data-target="docSectionPayment" onclick="jumpToDocSection('docSectionPayment')">Payment</div>
+                </div>
+            </div>
+
+            <!-- Tinted backdrop so the white section cards actually read as
+                 separate boxes rather than blending into .editor-box's own
+                 white background — matches the reviewed mockup's grey
+                 page / white card contrast. -->
+            <div class="doc-sections-wrap">
+            <div class="doc-section" id="docSectionCustomer">
             <!-- vBeta5 F5: previously one 4-column row (Title/Client Name/
                  Billing Location/Contact No.), forced to fully stack on
                  mobile via "#salesInputs > div:first-child { flex-direction:
@@ -3060,6 +3125,9 @@
                     </div>
                 </div>
             </div>
+            </div><!-- /docSectionCustomer -->
+
+            <div class="doc-section" id="docSectionProduct">
             <div id="taxToggleDiv" style="background: var(--hp-amber-tint); padding: 10px 13px; border-radius: var(--hp-radius-sm); margin-top: 12px; border: none;">
                 <label style="color: var(--hp-amber-ink); margin-top: 0; cursor: pointer; text-transform: none;">
                     <input type="checkbox" id="inclusiveTax" onchange="renderTable()" checked style="vertical-align: middle;"> <b style="vertical-align: middle;">Rates INCLUDE GST</b>
@@ -3218,7 +3286,9 @@
                 </div>
                 <div style="font-size:10px; color:#888; margin-top:4px;">Leave blank = no discount. Subtracted from grand total before amount-in-words.</div>
             </div>
+            </div><!-- /docSectionProduct -->
 
+            <div class="doc-section" id="docSectionPayment">
             <div id="advAdjustBox" style="background:var(--hp-danger-tint); padding:15px; border-radius:var(--hp-radius-sm); margin-top:12px; display:none;">
                 <label style="color:var(--hp-danger-ink); margin-top:0;">🔗 Link Advance Receipts</label>
                 <table class="adv-link-table" id="advLinkTable">
@@ -3295,8 +3365,10 @@
                 <div id="salesUpiFields" style="display:none; margin-top:10px;"><input type="text" id="salesUpiDetails" placeholder="Transaction ID" onkeyup="renderTable()"></div>
                 <div id="salesBankFields" style="display:none; margin-top:10px;"><input type="text" id="salesBankDetails" placeholder="Reference Number" onkeyup="renderTable()"></div>
             </div>
+            </div><!-- /docSectionPayment -->
+            </div><!-- /doc-sections-wrap -->
         </div>
-        
+
         <div id="voucherInputs" style="display:none;">
             <div style="display:flex; gap:10px;">
                 <div style="flex:2;"><label>Paid To</label><input type="text" id="vPaidTo" onkeyup="updateInfo()"></div>
@@ -6203,7 +6275,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta6";
+    const APP_VERSION = "vBeta7";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -8465,6 +8537,64 @@
         });
     }
     renderVistaGridIcons();
+
+    // ---------- VISTA 4: Customer/Product/Payment jump-nav scrollspy ----------
+    // Purely presentational — reads scroll position, toggles a class,
+    // scrolls on click. Never touches form state, so it's safe to run
+    // regardless of which document type is currently active (it simply
+    // does nothing useful while #voucherInputs is showing, since none of
+    // its target ids are visible then).
+    function jumpToDocSection(id) {
+        let el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    (function initDocSectionScrollspy() {
+        let navItems = document.querySelectorAll('#docJumpNav .doc-jumpnav-item');
+        let sections = Array.from(navItems).map(it => document.getElementById(it.getAttribute('data-target'))).filter(Boolean);
+        if (!sections.length) return;
+        let obs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (!entry.isIntersecting) return;
+                let idx = sections.indexOf(entry.target);
+                if (idx === -1) return;
+                navItems.forEach(it => it.classList.remove('active'));
+                navItems[idx].classList.add('active');
+            });
+        }, { rootMargin: '-56px 0px -55% 0px', threshold: 0 });
+        sections.forEach(s => obs.observe(s));
+    })();
+
+    // Every document type shows a different subset of fields inside these
+    // cards (e.g. QUO hides Log Payment; ADV/RCP hide the product cart) —
+    // exactly the "each document will vary on what section it has" case
+    // discussed for this redesign. Rather than hardcode a per-type map
+    // (which would silently drift out of sync the next time a field's
+    // visibility rule changes), this just checks empirically whether a
+    // card still has any visible content after switchAppMode() runs, and
+    // collapses the card + its nav pill if not — so a Quotation's Payment
+    // card doesn't sit there as an empty white box.
+    function syncDocSectionVisibility() {
+        ['docSectionCustomer', 'docSectionProduct', 'docSectionPayment'].forEach(function(id) {
+            let sec = document.getElementById(id);
+            if (!sec) return;
+            let hasVisibleChild = Array.prototype.some.call(sec.children, function(ch) {
+                return getComputedStyle(ch).display !== 'none';
+            });
+            sec.style.display = hasVisibleChild ? '' : 'none';
+            let pill = document.querySelector('.doc-jumpnav-item[data-target="' + id + '"]');
+            if (pill) pill.style.display = hasVisibleChild ? '' : 'none';
+        });
+    }
+    // Non-invasive wrap — switchAppMode() itself is untouched, this just
+    // runs the sync after every call to it (the single place doc-type
+    // visibility changes), including its very first call further down.
+    (function() {
+        let originalSwitchAppMode = switchAppMode;
+        switchAppMode = function() {
+            originalSwitchAppMode.apply(this, arguments);
+            syncDocSectionVisibility();
+        };
+    })();
 
     // ---------- DRAFT PERSISTENCE ----------
     // Deliberately a plain localStorage read/write, NOT routed through
