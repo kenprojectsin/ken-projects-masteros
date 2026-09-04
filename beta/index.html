@@ -100,7 +100,27 @@
         .chip-slate   { background:var(--c-slate-bg); color:var(--c-slate); }
         /* Card — generic surface container */
         .ds-card { background:var(--c-surface); border:1px solid var(--c-border); border-radius:var(--rad-lg); box-shadow:var(--shadow-sm); }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2f5; margin: 0; padding: 0; padding-bottom: 100px; }
+        /* Vista 4 font pass (2026-09-04): app-wide base font. Was the old
+           pre-Vista system-font stack ('Segoe UI', Tahoma, Geneva, Verdana),
+           which is why the app looked like a different typeface on every
+           device — Windows has Segoe UI installed so it showed correctly
+           there, Android/iOS/Mac don't, so those devices silently fell
+           through the stack to whatever generic sans the OS defaults to.
+           Now matches --vista-font exactly, so the whole app (everything
+           that doesn't have its own more specific override, plus every
+           screen not yet migrated onto Vista) renders in the same loaded
+           Lato webfont everywhere, regardless of device or OS.
+           font-synthesis:none stops browsers from faking a bold/italic cut
+           for a weight Lato doesn't actually have loaded (Google Fonts
+           only serves Lato at 400/700/900 here — see the <link> in <head>;
+           several places in this file use font-weight:500/600/800, which
+           used to get faked-bold inconsistently by browser/OS — now the
+           browser must pick the nearest real loaded weight instead, so
+           every device renders the exact same weight for the exact same
+           declaration. .bill-layout explicitly resets both of these back
+           to the old stack/behavior so the printed/PDF document is
+           completely unaffected — see the comment there. */
+        body { font-family: 'Lato', -apple-system, 'Segoe UI', sans-serif; font-synthesis: none; background: #eef2f5; margin: 0; padding: 0; padding-bottom: 100px; }
         /* v63: GLOBAL HORIZONTAL-SCROLL SAFETY NET.
            Root cause of "not mobile responsive" reports: individual pieces of UI
            (added across many feature passes) can be a few px wider than the
@@ -522,7 +542,18 @@
         .btn-bulk-pdf { background: #8e44ad; }
         .btn-bulk.disabled-bulk { opacity: 0.4; cursor: not-allowed; pointer-events: none; box-shadow: none; }
         
-        .bill-layout { background: white; padding: 40px; color: #333; width: 100%; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.1); position: relative; overflow: hidden; min-height: 800px; display: flex; flex-direction: column;}
+        /* Vista 4 font pass (2026-09-04): .bill-layout never had its own
+           font-family — it silently inherited whatever `body` was set to.
+           That was harmless while body used the same old system-font stack
+           as everything else, but body is now moving to Lato (see below).
+           Pinning the exact old stack here explicitly means the printed/
+           PDF-exported document's font is now completely decoupled from
+           body and stays byte-for-byte the same no matter what the rest of
+           the app's typography does — verified pixel-identical via the
+           usual .bill-layout screenshot diff. font-synthesis is reset to
+           the browser default too, for the same reason (see body's
+           font-synthesis:none below, which this must NOT inherit). */
+        .bill-layout { background: white; padding: 40px; color: #333; width: 100%; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.1); position: relative; overflow: hidden; min-height: 800px; display: flex; flex-direction: column; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-synthesis: weight style;}
 
         .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 140px; color: rgba(231, 76, 60, 0.15); font-weight: 900; z-index: 50; pointer-events: none; display: none; letter-spacing: 5px; text-transform: uppercase;}
 
@@ -2678,7 +2709,7 @@
              Tap to force-check for updates. Update this string (and the
              matching APP_VERSION const in the script block) on every release. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:rgba(255,255,255,0.35); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta7</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta8</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- v73a: passive unsynced warning. Hidden by default and only
@@ -6275,7 +6306,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta7";
+    const APP_VERSION = "vBeta8";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
