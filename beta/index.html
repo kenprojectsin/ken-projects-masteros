@@ -302,101 +302,133 @@
 
         /* ============================================================
            v73a/v74c TRIAL — Blocks Calculator
-        ============================================================ */
-        .bcalc-row { background:#243342; border:1px solid #34495e; border-radius:6px; padding:8px; margin-bottom:8px; }
+           vBeta6: restyled from its original hardcoded dark-dashboard
+           palette (#243342/#2c3e50/#34495e/#465c71 etc.) onto the shared
+           --hp-* Vista tokens, matching the rest of .editor-box (this
+           block is a descendant of .editor-box, so the tokens already
+           resolve here with no new alias block needed). ONLY colors,
+           borders and shadows changed below — every size/spacing/layout
+           value is untouched, so row structure, alignment and the
+           label-reservation comment above .bcalc-icon-col all still
+           apply exactly as before. The green/red "adds vs subtracts"
+           split and the violet/amber wastage/round-up split (both
+           deliberate visual-clue requests) are kept, just remapped onto
+           Vista's mint/danger and purple/amber pairs — the same 4-color
+           set already used everywhere else in Vista, so this no longer
+           reads as a different app bolted onto the homepage. */
+        .bcalc-row { background:var(--hp-surface); border:1px solid var(--hp-border); border-radius:6px; padding:8px; margin-bottom:8px; box-shadow:var(--hp-shadow); }
         .bcalc-row-top { display:flex; gap:6px; align-items:flex-start; }
-        .bcalc-row-top input[type=number], .bcalc-row-top input[type=text] { background:#2c3e50; border:1px solid #465c71; color:#fff; padding:8px 6px; border-radius:4px; font-size:13px; width:100%; box-sizing:border-box; margin:0; }
+        .bcalc-row-top input[type=number], .bcalc-row-top input[type=text] { background:var(--hp-surface-alt); border:1px solid var(--hp-border); color:var(--hp-ink); padding:8px 6px; border-radius:4px; font-size:13px; width:100%; box-sizing:border-box; margin:0; }
         .bcalc-dim-group { flex:1; display:flex; flex-direction:column; gap:2px; }
-        .bcalc-dim-label { font-size:9px; color:#7f8c8d; text-transform:uppercase; font-weight:bold; height:22px; line-height:11px; overflow:hidden; display:block; }
+        .bcalc-dim-label { font-size:9px; color:var(--hp-ink-muted); text-transform:uppercase; font-weight:bold; height:22px; line-height:11px; overflow:hidden; display:block; }
         /* Icon buttons (duplicate/delete) sit beside Length/Height/Wall
            Count. Their column has no label of its own, so it must reserve
            the SAME 22px + 2px gap the other columns spend on their label
            before the input starts — otherwise the icons float up next to
            the labels instead of lining up with the input boxes. */
         .bcalc-icon-col { display:flex; flex-direction:column; gap:4px; margin-top:24px; }
-        .bcalc-x { align-self:center; color:#7f8c8d; font-weight:bold; padding-top:14px; }
+        .bcalc-x { align-self:center; color:var(--hp-ink-muted); font-weight:bold; padding-top:14px; }
         .bcalc-size-row { display:flex; gap:5px; margin-top:8px; }
-        .bcalc-size-btn { flex:1; margin:0; padding:7px 2px; font-size:12px; font-weight:bold; border-radius:4px; background:#2c3e50; border:2px solid #465c71; color:#aaa; cursor:pointer; }
-        .bcalc-size-btn.active { background:#3498db; border-color:#3498db; color:#fff; }
-        .bcalc-row-result { font-size:11px; color:#2ecc71; font-weight:bold; margin-top:6px; text-align:right; }
-        .bcalc-label-input { width:100%; box-sizing:border-box; background:transparent; border:none; border-bottom:1px dashed #465c71; color:#fff; font-size:12px; font-weight:bold; padding:2px 0 6px 0; margin-bottom:6px; }
-        .bcalc-label-input::placeholder { color:#5d7285; font-weight:normal; }
-        .bcalc-icon-btn { background:#2c3e50; color:#bdc3c7; border:1px solid #465c71; border-radius:4px; width:32px; height:16px; font-size:12px; cursor:pointer; padding:0; margin:0; }
-        .bcalc-icon-del { background:#c0392b; color:#fff; border-color:#c0392b; }
+        .bcalc-size-btn { flex:1; margin:0; padding:7px 2px; font-size:12px; font-weight:bold; border-radius:4px; background:var(--hp-surface-alt); border:2px solid var(--hp-border); color:var(--hp-ink-muted); cursor:pointer; }
+        .bcalc-size-btn.active { background:var(--hp-ink); border-color:var(--hp-ink); color:#fff; }
+        .bcalc-row-result { font-size:11px; color:var(--hp-mint-ink); font-weight:bold; margin-top:6px; text-align:right; }
+        .bcalc-label-input { width:100%; box-sizing:border-box; background:transparent; border:none; border-bottom:1px dashed var(--hp-border); color:var(--hp-ink); font-size:12px; font-weight:bold; padding:2px 0 6px 0; margin-bottom:6px; }
+        .bcalc-label-input::placeholder { color:var(--hp-ink-muted); font-weight:normal; }
+        .bcalc-icon-btn { background:var(--hp-surface-alt); color:var(--hp-ink-muted); border:1px solid var(--hp-border); border-radius:4px; width:32px; height:16px; font-size:12px; cursor:pointer; padding:0; margin:0; }
+        .bcalc-icon-del { background:var(--hp-danger-tint); color:var(--hp-danger-ink); border-color:var(--hp-danger); }
 
         /* v74c: green "wall details" and red "deductions" themed sub-boxes,
            giving each row a clear visual split between what ADDS to the
-           order and what SUBTRACTS from it — the "more visual clues" ask. */
-        .bcalc-section-green { background:rgba(46,204,113,0.10); border:1px solid rgba(46,204,113,0.35); border-radius:5px; padding:7px; margin-bottom:6px; }
-        .bcalc-section-red { background:rgba(231,76,60,0.10); border:1px solid rgba(231,76,60,0.4); border-radius:5px; padding:7px; }
+           order and what SUBTRACTS from it — the "more visual clues" ask.
+           vBeta6: remapped onto Vista's mint/danger tint pair instead of
+           raw rgba(46,204,113,...)/rgba(231,76,60,...) — same soft-tint
+           card language already used for banners elsewhere (e.g.
+           .client-autofill-banner / .duplicate-warn-banner). */
+        .bcalc-section-green { background:var(--hp-mint-tint); border:1px solid transparent; border-radius:5px; padding:7px; margin-bottom:6px; }
+        .bcalc-section-red { background:var(--hp-danger-tint); border:1px solid transparent; border-radius:5px; padding:7px; }
 
         /* Length field supports "20 16" (space-separated, auto-summed) —
            needs a plain text input (a native number input rejects spaces
            and would also hide the space key on many mobile keyboards). */
-        .bcalc-length-input { background:#2c3e50; border:1px solid #465c71; color:#fff; padding:8px 6px; border-radius:4px; font-size:13px; width:100%; box-sizing:border-box; margin:0; }
-        .bcalc-length-sum-hint { font-size:9px; color:#2ecc71; margin-top:2px; min-height:11px; }
+        .bcalc-length-input { background:var(--hp-surface); border:1px solid var(--hp-border); color:var(--hp-ink); padding:8px 6px; border-radius:4px; font-size:13px; width:100%; box-sizing:border-box; margin:0; }
+        .bcalc-length-sum-hint { font-size:9px; color:var(--hp-mint-ink); margin-top:2px; min-height:11px; }
 
         /* Inner/Outer dimension toggle — replaces the old freeform "extra
            length" field. Outer = no correction (as-measured). Inner = the
            block-thickness correction is applied automatically once a size
            is picked, so there is nothing to type or compute by hand. */
         .bcalc-io-row { display:flex; gap:5px; margin-top:6px; }
-        .bcalc-io-btn { flex:1; margin:0; padding:6px 2px; font-size:11px; font-weight:bold; border-radius:4px; background:#2c3e50; border:2px solid #465c71; color:#aaa; cursor:pointer; text-transform:uppercase; letter-spacing:0.3px; }
-        .bcalc-io-btn.active { background:#27ae60; border-color:#27ae60; color:#fff; }
-        .bcalc-io-hint { font-size:9px; color:#7f8c8d; margin-top:3px; }
+        .bcalc-io-btn { flex:1; margin:0; padding:6px 2px; font-size:11px; font-weight:bold; border-radius:4px; background:var(--hp-surface); border:2px solid var(--hp-border); color:var(--hp-ink-muted); cursor:pointer; text-transform:uppercase; letter-spacing:0.3px; }
+        .bcalc-io-btn.active { background:var(--hp-mint); border-color:var(--hp-mint); color:var(--hp-mint-ink); }
+        .bcalc-io-hint { font-size:9px; color:var(--hp-ink-muted); margin-top:3px; }
 
         /* v75: Deductions box is collapsed by default per row — a red
            toggle button reveals a single math-expression input (same
            grammar as Length). No separate "count" field anymore — the
            expression itself already handles repeats, e.g. "12x3 10". */
         .bcalc-ded-toggle { display:block; width:100%; margin:6px 0 0 0; padding:8px; font-size:11px; font-weight:bold; border-radius:5px; cursor:pointer; text-align:center;
-            background:rgba(231,76,60,0.12); border:1px dashed rgba(231,76,60,0.5); color:#e74c3c; }
-        .bcalc-ded-toggle-open { border-style:solid; background:rgba(231,76,60,0.18); }
-        .bcalc-ded-toggle-hasvalue { border-style:solid; background:rgba(231,76,60,0.22); }
-        .bcalc-deduct-input { border-color:rgba(231,76,60,0.5) !important; }
+            background:var(--hp-danger-tint); border:1px dashed var(--hp-danger); color:var(--hp-danger-ink); }
+        .bcalc-ded-toggle-open { border-style:solid; background:var(--hp-danger-tint); }
+        .bcalc-ded-toggle-hasvalue { border-style:solid; background:var(--hp-danger-tint); }
+        .bcalc-deduct-input { border-color:var(--hp-danger) !important; }
 
         /* v75: prominent "Add Wall Row" — bold gradient, larger touch
            target, soft glow. Was previously easy to miss; this should not
-           be missable. */
-        .bcalc-addrow-btn { flex:1.6; margin:0; padding:13px; font-size:14px; font-weight:900; letter-spacing:0.5px; color:#fff; border:none; border-radius:7px; cursor:pointer;
-            background:linear-gradient(135deg, #2ecc71, #27ae60); box-shadow:0 3px 10px rgba(46,204,113,0.5); text-transform:uppercase; }
+           be missable. vBeta6: the gradient was the one piece of this UI
+           with no equivalent anywhere else in Vista (which doesn't use
+           gradients at all), so it's now a solid --hp-mint fill instead —
+           still the brightest, most saturated element in the section
+           (mint is Vista's brightest core color) and still reads as
+           "add/positive", just consistent with how every other Vista
+           surface renders. */
+        .bcalc-addrow-btn { flex:1.6; margin:0; padding:13px; font-size:14px; font-weight:900; letter-spacing:0.5px; color:var(--hp-mint-ink); border:none; border-radius:7px; cursor:pointer;
+            background:var(--hp-mint); box-shadow:0 3px 10px rgba(28,122,62,0.25); text-transform:uppercase; }
         .bcalc-addrow-btn:active { transform:scale(0.97); }
 
         /* v75: Add Wastage / Round Up — each column is an explicit ON/OFF
            toggle switch (OFF by default) plus an "elegant" connected
            segmented control (not separate rounded pills) that dims when
            its switch is off. Distinct violet/amber palette so this whole
-           strip reads as a different KIND of control from the row cards. */
+           strip reads as a different KIND of control from the row cards.
+           vBeta6: violet -> --hp-purple, amber -> --hp-amber — both
+           already part of Vista's core token set, so no new color was
+           introduced to achieve the same "different kind of control"
+           distinction. */
         .bcalc-adjust-strip { display:flex; gap:8px; margin-top:10px; }
         .bcalc-adjust-col { flex:1; border-radius:8px; padding:7px 9px; }
-        .bcalc-adjust-wastage { background:rgba(108,92,231,0.10); border:1px solid rgba(108,92,231,0.35); }
-        .bcalc-adjust-round { background:rgba(243,156,18,0.10); border:1px solid rgba(243,156,18,0.35); }
+        .bcalc-adjust-wastage { background:var(--hp-purple-tint); border:1px solid transparent; }
+        .bcalc-adjust-round { background:var(--hp-amber-tint); border:1px solid transparent; }
         .bcalc-toggle-row { display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:6px; }
-        .bcalc-adjust-label { font-size:10px; font-weight:bold; color:#ddd; }
+        .bcalc-adjust-label { font-size:10px; font-weight:bold; color:var(--hp-ink); }
         .bcalc-toggle-switch { position:relative; display:inline-block; width:26px; height:15px; flex-shrink:0; }
         .bcalc-toggle-switch input { opacity:0; width:0; height:0; }
-        .bcalc-toggle-slider { position:absolute; inset:0; background:#465c71; border-radius:15px; transition:background 0.15s; }
+        .bcalc-toggle-slider { position:absolute; inset:0; background:var(--hp-surface-alt-strong); border-radius:15px; transition:background 0.15s; }
         .bcalc-toggle-slider::before { content:''; position:absolute; width:11px; height:11px; left:2px; top:2px; background:#fff; border-radius:50%; transition:transform 0.15s; }
-        .bcalc-adjust-wastage .bcalc-toggle-switch input:checked + .bcalc-toggle-slider { background:#6c5ce7; }
-        .bcalc-adjust-round .bcalc-toggle-switch input:checked + .bcalc-toggle-slider { background:#f39c12; }
+        .bcalc-adjust-wastage .bcalc-toggle-switch input:checked + .bcalc-toggle-slider { background:var(--hp-purple); }
+        .bcalc-adjust-round .bcalc-toggle-switch input:checked + .bcalc-toggle-slider { background:var(--hp-amber); }
         .bcalc-toggle-switch input:checked + .bcalc-toggle-slider::before { transform:translateX(11px); }
         /* Elegant connected segmented control — a single bordered strip
            with square-ish internal dividers rather than separate floating
            pills, which reads as more deliberate/refined. */
-        .bcalc-seg { display:flex; border:1px solid #465c71; border-radius:6px; overflow:hidden; transition:opacity 0.15s; }
+        .bcalc-seg { display:flex; border:1px solid var(--hp-border); border-radius:6px; overflow:hidden; transition:opacity 0.15s; background:var(--hp-surface); }
         .bcalc-seg.disabled { opacity:0.35; pointer-events:none; }
-        .bcalc-seg-btn { flex:1; margin:0; padding:6px 2px; font-size:11px; font-weight:bold; cursor:pointer; background:#1a2f42; color:#aaa; border:none; border-right:1px solid #465c71; }
+        .bcalc-seg-btn { flex:1; margin:0; padding:6px 2px; font-size:11px; font-weight:bold; cursor:pointer; background:var(--hp-surface); color:var(--hp-ink-muted); border:none; border-right:1px solid var(--hp-border); }
         .bcalc-seg-btn:last-child { border-right:none; }
-        .bcalc-adjust-wastage .bcalc-seg-btn.active { background:#6c5ce7; color:#fff; }
-        .bcalc-adjust-round .bcalc-seg-btn.active { background:#f39c12; color:#1a2f42; }
+        .bcalc-adjust-wastage .bcalc-seg-btn.active { background:var(--hp-purple); color:var(--hp-purple-ink); }
+        .bcalc-adjust-round .bcalc-seg-btn.active { background:var(--hp-amber); color:var(--hp-amber-ink); }
 
         /* v75: Save / Load panel */
-        .bcalc-saved-row { display:flex; align-items:center; gap:6px; padding:6px 4px; border-bottom:1px solid #34495e; }
+        .bcalc-saved-row { display:flex; align-items:center; gap:6px; padding:6px 4px; border-bottom:1px solid var(--hp-border); }
         .bcalc-saved-info { flex:1; min-width:0; }
-        .bcalc-saved-name { font-size:12px; font-weight:bold; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .bcalc-saved-meta { font-size:10px; color:#7f8c8d; }
-        .bcalc-saved-load { background:#2980b9; color:#fff; border:none; border-radius:4px; padding:5px 10px; font-size:11px; font-weight:bold; cursor:pointer; margin:0; width:auto; }
-        .bcalc-saved-del { background:none; border:none; color:#e74c3c; font-size:13px; cursor:pointer; padding:3px 6px; margin:0; width:auto; }
+        .bcalc-saved-name { font-size:12px; font-weight:bold; color:var(--hp-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .bcalc-saved-meta { font-size:10px; color:var(--hp-ink-muted); }
+        .bcalc-saved-load { background:var(--hp-ink); color:#fff; border:none; border-radius:4px; padding:5px 10px; font-size:11px; font-weight:bold; cursor:pointer; margin:0; width:auto; }
+        .bcalc-saved-del { background:none; border:none; color:var(--hp-danger-ink); font-size:13px; cursor:pointer; padding:3px 6px; margin:0; width:auto; }
+        /* vBeta6: the old flat-color Convert buttons had no visible
+           disabled state beyond the browser's inconsistent default; the
+           new soft tint pills need one explicitly since a disabled pill
+           and an enabled pill would otherwise look identical. */
+        #btnBlocksToQuo:disabled, #btnBlocksToSal:disabled { opacity:0.45; cursor:not-allowed; }
 
 
         /* ============================================================
@@ -2602,7 +2634,7 @@
              Tap to force-check for updates. Update this string (and the
              matching APP_VERSION const in the script block) on every release. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:rgba(255,255,255,0.35); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta5</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta6</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- v73a: passive unsynced warning. Hidden by default and only
@@ -2730,7 +2762,7 @@
                  chevron to expand or collapse. -->
             <div class="analytics-section-title" onclick="toggleBlocksCalcCollapse()"><span>🧱 Blocks Calculator</span><span class="analytics-section-chevron" id="btnBlocksCalcCollapse">›</span></div>
             <div class="analytics-section-body" id="blocksCalcBody">
-                <div style="font-size:11px; color:#7f8c8d; margin-bottom:10px;">Quick rough estimate.</div>
+                <div style="font-size:11px; color:var(--hp-ink-muted); margin-bottom:10px;">Quick rough estimate.</div>
 
                 <div id="blocksCalcRows"></div>
 
@@ -2739,12 +2771,12 @@
                      glow — per feedback that it was too easy to overlook. -->
                 <div style="display:flex; gap:8px; margin-top:10px;">
                     <button type="button" onclick="addBlocksCalcRow()" class="bcalc-addrow-btn">➕ ADD WALL ROW</button>
-                    <button type="button" onclick="clearBlocksCalcAll()" style="flex:0.6; margin:0; background:#2c3e50; border:1px solid #c0392b; color:#e74c3c; padding:9px; font-size:11px; border-radius:5px;">Clear All</button>
+                    <button type="button" onclick="clearBlocksCalcAll()" style="flex:0.6; margin:0; background:var(--hp-surface); border:1px solid var(--hp-danger); color:var(--hp-danger-ink); padding:9px; font-size:11px; border-radius:5px;">Clear All</button>
                 </div>
 
-                <div id="blocksCalcUndoBar" style="display:none; margin-top:8px; background:#34495e; padding:8px 10px; border-radius:5px; font-size:12px; color:#ecf0f1; align-items:center; justify-content:space-between;">
+                <div id="blocksCalcUndoBar" style="display:none; margin-top:8px; background:var(--hp-surface-alt-strong); padding:8px 10px; border-radius:5px; font-size:12px; color:var(--hp-ink); align-items:center; justify-content:space-between;">
                     <span>Wall row removed.</span>
-                    <a href="javascript:void(0)" onclick="undoBlocksCalcRemove()" style="color:#3498db; font-weight:bold; text-decoration:underline;">Undo</a>
+                    <a href="javascript:void(0)" onclick="undoBlocksCalcRemove()" style="color:var(--hp-blue-ink); font-weight:bold; text-decoration:underline;">Undo</a>
                 </div>
 
                 <!-- v75: Wastage / Round-Up — each is now an explicit ON/OFF
@@ -2753,9 +2785,9 @@
                      separate floating pill buttons. -->
                 <div class="bcalc-adjust-strip" id="bcalcAdjustStrip"></div>
 
-                <div id="blocksCalcSummary" style="margin-top:14px; background:#243342; border-radius:6px; padding:10px;">
-                    <div style="font-size:10px; font-weight:bold; color:#7f8c8d; text-transform:uppercase; margin-bottom:6px;">Totals by Size</div>
-                    <div id="blocksCalcSummaryBody" style="font-size:12px; color:#ddd;">No rows added yet.</div>
+                <div id="blocksCalcSummary" style="margin-top:14px; background:var(--hp-surface-alt); border-radius:6px; padding:10px;">
+                    <div style="font-size:10px; font-weight:bold; color:var(--hp-ink-muted); text-transform:uppercase; margin-bottom:6px;">Totals by Size</div>
+                    <div id="blocksCalcSummaryBody" style="font-size:12px; color:var(--hp-ink);">No rows added yet.</div>
                 </div>
 
                 <!-- v75: Save / Load a named calculation, sitting above the
@@ -2763,16 +2795,22 @@
                      (Config store) since a deliberately-named save is a
                      real record, unlike the ephemeral autosaved draft. -->
                 <div style="display:flex; gap:8px; margin-top:12px;">
-                    <button type="button" onclick="saveBlocksCalcCalculation()" style="flex:1; margin:0; background:#2980b9; font-size:12px; padding:9px;">💾 Save</button>
-                    <button type="button" id="btnBlocksCalcLoad" onclick="toggleBlocksCalcLoadPanel()" style="flex:1; margin:0; background:#34495e; border:1px solid #465c71; font-size:12px; padding:9px;">📂 Load ▼</button>
+                    <button type="button" onclick="saveBlocksCalcCalculation()" style="flex:1; margin:0; background:var(--hp-surface-alt-strong); color:var(--hp-ink); font-size:12px; padding:9px;">💾 Save</button>
+                    <button type="button" id="btnBlocksCalcLoad" onclick="toggleBlocksCalcLoadPanel()" style="flex:1; margin:0; background:var(--hp-surface-alt-strong); color:var(--hp-ink); border:1px solid var(--hp-border); font-size:12px; padding:9px;">📂 Load ▼</button>
                 </div>
-                <div id="bcalcLoadPanel" style="display:none; margin-top:8px; background:#1a2f42; border:1px solid #34495e; border-radius:6px; padding:8px; max-height:200px; overflow-y:auto;"></div>
+                <div id="bcalcLoadPanel" style="display:none; margin-top:8px; background:var(--hp-surface); border:1px solid var(--hp-border); border-radius:6px; padding:8px; max-height:200px; overflow-y:auto;"></div>
 
+                <!-- vBeta6: Quotation/Sales Invoice convert buttons now use
+                     the same tint-pill treatment as the homepage's own
+                     "⚡ → Tax Invoice"/"⚡ → Sales Invoice" buttons (mint
+                     tint) — Quotation gets the equivalent purple tint,
+                     reusing an already-established Vista pattern instead
+                     of the old flat purple/teal fills. -->
                 <div style="display:flex; gap:8px; margin-top:10px;">
-                    <button type="button" id="btnBlocksToQuo" onclick="convertBlocksCalcToDoc('QUO')" style="flex:1; margin:0; background:#8e44ad; font-size:12px; padding:10px;" disabled>📝 Convert to Quotation</button>
-                    <button type="button" id="btnBlocksToSal" onclick="convertBlocksCalcToDoc('SAL')" style="flex:1; margin:0; background:#16a085; font-size:12px; padding:10px;" disabled>🧾 Convert to Sales Invoice</button>
+                    <button type="button" id="btnBlocksToQuo" onclick="convertBlocksCalcToDoc('QUO')" style="flex:1; margin:0; background:var(--hp-purple-tint); color:var(--hp-purple-ink); font-size:12px; padding:10px;" disabled>📝 Convert to Quotation</button>
+                    <button type="button" id="btnBlocksToSal" onclick="convertBlocksCalcToDoc('SAL')" style="flex:1; margin:0; background:var(--hp-mint-tint); color:var(--hp-mint-ink); font-size:12px; padding:10px;" disabled>🧾 Convert to Sales Invoice</button>
                 </div>
-                <div id="blocksCalcQueueBanner" style="display:none; margin-top:10px; background:#e67e22; color:#fff; padding:8px 10px; border-radius:5px; font-size:12px; font-weight:bold; text-align:center;"></div>
+                <div id="blocksCalcQueueBanner" style="display:none; margin-top:10px; background:var(--hp-amber-tint); color:var(--hp-amber-ink); padding:8px 10px; border-radius:5px; font-size:12px; font-weight:bold; text-align:center;"></div>
             </div>
         </div>
 
@@ -6165,7 +6203,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta5";
+    const APP_VERSION = "vBeta6";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -8534,7 +8572,7 @@
                     <div class="bcalc-dim-group">
                         <span class="bcalc-dim-label">Deduct (sq.ft)</span>
                         <input type="text" class="bcalc-length-input bcalc-deduct-input" value="${esc(row.deductSqft)}" oninput="updateBlocksCalcRow(${row.id},'deductSqft',this.value)" placeholder="e.g. 10 10 20 or 12x3+10">
-                        <div class="bcalc-length-sum-hint" id="bcalcDedHint_${row.id}" style="color:#e74c3c;">${dedHint}</div>
+                        <div class="bcalc-length-sum-hint" id="bcalcDedHint_${row.id}" style="color:var(--hp-danger-ink);">${dedHint}</div>
                     </div>
                 </div>` : '';
 
@@ -8575,7 +8613,7 @@
 
                 <div class="bcalc-row-result">${netEach.toFixed(2)} sq.ft each${row.count>1 ? ` × ${row.count} = ${totalArea.toFixed(2)} sq.ft` : ''} ${row.size ? '→ ' + blocks.toFixed(1) + ' blocks (' + row.size + '")' : '(pick a size)'}</div>
             </div>`;
-        }).join('') || '<div style="font-size:12px; color:#7f8c8d; text-align:center; padding:10px;">No wall rows yet — tap "+ Add Wall Row" below.</div>';
+        }).join('') || '<div style="font-size:12px; color:var(--hp-ink-muted); text-align:center; padding:10px;">No wall rows yet — tap "+ Add Wall Row" below.</div>';
         renderBlocksCalcSummary();
     }
 
@@ -8670,7 +8708,7 @@
         if (!blocksCalcLoadPanelOpen) return;
 
         if (blocksCalcSavedList.length === 0) {
-            panel.innerHTML = '<div style="font-size:12px; color:#7f8c8d; text-align:center; padding:8px;">No saved calculations yet.</div>';
+            panel.innerHTML = '<div style="font-size:12px; color:var(--hp-ink-muted); text-align:center; padding:8px;">No saved calculations yet.</div>';
             return;
         }
         panel.innerHTML = blocksCalcSavedList.slice().reverse().map(s => {
@@ -8728,7 +8766,7 @@
 
         if (sizes.length === 0) {
             body.innerHTML = untaggedArea > 0
-                ? `<span style="color:#e67e22;">${untaggedArea.toFixed(2)} sq.ft entered but no size picked yet on those rows.</span>`
+                ? `<span style="color:var(--hp-amber-ink);">${untaggedArea.toFixed(2)} sq.ft entered but no size picked yet on those rows.</span>`
                 : 'No rows added yet.';
             quoBtn.disabled = true; salBtn.disabled = true;
             return;
@@ -8739,23 +8777,23 @@
             let sqft = totals[sz];
             let { raw, final } = blocksCalcAdjustedCount(sqft);
             grandBlocks += final;
-            let adjustedNote = final !== raw ? ` <span style="color:#7f8c8d; font-weight:normal;">(net ${raw})</span>` : '';
-            return `<div style="display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid #34495e;">
+            let adjustedNote = final !== raw ? ` <span style="color:var(--hp-ink-muted); font-weight:normal;">(net ${raw})</span>` : '';
+            return `<div style="display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid var(--hp-border);">
                 <span>${sz}" Block — ${sqft.toFixed(2)} sq.ft</span>
-                <span style="font-weight:bold; color:#2ecc71;">${final} blocks${adjustedNote}</span>
+                <span style="font-weight:bold; color:var(--hp-mint-ink);">${final} blocks${adjustedNote}</span>
             </div>`;
         }).join('');
         if (untaggedArea > 0) {
-            rowsHtml += `<div style="color:#e67e22; font-size:11px; margin-top:4px;">+ ${untaggedArea.toFixed(2)} sq.ft on rows with no size picked (excluded from totals)</div>`;
+            rowsHtml += `<div style="color:var(--hp-amber-ink); font-size:11px; margin-top:4px;">+ ${untaggedArea.toFixed(2)} sq.ft on rows with no size picked (excluded from totals)</div>`;
         }
-        rowsHtml += `<div style="display:flex; justify-content:space-between; padding:6px 0 0 0; margin-top:4px; border-top:1px solid #465c71; font-weight:bold;">
-            <span>Total blocks (all sizes)</span><span style="color:#2ecc71;">${grandBlocks}</span>
+        rowsHtml += `<div style="display:flex; justify-content:space-between; padding:6px 0 0 0; margin-top:4px; border-top:1px solid var(--hp-border); font-weight:bold;">
+            <span>Total blocks (all sizes)</span><span style="color:var(--hp-mint-ink);">${grandBlocks}</span>
         </div>`;
         let adjustParts = [];
         if (blocksCalcWastageEnabled) adjustParts.push(`+${blocksCalcWastagePct}% wastage`);
         if (blocksCalcRoundEnabled) adjustParts.push(`rounded up to nearest ${blocksCalcRoundTo}`);
         if (adjustParts.length > 0) {
-            rowsHtml += `<div style="font-size:10px; color:#7f8c8d; margin-top:3px;">Includes ${adjustParts.join(', ')}</div>`;
+            rowsHtml += `<div style="font-size:10px; color:var(--hp-ink-muted); margin-top:3px;">Includes ${adjustParts.join(', ')}</div>`;
         }
         body.innerHTML = rowsHtml;
         quoBtn.disabled = false; salBtn.disabled = false;
