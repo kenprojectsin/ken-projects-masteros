@@ -18,7 +18,7 @@
 // a changed CACHE_NAME means the browser sees this as a genuinely different
 // service worker file, triggering the install/updatefound/waiting flow that
 // index.html's updatefound listener picks up and turns into the orange banner.
-const CACHE_NAME = 'ken-traders-beta-vbeta12';
+const CACHE_NAME = 'ken-traders-beta-vbeta13';
 const SHELL_FILES = [
   './index.html',
   './manifest.json',
@@ -76,21 +76,15 @@ self.addEventListener('fetch', event => {
     return; // let the browser handle it normally
   }
 
-  // For Google Fonts — cache-first (they never change for a given URL)
-  if (url.includes('fonts.googleapis.com') || url.includes('fonts.gstatic.com')) {
-    event.respondWith(
-      caches.match(event.request).then(cached => {
-        return cached || fetch(event.request).then(response => {
-          if (response.ok) {
-            let clone = response.clone();
-            caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
-          }
-          return response;
-        });
-      })
-    );
-    return;
-  }
+  // vBeta13: removed the old "Google Fonts — cache-first" branch that used to
+  // sit here (matching fonts.googleapis.com/fonts.gstatic.com). Two things,
+  // now moot together: (1) Lato is self-hosted inline in index.html as base64
+  // now, so the app never requests either host at all; (2) that branch was
+  // dead code anyway — fonts.googleapis.com always matched the plain
+  // "googleapis.com" check right above first, so it never even reached the
+  // font-caching logic, and its would-be caching never covered the first
+  // (or offline) load in the first place. See index.html's font-face comment
+  // for the actual device-inconsistency bug this was contributing to.
 
   // For the main HTML file — network-first so updates land automatically.
   // Falls back to cache if offline.
