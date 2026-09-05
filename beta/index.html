@@ -335,7 +335,12 @@
         ============================================================ */
         .doctype-spotlight { background: var(--hp-surface-alt); padding: 12px 14px; border-radius: var(--hp-radius-md, 16px); margin-bottom: 10px; box-shadow: none; }
         .doctype-spotlight label { color: var(--hp-ink-muted); font-size: 10px; margin: 0 0 6px 0; opacity: 1; }
-        .doctype-spotlight select { background: var(--hp-ink); color: #FFFFFF; font-size: 15px; font-weight: 800; padding: 12px 14px; border-radius: var(--hp-radius-sm); border: none; margin-top: 0; box-shadow: none; }
+        /* vBeta15: dark background needs its own white-stroke arrow — the
+           base `select` rule's grey (--hp-ink-muted) arrow is tuned for the
+           app's usual white-surface selects and would be low-contrast here. */
+        .doctype-spotlight select { background: var(--hp-ink); color: #FFFFFF; font-size: 15px; font-weight: 800; padding: 12px 14px; border-radius: var(--hp-radius-sm); border: none; margin-top: 0; box-shadow: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 7l5 5 5-5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 14px center; background-size: 13px; padding-right: 34px; }
 
         /* ============================================================
            U7: Signature / Boss Mode / Void — uniform grouped row
@@ -638,6 +643,22 @@
         .editor-box input:not([type="checkbox"]):not([type="radio"]):focus, .editor-box select:focus { outline: none; box-shadow: inset 0 0 0 2.5px var(--hp-purple); }
         input[type="checkbox"], input[type="radio"] { width: auto; margin-top: 0; padding: 0; vertical-align: middle; flex: none; }
         select option { font-family: inherit; }
+        /* vBeta15: same class of bug as the font-family fix above — a bare
+           <select> is drawn by the OS/browser's own native control chrome
+           (Android in particular renders a visibly different shape/inset than
+           a plain text <input>, even though both had the exact same
+           border-radius/border/background CSS) unless "appearance" is reset
+           and a custom arrow substituted for the one that removes. This is
+           what made Title/E-Way Bill/Freight Terms look like a different
+           control shape than Client Name/Billing Location/GSTIN on a real
+           phone, independent of anything already correct in the shared
+           input/select rule above. Scoped to plain single-selects only —
+           none of this touches .bill-layout (no <select> lives in the frozen
+           print output at all). */
+        select { appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%236E6C80' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 7l5 5 5-5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 10px center; background-size: 13px;
+            padding-right: 30px; }
         /* textarea has the same UA-default-font problem as button/input/select
            above. Two of the app's three <textarea>s already had font-family:
            inherit set inline (someone clearly hit this exact bug before and
@@ -1499,11 +1520,14 @@
                already a 2-up row with its own flex-wrap safety net, so
                the old forced full-stack override is no longer needed. */
 
-            /* GSTIN / Vehicle / E-Way — 3 columns stacks to 1 */
-            #dispatchSettingsBox > div:first-child { flex-direction: column !important; gap: 8px !important; }
+            /* vBeta15: GST Status / Vehicle Number row (#gstVehRow, dispatchSettingsBox's
+               first-child) is intentionally left OUT of this stacking rule now — the
+               flex-wrap + min-width already on the row keeps the two fields side by
+               side even on a narrow phone, which is what this pair specifically needed. */
 
-            /* Delivery Site / Freight — 2 columns stacks to 1 */
-            #dispatchSettingsBox > div:nth-child(2) { flex-direction: column !important; gap: 8px !important; }
+            /* Delivery Site / Freight — now dispatchSettingsBox's 3rd child (E-Way Bill's
+               own row is the 2nd) — 2 columns stacks to 1 */
+            #dispatchSettingsBox > div:nth-child(3) { flex-direction: column !important; gap: 8px !important; }
 
             /* Product select + Qty + Rate row — product full width, qty+rate below */
             #salesInputs .add-product-row { flex-wrap: wrap !important; }
@@ -1743,8 +1767,9 @@
         body.force-mobile-main #docNoDateRow { flex-wrap: wrap !important; gap: 8px !important; }
         body.force-mobile-main #docNoDateRow > div { min-width: 130px; }
         /* vBeta5 F5: superseded by #titleClientRow/#billingContactRow's own inline flex-wrap — see the non-force-mobile block above for the full explanation. */
-        body.force-mobile-main #dispatchSettingsBox > div:first-child { flex-direction: column !important; gap: 8px !important; }
-        body.force-mobile-main #dispatchSettingsBox > div:nth-child(2) { flex-direction: column !important; gap: 8px !important; }
+        /* vBeta15: #gstVehRow (first-child) intentionally excluded — stays side by
+           side via its own flex-wrap+min-width even in forced-mobile mode. */
+        body.force-mobile-main #dispatchSettingsBox > div:nth-child(3) { flex-direction: column !important; gap: 8px !important; }
         body.force-mobile-main #salesInputs .add-product-row { flex-wrap: wrap !important; }
         body.force-mobile-main #salesInputs .add-product-row > div:first-child { flex: 1 1 100% !important; }
         body.force-mobile-main #salesInputs .add-product-row > div:not(:first-child) { flex: 1 1 0 !important; min-width: 80px; }
@@ -1927,8 +1952,9 @@
         body.force-mobile-main #docNoDateRow { flex-wrap: wrap !important; gap: 8px !important; }
         body.force-mobile-main #docNoDateRow > div { min-width: 130px; }
         /* vBeta5 F5: superseded by #titleClientRow/#billingContactRow's own inline flex-wrap — see the non-force-mobile block above for the full explanation. */
-        body.force-mobile-main #dispatchSettingsBox > div:first-child { flex-direction: column !important; gap: 8px !important; }
-        body.force-mobile-main #dispatchSettingsBox > div:nth-child(2) { flex-direction: column !important; gap: 8px !important; }
+        /* vBeta15: #gstVehRow (first-child) intentionally excluded — stays side by
+           side via its own flex-wrap+min-width even in forced-mobile mode. */
+        body.force-mobile-main #dispatchSettingsBox > div:nth-child(3) { flex-direction: column !important; gap: 8px !important; }
         body.force-mobile-main #salesInputs .add-product-row { flex-wrap: wrap !important; }
         body.force-mobile-main #salesInputs .add-product-row > div:first-child { flex: 1 1 100% !important; }
         body.force-mobile-main #salesInputs .add-product-row > div:not(:first-child) { flex: 1 1 0 !important; min-width: 80px; }
@@ -2545,6 +2571,11 @@
             background: var(--cb-input-bg); color: var(--cb-ink); border: 1px solid var(--cb-border);
             border-radius: 10px;
         }
+        /* vBeta15: dark glass surface needs a white-stroke arrow — see the
+           .doctype-spotlight comment above for why the base grey one doesn't work here. */
+        #cashBookModal select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 7l5 5 5-5'/%3E%3C/svg%3E");
+        }
         #cashBookModal input::placeholder, #cashBookModal select { color: var(--cb-ink); }
         #cashBookModal input:focus, #cashBookModal select:focus, #cashBookModal textarea:focus {
             outline: none; border-color: var(--cb-accent); box-shadow: 0 0 0 3px var(--glass-accent-bg);
@@ -2852,6 +2883,26 @@
 <div class="container">
     
     <div class="editor-box">
+        <!-- vBeta15: app header logo bar — the header opened straight into the
+             BETA badge with no branding at all. Reuses the exact same uploaded-
+             logo pipeline as the printed document's header (applyBrandAssets(),
+             see the appHeaderLogo entry in its logoTargets list) and the same
+             handleLogoError() fallback as mainLogo/letLogo, so this needs no
+             separate upload step and stays in sync if the logo is ever changed. -->
+        <div style="text-align:center; margin-bottom:10px;">
+            <img id="appHeaderLogo" src="logo.png" onerror="handleLogoError(this)" alt="KEN LOGO" style="max-height:48px; max-width:100%;">
+            <script>
+                // Same ordering guard as mainLogo/letLogo's own inline script (see
+                // "uifix1" comment near mainLogo below) — this image sits earlier in
+                // the document than that script, so this stub guarantees
+                // handleLogoError() exists the instant this image could error,
+                // regardless of network timing. The real definition (further down)
+                // simply overwrites this one once it runs.
+                if (typeof handleLogoError !== 'function') {
+                    function handleLogoError(img) { img.onerror = null; }
+                }
+            </script>
+        </div>
         <!-- BETA channel banner — this copy lives at /beta/ and is only for
              previewing UI work-in-progress before it's promoted to the main
              app. It shares the same real backend/localStorage data as
@@ -2878,7 +2929,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #6E6C80); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta14</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta15</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- v73a: passive unsynced warning. Hidden by default and only
@@ -2907,24 +2958,25 @@
             <button onclick="createNewDocSafe()" style="flex: 1; margin: 0; background: var(--hp-ink); font-size: 15px; padding: 12px; box-shadow: 0 4px 14px -6px rgba(28,28,39,0.5);">✨ New Doc</button>
             <button class="btn-list" onclick="openSavedDocs()" style="flex: 1; margin: 0; background: var(--hp-purple-tint); color: var(--hp-purple-ink); font-size: 15px; padding: 12px; box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35);">📂 View List</button>
         </div>
-        <!-- v80 (item 21): every invoice currently starts from an empty cart,
-             even for a regular who orders close to the same thing each time.
-             Uses this client's last invoice when a name is typed, otherwise the
-             most recent one. Block rates are recalculated at current tier and
-             tonnage rather than frozen from the old document.
-             VISTA 4: Repeat Last Invoice + Project Manager combined into one
-             2-column row (previously two stacked full-width buttons) — same
-             actions, less vertical space. -->
-        <div style="display:flex; gap:8px; margin-bottom: 10px;">
-            <button onclick="repeatLastInvoice()" style="flex:1; margin:0; background:var(--hp-surface-alt); color:var(--hp-ink); font-size:13px; padding:11px 6px; box-shadow:0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35);">🔁 Repeat Last Invoice</button>
-            <button onclick="openProjectManager()" style="flex:1; margin:0; background:var(--hp-surface-alt); color:var(--hp-ink); font-size:13px; padding:11px 6px; box-shadow:0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35);">🏗️ Project Manager</button>
+        <!-- vBeta15 HEADER CLEANUP:
+             - Repeat Last Invoice moved out of this static header entirely — it
+               now lives right under the Document Type selector (see
+               #docTypeContextActions below) and only appears for Tax
+               Invoice/Sales Invoice, where "repeat" actually makes sense.
+             - Project Manager loses its old row partner and becomes its own
+               full-width, visually quieter row (smaller text, no shadow) so
+               it doesn't compete with New Doc/View List for attention.
+             - Convert-to-Invoice/Convert-to-Sales/Amend also moved down to
+               #docTypeContextActions, right where the doc type that triggers
+               them is chosen, instead of sitting here always-rendered-but-
+               hidden.
+             - WhatsApp is hidden (display:none) rather than deleted — the
+               button, its onclick and shareOnWhatsApp() are all left intact
+               for when it's switched back on. -->
+        <div style="margin-bottom: 10px;">
+            <button onclick="openProjectManager()" style="width:100%; margin:0; background:var(--hp-surface-alt); color:var(--hp-ink-muted); font-size:12.5px; padding:9px 6px; box-shadow:none;">🏗️ Project Manager</button>
         </div>
-        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-            <button id="btnConvertToInv" onclick="convertDocument('INV')" style="flex:1; margin:0; background:var(--hp-mint-tint); color:var(--hp-mint-ink); font-size:12.5px; padding:9px 4px; box-shadow:none; display:none;">⚡ → Tax Invoice</button>
-            <button id="btnConvertToSal" onclick="convertDocument('SAL')" style="flex:1; margin:0; background:var(--hp-mint-tint); color:var(--hp-mint-ink); font-size:12.5px; padding:9px 4px; box-shadow:none; display:none;">⚡ → Sales Invoice</button>
-            <button id="btnAmendDoc" onclick="amendDocument()" style="flex:1; margin:0; background:var(--hp-amber-tint); color:var(--hp-amber-ink); font-size:12.5px; padding:9px 4px; box-shadow:none; display:none;">✏️ Amend (Supersede)</button>
-            <button id="btnWhatsApp" onclick="shareOnWhatsApp()" style="flex:1; margin:0; background:#1C7A3E; font-size:12.5px; padding:9px 4px; box-shadow:none;">📲 WhatsApp</button>
-        </div>
+        <button id="btnWhatsApp" onclick="shareOnWhatsApp()" style="display:none; flex:1; margin:0; background:#1C7A3E; font-size:12.5px; padding:9px 4px; box-shadow:none;">📲 WhatsApp</button>
         <!-- U4: Analytics — dedicated section, 2 rows x 3 columns, icon above label.
              VISTA 4: now collapsible, same chevron-header mechanic as Blocks
              Calculator (toggleAnalyticsSection() below) — defaults OPEN since
@@ -3074,6 +3126,23 @@
             </select>
         </div>
 
+        <!-- vBeta15: contextual actions for the CURRENTLY SELECTED document type,
+             right under the selector that determines them — replaces the old
+             always-present New Doc/View List header row for these 4 buttons.
+             switchAppMode() (search "U1: Convert and Amend buttons" and
+             "vBeta15: Repeat Last Invoice row") owns all the show/hide logic
+             below; nothing here needs to change when the doc type changes. -->
+        <div id="docTypeContextActions">
+            <div id="repeatInvoiceRow" style="display:none; margin-bottom:8px;">
+                <button onclick="repeatLastInvoice()" style="width:100%; margin:0; background:var(--hp-surface-alt); color:var(--hp-ink); font-size:13px; padding:11px 6px; box-shadow:0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35);">🔁 Repeat Last Invoice</button>
+            </div>
+            <div id="docConvertAmendRow" style="display:flex; gap:8px; margin-bottom: 10px;">
+                <button id="btnConvertToInv" onclick="convertDocument('INV')" style="flex:1; margin:0; background:var(--hp-mint-tint); color:var(--hp-mint-ink); font-size:12.5px; padding:9px 4px; box-shadow:none; display:none;">⚡ → Tax Invoice</button>
+                <button id="btnConvertToSal" onclick="convertDocument('SAL')" style="flex:1; margin:0; background:var(--hp-mint-tint); color:var(--hp-mint-ink); font-size:12.5px; padding:9px 4px; box-shadow:none; display:none;">⚡ → Sales Invoice</button>
+                <button id="btnAmendDoc" onclick="amendDocument()" style="flex:1; margin:0; background:var(--hp-amber-tint); color:var(--hp-amber-ink); font-size:12.5px; padding:9px 4px; box-shadow:none; display:none;">✏️ Amend (Supersede)</button>
+            </div>
+        </div>
+
         <!-- v70: PRICING TIER BAR — was a plain <select> tucked inside the
              master-bar (easy to miss — this was the exact complaint: tier
              selection needs to be prominent, since it silently affects
@@ -3216,6 +3285,11 @@
                  page / white card contrast. -->
             <div class="doc-sections-wrap">
             <div class="doc-section" id="docSectionCustomer">
+            <!-- vBeta15: section title mirrors the jump-nav pill's own label
+                 (see #docJumpNav above) so scrolling deep into a long section
+                 still shows which one you're in, without having to look back
+                 up at the (possibly scrolled-past) nav bar. -->
+            <div class="doc-section-title">👤 Customer</div>
             <!-- vBeta5 F5: previously one 4-column row (Title/Client Name/
                  Billing Location/Contact No.), forced to fully stack on
                  mobile via "#salesInputs > div:first-child { flex-direction:
@@ -3283,8 +3357,13 @@
                 ⚠️ <span id="duplicateGuardText"></span>
             </div>
             <div id="dispatchSettingsBox">
-                <div style="display:flex; gap:10px; margin-top: 5px;">
-                    <div style="flex:1;" id="inputGstinContainer">
+                <!-- vBeta15: GST Status + Vehicle Number kept side-by-side even on
+                     narrow phones (flex-wrap + min-width, like titleClientRow/
+                     billingContactRow above) instead of the old 3-up row that the
+                     1100px media query forced into a full column stack. E-Way Bill
+                     now gets its own row below since it no longer shares this one. -->
+                <div id="gstVehRow" style="display:flex; gap:10px; margin-top: 5px; flex-wrap:wrap;">
+                    <div style="flex:1.2; min-width:140px;" id="inputGstinContainer">
                         <label>Client GSTIN / Status</label>
                         <input type="text" id="gstinIn" placeholder="GSTIN or URD" onkeyup="updateInfo(); validateGSTINField();" style="text-transform:uppercase;">
                         <!-- G3: live format check, not a blocker. A typo'd GSTIN
@@ -3295,12 +3374,21 @@
                              point of entry. -->
                         <div id="gstinValidationMsg" style="display:none; font-size:10px; margin-top:3px; padding:2px 6px; border-radius:3px;"></div>
                     </div>
-                    <div style="flex:1;" id="inputVehContainer"><label>Vehicle Number</label><input type="text" id="vehIn" onkeyup="updateInfo()">
-                        <!-- v80 (item 12): recent lorries, derived from saved
-                             documents rather than a separate list that would
-                             need its own cleanup. -->
-                        <div id="vehicleChips" style="display:none; margin-top:6px;"></div>
+                    <div style="flex:1; min-width:130px;" id="inputVehContainer">
+                        <label>Vehicle Number</label>
+                        <!-- vBeta15: was a free-text input with a "Recent" chip row of
+                             past lorry numbers (see the removed getRecentVehicles/
+                             renderVehicleChips/applyVehicleChip functions) — with only
+                             one vehicle actually in service now, that whole suggestion
+                             layer is dead weight. Plain dropdown, default empty so
+                             nothing is silently pre-selected on a new document. -->
+                        <select id="vehIn" onchange="updateInfo()">
+                            <option value="">— Select —</option>
+                            <option value="TN 59 DK 0451">TN 59 DK 0451</option>
+                        </select>
                     </div>
+                </div>
+                <div id="ewayRow" style="display:flex; gap:10px; margin-top: 5px;">
                     <div style="flex:1;" id="inputEwayContainer">
                         <label>E-Way Bill No.</label>
                         <select id="ewayBillIn" onchange="updateInfo()">
@@ -3331,6 +3419,7 @@
             </div><!-- /docSectionCustomer -->
 
             <div class="doc-section" id="docSectionProduct">
+            <div class="doc-section-title">📦 Product</div>
             <div id="taxToggleDiv" style="background: var(--hp-amber-tint); padding: 10px 13px; border-radius: var(--hp-radius-sm); margin-top: 12px; border: none;">
                 <label style="color: var(--hp-amber-ink); margin-top: 0; cursor: pointer; text-transform: none;">
                     <input type="checkbox" id="inclusiveTax" onchange="renderTable()" checked style="vertical-align: middle;"> <b style="vertical-align: middle;">Rates INCLUDE GST</b>
@@ -3493,6 +3582,7 @@
             </div><!-- /docSectionProduct -->
 
             <div class="doc-section" id="docSectionPayment">
+            <div class="doc-section-title">💳 Payment</div>
             <div id="advAdjustBox" style="background:var(--hp-danger-tint); padding:15px; border-radius:var(--hp-radius-sm); margin-top:12px; display:none;">
                 <label style="color:var(--hp-danger-ink); margin-top:0;">🔗 Link Advance Receipts</label>
                 <table class="adv-link-table" id="advLinkTable">
@@ -6497,7 +6587,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta14";
+    const APP_VERSION = "vBeta15";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -7716,7 +7806,10 @@
     // startup and after any upload — if no upload exists, leaves the
     // existing src (logo.png file or code fallback) untouched.
     function applyBrandAssets() {
-        let logoTargets = ['mainLogo', 'letLogo'];
+        // vBeta15: appHeaderLogo (the app's own header, not the printed
+        // document) shares this same uploaded-logo pipeline — one upload
+        // in Brand Assets updates the print header AND the in-app header.
+        let logoTargets = ['mainLogo', 'letLogo', 'appHeaderLogo'];
         logoTargets.forEach(id => {
             let logo = document.getElementById(id);
             if (logo && brandAssets.logo && isRealAsset(brandAssets.logo)) {
@@ -8766,15 +8859,34 @@
     // regardless of which document type is currently active (it simply
     // does nothing useful while #voucherInputs is showing, since none of
     // its target ids are visible then).
+    // vBeta15: tapping a pill used to only scroll — the active pill only
+    // caught up once the IntersectionObserver below noticed the new section
+    // had arrived, which happens mid/after the scroll animation, by which
+    // point the user is looking at the destination, not the nav bar, so the
+    // switch was easy to miss entirely. Now the tapped pill goes active the
+    // instant it's tapped (immediate feedback, right where the user is
+    // looking), and the observer is told to back off for the duration of the
+    // scroll animation so it can't flicker the highlight onto whatever
+    // section scrolls past in between — it simply confirms the same pill
+    // once the scroll settles, and takes back over for ordinary free-scroll
+    // after that.
+    var docJumpNavSuppressUntil = 0;
     function jumpToDocSection(id) {
         let el = document.getElementById(id);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (!el) return;
+        let navItems = document.querySelectorAll('#docJumpNav .doc-jumpnav-item');
+        navItems.forEach(it => it.classList.remove('active'));
+        let tapped = document.querySelector('.doc-jumpnav-item[data-target="' + id + '"]');
+        if (tapped) tapped.classList.add('active');
+        docJumpNavSuppressUntil = Date.now() + 700; // roughly a smooth-scroll's duration
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     (function initDocSectionScrollspy() {
         let navItems = document.querySelectorAll('#docJumpNav .doc-jumpnav-item');
         let sections = Array.from(navItems).map(it => document.getElementById(it.getAttribute('data-target'))).filter(Boolean);
         if (!sections.length) return;
         let obs = new IntersectionObserver(function(entries) {
+            if (Date.now() < docJumpNavSuppressUntil) return; // a tap just set this — don't fight it mid-scroll
             entries.forEach(function(entry) {
                 if (!entry.isIntersecting) return;
                 let idx = sections.indexOf(entry.target);
@@ -8799,8 +8911,12 @@
         ['docSectionCustomer', 'docSectionProduct', 'docSectionPayment'].forEach(function(id) {
             let sec = document.getElementById(id);
             if (!sec) return;
+            // vBeta15: skip .doc-section-title itself — it's a permanently-visible
+            // label (see markup), not real content, so it must not count as "this
+            // section still has something to show" or an empty section would
+            // never collapse again.
             let hasVisibleChild = Array.prototype.some.call(sec.children, function(ch) {
-                return getComputedStyle(ch).display !== 'none';
+                return !ch.classList.contains('doc-section-title') && getComputedStyle(ch).display !== 'none';
             });
             sec.style.display = hasVisibleChild ? '' : 'none';
             let pill = document.querySelector('.doc-jumpnav-item[data-target="' + id + '"]');
@@ -11545,7 +11661,6 @@
     // ============================================================
     try { wireCartFieldAutoAdvance(); } catch (e) {}   // item 25: Enter moves qty → rate → add
     try { refreshSiteSuggestions(); } catch (e) {}     // item 11: fill the site datalist
-    try { renderVehicleChips(); } catch (e) {}         // item 12: recent lorries
     try { renderBundleChips(); } catch (e) {}          // item 22: saved bundles
     try {                                              // item 15: show the saved review ceiling
         let ldEl = document.getElementById('largeDocThresholdIn');
@@ -13078,6 +13193,12 @@
         document.getElementById('btnConvertToInv').style.display = (type === 'QUO' || type === 'SAL') ? 'inline-block' : 'none';
         document.getElementById('btnConvertToSal').style.display = (type === 'QUO' || type === 'INV') ? 'inline-block' : 'none';
         document.getElementById('btnAmendDoc').style.display = (type === 'INV' || type === 'SAL') ? 'inline-block' : 'none';
+        // vBeta15: Repeat Last Invoice row — moved here from the static header,
+        // shown only for Tax Invoice/Sales Invoice (not Quotation — repeating a
+        // quotation into a quotation isn't a real workflow here).
+        if (document.getElementById('repeatInvoiceRow')) {
+            document.getElementById('repeatInvoiceRow').style.display = (type === 'INV' || type === 'SAL') ? 'block' : 'none';
+        }
 
         // Print titles
         const titles = { INV:'TAX INVOICE', QUO:'QUOTATION', ADV:'ADVANCE RECEIPT', RCP:'PAYMENT RECEIPT', SAL:'SALES INVOICE', CRN:'CREDIT NOTE', RCM:'PAYMENT VOUCHER', EXP:'EXPENSE VOUCHER' };
@@ -14050,76 +14171,16 @@
 
 
     // ================================================================
-    // v80 ITEM 12 — VEHICLE NUMBER HISTORY CHIPS
+    // v80 ITEM 12 — VEHICLE NUMBER HISTORY CHIPS — REMOVED vBeta15.
     // ----------------------------------------------------------------
-    // The same handful of lorries run every day and every one of them
-    // gets retyped from scratch, in a field where a typo silently breaks
-    // the vehicle search in Search Everything.
-    //
-    // No new storage: the history is derived from saved documents, which
-    // already carry `vehicle` (sales docs) and `vVeh` (vouchers). That
-    // means it works on a fresh device the moment documents sync down,
-    // and there is no separate list to drift out of date or need
-    // cleaning up.
+    // Used to derive a "Recent:" row of past lorry numbers from saved
+    // documents so a frequently-used vehicle could be tapped instead of
+    // retyped. With only one vehicle in service now (TN 59 DK 0451),
+    // #vehIn is a plain dropdown (see markup) and this whole suggestion
+    // layer — getRecentVehicles()/renderVehicleChips()/applyVehicleChip()
+    // — is dead weight. Removed rather than left disabled so a future
+    // reader doesn't have to figure out why #vehicleChips never renders.
     // ================================================================
-    var VEHICLE_CHIP_COUNT = 6;
-
-    function getRecentVehicles(n) {
-        var stats = Object.create(null);
-        try {
-            savedDocs.forEach(function (d) {
-                [d.vehicle, d.vVeh].forEach(function (raw) {
-                    var v = String(raw || '').trim().toUpperCase();
-                    if (!v || v.length < 4) return;   // "-", "NA" and other noise
-                    var t = parseLocalDate(cleanDate(d.date));
-                    if (!stats[v]) stats[v] = { name: v, count: 0, last: 0 };
-                    stats[v].count += 1;
-                    if (t > stats[v].last) stats[v].last = t;
-                });
-            });
-        } catch (e) { return []; }
-
-        // Recency first, frequency as the tiebreak: the lorry running
-        // this week matters more than one that ran fifty times last year.
-        return Object.keys(stats).map(function (k) { return stats[k]; })
-            .sort(function (a, b) { return (b.last - a.last) || (b.count - a.count); })
-            .slice(0, n || VEHICLE_CHIP_COUNT);
-    }
-
-    function renderVehicleChips() {
-        var host = document.getElementById('vehicleChips');
-        if (!host) return;
-        var typeEl = document.getElementById('docType');
-        var input = document.getElementById('vehIn');
-        if (!typeEl || !input) { host.style.display = 'none'; return; }
-
-        var vehicles = getRecentVehicles(VEHICLE_CHIP_COUNT);
-        if (!vehicles.length) { host.style.display = 'none'; return; }
-
-        var current = String(input.value || '').trim().toUpperCase();
-        host.innerHTML = '<span style="font-size:10px; color:#6E6C80; text-transform:uppercase; margin-right:6px;">Recent:</span>' +
-            vehicles.map(function (v) {
-                var active = (v.name === current);
-                var safe = String(v.name).replace(/'/g, "\\'");
-                return '<button type="button" onclick="applyVehicleChip(\'' + safe + '\')" ' +
-                    'title="Used on ' + v.count + ' document' + (v.count === 1 ? '' : 's') + '" ' +
-                    'style="width:auto; margin:0 6px 6px 0; padding:5px 10px; font-size:11px; font-weight:bold; ' +
-                    'background:' + (active ? '#1C7A3E' : '#0B5A94') + '; color:#FFFFFF; border-radius:14px; cursor:pointer;">' +
-                    v.name + '</button>';
-            }).join('');
-        host.style.display = 'block';
-    }
-
-    function applyVehicleChip(name) {
-        var input = document.getElementById('vehIn');
-        if (!input) return;
-        // Tapping the already-selected lorry clears it, so a mis-tap
-        // doesn't force a manual field-clear.
-        input.value = (String(input.value || '').trim().toUpperCase() === name) ? '' : name;
-        if (typeof markDirty === 'function') { try { markDirty(); } catch (e) {} }
-        updateInfo();
-        try { renderVehicleChips(); } catch (e) {}
-    }
 
 
     // v80 ITEM 13 — STICKY GRAND TOTAL ON MOBILE — removed in v81. It kept
@@ -15120,7 +15181,6 @@
     function renderV80DocExtras() {
         try { renderCartBelowCostWarning(); } catch (e) {}
         try { renderClientCreditWarning(); } catch (e) {}
-        try { renderVehicleChips(); } catch (e) {}
         try { renderBundleChips(); } catch (e) {}
         try { refreshSiteSuggestions(); } catch (e) {}
     }
@@ -17444,7 +17504,22 @@
             document.getElementById('gstinIn').value = doc.gstin || "";
             validateGSTINField(); // G3: surface validation state for a loaded document too, not just fresh typing
             updateMakeRepeatClientVisibility(); // show the button if this doc's client isn't registered yet
-            document.getElementById('vehIn').value = doc.vehicle || "";
+            // vBeta15: vehIn is now a fixed dropdown (single vehicle in service),
+            // but an older saved document may carry a different vehicle number
+            // from before this changed. Rather than silently blank it out (which
+            // would then wipe that historical value for good the next time this
+            // doc gets saved), add it as a one-off option so it still displays —
+            // it just won't appear on a fresh, empty document.
+            (function () {
+                let vehSel = document.getElementById('vehIn');
+                let savedVeh = doc.vehicle || "";
+                if (savedVeh && !Array.prototype.some.call(vehSel.options, function (o) { return o.value === savedVeh; })) {
+                    let opt = document.createElement('option');
+                    opt.value = savedVeh; opt.text = savedVeh + ' (past record)';
+                    vehSel.appendChild(opt);
+                }
+                vehSel.value = savedVeh;
+            })();
             document.getElementById('ewayBillIn').value = doc.ewayBill || "Not Applicable (Under 1 Lakh)";
             document.getElementById('customEwayIn').value = doc.customEway || "";
             document.getElementById('freightTypeIn').value = doc.freight || "Borne By Customer (To Pay)";
