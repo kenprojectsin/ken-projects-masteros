@@ -371,26 +371,31 @@
         /* ============================================================
            U4: Analytics buttons — dedicated 2x3 grid section
         ============================================================ */
-        /* VISTA 4: Reports & Tools is now collapsible (see #analyticsSectionBody /
-           toggleAnalyticsSection() in JS) — same chevron-header mechanic as the
-           Blocks Calculator below it. Defaults to OPEN (these 15 buttons are
-           core daily navigation, unlike the Blocks Calculator trial feature),
-           but remembers the user's last choice via localStorage. */
-        /* vBeta5 F2: generalized from analytics-only selectors so any
-           collapsible section (Reports & Tools, Blocks Calculator, and
-           any future one) shares one visual/behavioral treatment instead
-           of each hand-rolling its own header, chevron and show/hide
-           logic — which is what produced the mismatched heights, fonts
-           and arrow glyphs between Reports & Tools and Blocks Calculator
-           in vBeta4. #analyticsSectionBody kept as an alias of the new
-           .analytics-section-body class so nothing else that may
-           reference that ID elsewhere breaks. */
+        /* vBeta17: Reports & Tools/Blocks Calculator no longer use the
+           chevron-header-owns-its-own-body mechanism this section used to
+           describe (.analytics-section.open toggling a nested
+           .analytics-section-body) — that pair now lives in the
+           .section-tab-row/.section-tab-body system just below, where the
+           headers ("tabs") and bodies are siblings, not parent/child, so one
+           tab's body can expand to the full row's width instead of being
+           confined under its own header. .analytics-section itself lives on
+           as a plain background/padding card style — used by Project
+           Manager's header-styled row and by both tab bodies. */
         .analytics-section { background: var(--hp-surface-alt); border-radius: var(--hp-radius-md, 16px); padding: 12px 14px; margin-bottom: 10px; border: none; }
         .analytics-section-title { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 800; text-transform: none; letter-spacing: 0; color: var(--hp-ink); margin-bottom: 0; padding-left: 2px; cursor: pointer; }
-        .analytics-section-chevron { color: var(--hp-ink-muted); font-size: 15px; transition: transform 0.18s ease; }
-        .analytics-section.open .analytics-section-chevron { transform: rotate(90deg); }
-        .analytics-section-body, #analyticsSectionBody { display: none; margin-top: 10px; }
-        .analytics-section.open .analytics-section-body, .analytics-section.open #analyticsSectionBody { display: block; }
+        /* vBeta17: Reports & Tools / Blocks Calculator "tabs" — two headers
+           sitting side by side (like .analytics-section-title but standalone,
+           no body nested inside), collapsed by default. Since realistically
+           only one gets used at a time, whichever is tapped expands its body
+           to the FULL header row's width below both tabs, instead of being
+           squeezed into its own half — and opening one closes the other, true
+           tab exclusivity rather than two independent accordions. See
+           selectHeaderTab() in JS. */
+        .section-tab-row { display: flex; gap: 8px; margin-bottom: 10px; }
+        .section-tab { flex: 1; background: var(--hp-surface-alt); border-radius: var(--hp-radius-md, 16px); padding: 12px 10px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 800; color: var(--hp-ink); cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; transition: background .15s ease, color .15s ease; text-align: center; }
+        .section-tab.active { background: var(--hp-ink); color: #FFFFFF; }
+        .section-tab-body { display: none; }
+        .section-tab-body.open { display: block; }
         .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
         .analytics-grid-btn {
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
@@ -2883,6 +2888,22 @@
 <div class="container">
     
     <div class="editor-box">
+        <!-- vBeta16: version text pushed to the very top of the header, above
+             even the logo — always the first thing anyone sees, matching the
+             "check what build this is before anything else" purpose it always
+             had. BETA badge and Force Mobile toggle below are both hidden
+             (display:none) rather than deleted — same hide-not-delete pattern
+             as WhatsApp — so both can come back with one style flip later. -->
+        <!-- vBeta14 FIX: color was rgba(255,255,255,0.35) — white at low opacity,
+             a leftover from when this sat on a dark editor-box background. Vista's
+             editor background is white now, so this was literally invisible white-
+             on-white (the exact bug flagged in the audit). Switched to Ink Muted,
+             the token this app already uses everywhere else for de-emphasized
+             secondary text. -->
+        <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #6E6C80); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
+            <span id="appVersionBadge">vBeta17</span> · <span id="appUpdateStatus">tap to check for updates</span>
+        </div>
+
         <!-- vBeta15: app header logo bar — the header opened straight into the
              BETA badge with no branding at all. Reuses the exact same uploaded-
              logo pipeline as the printed document's header (applyBrandAssets(),
@@ -2908,28 +2929,14 @@
              app. It shares the same real backend/localStorage data as
              production by design (per owner's explicit confirmation), so
              the badge below exists purely so no one mistakes this build for
-             production. -->
+             production. vBeta16: hidden per request — code kept intact. -->
         <!-- vBeta14 FIX: color was #1C1C27 (near-black), left dark-on-dark against
              this #92400E (Amber Ink) solid fill — Amber Ink is meant to be TEXT on a
              light tint, not a background color of its own, so pairing it with dark
              text was the same class of bug as every other solid/dark button in the
              app: those get white text, this one didn't. -->
-        <div style="text-align:center; font-size:11px; font-weight:bold; letter-spacing:0.5px; color:#FFFFFF; background:#92400E; border-radius:6px; padding:6px 10px; margin-bottom:8px;">
+        <div style="display:none; text-align:center; font-size:11px; font-weight:bold; letter-spacing:0.5px; color:#FFFFFF; background:#92400E; border-radius:6px; padding:6px 10px; margin-bottom:8px;">
             🧪 BETA BUILD — UI preview only
-        </div>
-
-        <!-- APP_VERSION badge — always visible so anyone (you, staff, your
-             sister) can glance and confirm which build they're running.
-             Tap to force-check for updates. Update this string (and the
-             matching APP_VERSION const in the script block) on every release. -->
-        <!-- vBeta14 FIX: color was rgba(255,255,255,0.35) — white at low opacity,
-             a leftover from when this sat on a dark editor-box background. Vista's
-             editor background is white now, so this was literally invisible white-
-             on-white (the exact bug flagged in the audit). Switched to Ink Muted,
-             the token this app already uses everywhere else for de-emphasized
-             secondary text. -->
-        <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #6E6C80); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta15</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- v73a: passive unsynced warning. Hidden by default and only
@@ -2949,8 +2956,12 @@
              (currently desktop-oriented) layout either way, since they
              haven't had their own mobile pass yet. The choice is
              remembered (localStorage) so it doesn't need to be set again
-             next time the app opens. -->
-        <div style="text-align:center; margin-bottom:10px;">
+             next time the app opens.
+             vBeta16: hidden per request (see initForceMobileMain() — the
+             auto-enable-for-installed-PWA default was also removed there so
+             hiding this button can't leave anyone silently stuck in force-
+             mobile mode with no visible way to see why). -->
+        <div style="display:none; text-align:center; margin-bottom:10px;">
             <button type="button" id="btnForceMobileToggle" onclick="toggleForceMobileMain()" style="width:auto; margin:0; background:var(--hp-surface-alt); color:var(--hp-ink-muted); border:none; box-shadow:inset 0 0 0 1.5px var(--hp-border); padding:6px 12px; border-radius:20px; font-size:11px; font-weight:bold; cursor:pointer;">📱 Force Mobile Layout: OFF</button>
         </div>
 
@@ -2963,27 +2974,35 @@
                now lives right under the Document Type selector (see
                #docTypeContextActions below) and only appears for Tax
                Invoice/Sales Invoice, where "repeat" actually makes sense.
-             - Project Manager loses its old row partner and becomes its own
-               full-width, visually quieter row (smaller text, no shadow) so
-               it doesn't compete with New Doc/View List for attention.
              - Convert-to-Invoice/Convert-to-Sales/Amend also moved down to
                #docTypeContextActions, right where the doc type that triggers
                them is chosen, instead of sitting here always-rendered-but-
                hidden.
              - WhatsApp is hidden (display:none) rather than deleted — the
                button, its onclick and shareOnWhatsApp() are all left intact
-               for when it's switched back on. -->
-        <div style="margin-bottom: 10px;">
-            <button onclick="openProjectManager()" style="width:100%; margin:0; background:var(--hp-surface-alt); color:var(--hp-ink-muted); font-size:12.5px; padding:9px 6px; box-shadow:none;">🏗️ Project Manager</button>
+               for when it's switched back on.
+             vBeta16: Project Manager now uses the exact same section-header
+             look as Reports & Tools/Blocks Calculator below (same classes,
+             same icon-left/text/chevron-less layout) instead of its own
+             one-off pill button, then sits directly above them so all three
+             read as one family — Project Manager the single "apex" row,
+             Reports & Tools + Blocks Calculator side by side underneath it. -->
+        <div class="analytics-section" style="cursor:pointer;" onclick="openProjectManager()">
+            <div class="analytics-section-title"><span>🏗️ Project Manager</span></div>
         </div>
         <button id="btnWhatsApp" onclick="shareOnWhatsApp()" style="display:none; flex:1; margin:0; background:#1C7A3E; font-size:12.5px; padding:9px 4px; box-shadow:none;">📲 WhatsApp</button>
-        <!-- U4: Analytics — dedicated section, 2 rows x 3 columns, icon above label.
-             VISTA 4: now collapsible, same chevron-header mechanic as Blocks
-             Calculator (toggleAnalyticsSection() below) — defaults OPEN since
-             this is core daily navigation, remembers the user's choice. -->
-        <div class="analytics-section open" id="analyticsSection">
-            <div class="analytics-section-title" onclick="toggleAnalyticsSection()"><span>📊 Reports &amp; Tools</span><span class="analytics-section-chevron" id="analyticsSectionChevron">›</span></div>
-            <div id="analyticsSectionBody">
+        <!-- vBeta17: Reports & Tools / Blocks Calculator are now a true tab
+             pair — see .section-tab/.section-tab-body CSS and
+             selectHeaderTab-style logic in toggleAnalyticsSection()/
+             toggleBlocksCalcCollapse() below. Both start collapsed; tapping
+             one opens its body at the FULL width of this row (nobody needs
+             both open at once) and closes the other. -->
+        <div class="section-tab-row">
+            <div class="section-tab" id="reportsToolsTab" onclick="toggleAnalyticsSection()"><span>📊</span><span>Reports &amp; Tools</span></div>
+            <div class="section-tab" id="blocksCalcTab" onclick="toggleBlocksCalcCollapse()"><span>🧱</span><span>Blocks Calculator</span></div>
+        </div>
+        <!-- U4: Analytics — dedicated section, 2 rows x 3 columns, icon above label. -->
+        <div class="analytics-section section-tab-body" id="analyticsSectionBody">
             <div class="analytics-grid">
                 <button id="btnAnalyticsLedger" class="analytics-grid-btn" onclick="openLedger()"><span class="ag-icon" data-vicon="ledger"></span><span>Ledger</span></button>
                 <button id="btnAnalyticsOutstanding" class="analytics-grid-btn" onclick="openOutstanding()"><span class="ag-icon" data-vicon="outstanding"></span><span>Outstanding</span></button>
@@ -3028,7 +3047,6 @@
                      though both sit in the same understated row. -->
                 <button onclick="openRestoreModal()" style="width:auto; margin:0; background:none; border:none; color:var(--hp-amber-ink); font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">📥 Restore from backup</button>
             </div>
-            </div>
         </div>
 
         <!-- v73a TRIAL FEATURE — BLOCKS CALCULATOR
@@ -3046,18 +3064,10 @@
              selectBlockSize()/qtyInput path a human tap would use. Deleting
              this whole block (HTML here + the paired JS block + CSS block)
              fully removes the feature with zero side effects on v73. -->
-        <!-- vBeta5 F2: now shares the exact analytics-section/-title/-chevron
-             classes Reports & Tools uses, instead of its own one-off inline
-             styles — same header height/font-weight, same rotating "›"
-             chevron instead of the old ▸/▾ text-swap. See
-             toggleBlocksCalcCollapse() for the matching JS-side unification
-             (open class + CSS display, mirroring toggleAnalyticsSection()). -->
-        <div class="analytics-section" id="blocksCalcSection">
-            <!-- v74c: the ENTIRE header row is now the tap target (not just
-                 the small chevron) — tap anywhere across the title/badge/
-                 chevron to expand or collapse. -->
-            <div class="analytics-section-title" onclick="toggleBlocksCalcCollapse()"><span>🧱 Blocks Calculator</span><span class="analytics-section-chevron" id="btnBlocksCalcCollapse">›</span></div>
-            <div class="analytics-section-body" id="blocksCalcBody">
+        <!-- vBeta17: header/tab moved up into #reportsToolsTab/#blocksCalcTab
+             (the .section-tab-row above) — this is now just the body card,
+             styled by .analytics-section like #analyticsSectionBody. -->
+        <div class="analytics-section section-tab-body" id="blocksCalcBody">
                 <div style="font-size:11px; color:var(--hp-ink-muted); margin-bottom:10px;">Quick rough estimate.</div>
 
                 <div id="blocksCalcRows"></div>
@@ -3107,8 +3117,7 @@
                     <button type="button" id="btnBlocksToSal" onclick="convertBlocksCalcToDoc('SAL')" style="flex:1; margin:0; background:var(--hp-mint-tint); color:var(--hp-mint-ink); font-size:12px; padding:10px;" disabled>🧾 Convert to Sales Invoice</button>
                 </div>
                 <div id="blocksCalcQueueBanner" style="display:none; margin-top:10px; background:var(--hp-amber-tint); color:var(--hp-amber-ink); padding:8px 10px; border-radius:5px; font-size:12px; font-weight:bold; text-align:center;"></div>
-            </div>
-        </div>
+        </div><!-- /blocksCalcBody -->
 
         <!-- U5: Doc Type gets its own dedicated, visually prominent block —
              it's the single most important selector in the form. -->
@@ -6587,7 +6596,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta15";
+    const APP_VERSION = "vBeta17";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -8783,37 +8792,35 @@
             </div>`;
     }
 
-    // vBeta5 F2: unified with toggleAnalyticsSection()'s mechanism — toggle
-    // an "open" class on the section, let CSS (.analytics-section.open
-    // .analytics-section-chevron / .analytics-section-body) handle both the
-    // chevron rotation and the show/hide, instead of this function
-    // separately flipping inline display + swapping ▾/▸ glyphs by hand.
-    function toggleBlocksCalcCollapse() {
-        document.getElementById('blocksCalcSection').classList.toggle('open');
-    }
-
-    // VISTA 4 (2026-09-03): Reports & Tools collapse — same mechanic as
-    // toggleBlocksCalcCollapse() above, but this one defaults OPEN (these 15
-    // buttons are core daily navigation) and remembers the user's last choice
-    // via localStorage, since forcing an extra tap on every page load would
-    // cost more than the scroll space it saves for a section people open
-    // constantly. restoreAnalyticsSectionState() runs once on page load.
+    // vBeta17: Reports & Tools / Blocks Calculator are a true tab pair now —
+    // realistically only one gets used at a time, so opening either one
+    // closes the other (rather than two independent accordions each
+    // confined to its own half-width column). Both start collapsed on every
+    // load; unlike the old Reports & Tools behavior, this is intentionally
+    // NOT persisted across reloads — a tab selection is transient, the same
+    // way switching a tab in any other tabbed UI doesn't "stick" for next time.
     function toggleAnalyticsSection() {
-        let section = document.getElementById('analyticsSection');
-        let isOpen = section.classList.toggle('open');
-        try { localStorage.setItem('ken_analyticsSectionOpen', isOpen ? '1' : '0'); } catch(e) {}
+        let body = document.getElementById('analyticsSectionBody');
+        let tab = document.getElementById('reportsToolsTab');
+        let willOpen = !body.classList.contains('open');
+        body.classList.toggle('open', willOpen);
+        tab.classList.toggle('active', willOpen);
+        if (willOpen) {
+            document.getElementById('blocksCalcBody').classList.remove('open');
+            document.getElementById('blocksCalcTab').classList.remove('active');
+        }
     }
-    function restoreAnalyticsSectionState() {
-        let section = document.getElementById('analyticsSection');
-        if (!section) return;
-        let saved = null;
-        try { saved = localStorage.getItem('ken_analyticsSectionOpen'); } catch(e) {}
-        if (saved === '0') section.classList.remove('open');
-        else section.classList.add('open'); // default OPEN — includes saved === '1' and first-ever load
+    function toggleBlocksCalcCollapse() {
+        let body = document.getElementById('blocksCalcBody');
+        let tab = document.getElementById('blocksCalcTab');
+        let willOpen = !body.classList.contains('open');
+        body.classList.toggle('open', willOpen);
+        tab.classList.toggle('active', willOpen);
+        if (willOpen) {
+            document.getElementById('analyticsSectionBody').classList.remove('open');
+            document.getElementById('reportsToolsTab').classList.remove('active');
+        }
     }
-    // Script sits at the very end of <body>, so the DOM (including
-    // #analyticsSection) already exists — no need to wait for an onload event.
-    restoreAnalyticsSectionState();
 
     // vBeta5 F1: Reports & Tools grid previously used raw emoji for its 15
     // icons — each brings its own OS-dependent color/style, reading as
@@ -16136,32 +16143,17 @@
             if (raw !== null) saved = (raw === '1');
         } catch(e) {}
 
-        // v74: if the person has never explicitly chosen, auto-enable when
-        // this is running as an INSTALLED PWA on a phone-sized screen.
-        //
-        // The whole reason this toggle exists is that some installed
-        // Android shells report a logical viewport too wide for the
-        // @media breakpoints to fire, so the app renders desktop layout on
-        // a phone. Detecting standalone display-mode catches exactly that
-        // case. The screen.width check keeps a genuine desktop/tablet PWA
-        // install on its normal desktop layout rather than forcing a
-        // phone layout onto a large screen.
-        //
-        // An explicit saved choice ALWAYS wins — this only fills in a
-        // sensible default for someone who has never touched the toggle,
-        // and never overrides a decision already made.
-        if (saved === null) {
-            let isStandalone = false;
-            try {
-                isStandalone = window.matchMedia('(display-mode: standalone)').matches
-                    || window.matchMedia('(display-mode: fullscreen)').matches
-                    || window.matchMedia('(display-mode: minimal-ui)').matches
-                    || window.navigator.standalone === true; // iOS
-            } catch(e) {}
-            let physicalWidth = 0;
-            try { physicalWidth = Math.min(screen.width || 0, screen.height || 0); } catch(e) {}
-            saved = isStandalone && physicalWidth > 0 && physicalWidth <= 820;
-        }
+        // v74: used to auto-enable here when the person had never explicitly
+        // chosen AND the app was running as an installed PWA on a phone-sized
+        // screen (some installed Android shells report a viewport too wide
+        // for the @media breakpoints to fire, so the app rendered desktop
+        // layout on a phone). vBeta16: removed — the toggle button itself is
+        // now hidden (see its markup above), so silently flipping this on
+        // with no visible way to see why or turn it back off would leave
+        // exactly the "off by default" request from breaking here. An
+        // explicit saved choice (from before the button was hidden) still
+        // wins; anyone new just gets OFF.
+        if (saved === null) saved = false;
 
         document.body.classList.toggle('force-mobile-main', saved);
         updateForceMobileToggleLabel(saved);
