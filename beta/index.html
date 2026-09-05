@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KEN Traders - Master OS (BETA)</title>
 
-    <!-- vBeta13 FIX: Lato used to load live from Google Fonts over the
+    <!-- vBeta14 FIX: Lato used to load live from Google Fonts over the
          network (see git history for the old <link> tag). That's why the
          app could look different device to device: a device that opened the
          app offline, or on a weak/no-signal site connection (this is a
@@ -521,7 +521,7 @@
         .bcalc-seg.disabled { opacity:0.35; pointer-events:none; }
         .bcalc-seg-btn { flex:1; margin:0; padding:6px 2px; font-size:11px; font-weight:bold; cursor:pointer; background:var(--hp-surface); color:var(--hp-ink-muted); border:none; border-right:1px solid var(--hp-border); }
         .bcalc-seg-btn:last-child { border-right:none; }
-        /* vBeta13 FIX: was background:var(--hp-purple)/var(--hp-amber) — the vivid base
+        /* vBeta14 FIX: was background:var(--hp-purple)/var(--hp-amber) — the vivid base
            tones — with the dark ink text on top. Measured contrast was only 2.97:1
            (purple) and 3.47:1 (amber), both under WCAG AA. Swapped to the tint
            background (same pairing used everywhere else in the app) for ~6.2:1 and
@@ -612,11 +612,40 @@
            caption onto the next line - "Rates INCLUDE GST" and Summary's "All Time" were
            the visible cases, but it affected every un-overridden checkbox in the app.
            Text inputs and selects still fill their container; toggles size to themselves. */
-        input:not([type="checkbox"]):not([type="radio"]), select { width: 100%; padding: 10px; margin-top: 5px; background: var(--hp-surface, #0B5A94); border: none; box-shadow: inset 0 0 0 1.5px var(--hp-border, #0B5A94); color: var(--hp-ink, white); border-radius: var(--hp-radius-sm, 4px); box-sizing: border-box; font-size: 14px; font-weight: 600; }
+        /* vBeta14 FIX — THE ACTUAL ROOT CAUSE of "the app looks like a different
+           font on different devices": <button>, <input>, and <select> are form
+           controls, and form controls do NOT inherit font-family from the page
+           by default — every browser's UA stylesheet gives them their own native
+           control font instead (Roboto on stock Android, the OEM's own system
+           font on MIUI/One UI/etc., Segoe UI on Windows, San Francisco on iOS).
+           Every "Lato migration" pass this app has been through (Onest, then
+           Lato, then self-hosting the font file) only ever touched `body`, which
+           has zero effect on this — body's font-family never reaches inside a
+           button or input, UA-default-font-for-controls always wins there
+           regardless of what's requested on body or :root. That's why the
+           EMBEDDED FONT FIX DID NOT HELP: buttons were never trying to use Lato
+           in the first place, on any device, ever — each device was just
+           showing its own OS's native control font the whole time, which is
+           exactly why two phones showed two different weights/letterforms on
+           the very same buttons. `font-family: inherit` is the fix — it makes
+           these controls actually participate in normal CSS inheritance like
+           every other element, picking up Lato from body/editor-box everywhere
+           in the live app, while still correctly picking up .bill-layout's own
+           frozen 'Segoe UI' override for the handful of edit-popover buttons
+           that live inside the print preview (inherit follows whatever the
+           real ancestor is — it does not silently switch anyone to Lato). */
+        input:not([type="checkbox"]):not([type="radio"]), select { font-family: inherit; width: 100%; padding: 10px; margin-top: 5px; background: var(--hp-surface, #0B5A94); border: none; box-shadow: inset 0 0 0 1.5px var(--hp-border, #0B5A94); color: var(--hp-ink, white); border-radius: var(--hp-radius-sm, 4px); box-sizing: border-box; font-size: 14px; font-weight: 600; }
         .editor-box input:not([type="checkbox"]):not([type="radio"]):focus, .editor-box select:focus { outline: none; box-shadow: inset 0 0 0 2.5px var(--hp-purple); }
         input[type="checkbox"], input[type="radio"] { width: auto; margin-top: 0; padding: 0; vertical-align: middle; flex: none; }
-        
-        button { cursor: pointer; border: none; padding: 12px; border-radius: var(--hp-radius-sm, 4px); font-weight: bold; width: 100%; margin-top: 15px; font-size: 15px; color: white; transition: transform 0.1s ease, background-color 0.2s ease, filter 0.15s ease; }
+        select option { font-family: inherit; }
+        /* textarea has the same UA-default-font problem as button/input/select
+           above. Two of the app's three <textarea>s already had font-family:
+           inherit set inline (someone clearly hit this exact bug before and
+           patched it locally) — this generic rule covers the one that was
+           missed (#termsEditTextarea) and any future textarea by default. */
+        textarea { font-family: inherit; }
+
+        button { font-family: inherit; cursor: pointer; border: none; padding: 12px; border-radius: var(--hp-radius-sm, 4px); font-weight: bold; width: 100%; margin-top: 15px; font-size: 15px; color: white; transition: transform 0.1s ease, background-color 0.2s ease, filter 0.15s ease; }
         .editor-box button:hover { filter: brightness(1.08); }
         button:active, .action-trio-btn:active, .pressed-state { /* v84: .action-trio-btn added - the signature tile is a <div>, so it never got press feedback */ transform: scale(0.95); opacity: 0.85; box-shadow: inset 0 3px 5px rgba(0,0,0,0.4)!important; }
         .btn-add { background: #0B5A94; }
@@ -1696,7 +1725,7 @@
         }
 
         body.force-mobile-main .editor-box label { font-size: 11px; margin-top: 12px; }
-        /* vBeta13 FIX: was "body.force-mobile-main .editor-box input, ...select"
+        /* vBeta14 FIX: was "body.force-mobile-main .editor-box input, ...select"
            — that selector's specificity (2 classes + 2 types) accidentally beat
            .doctype-spotlight select / .master-bar select's pill radius (var(--hp-radius-sm),
            16px), shrinking the Document-Type dropdown and every text input down to a
@@ -1739,7 +1768,7 @@
             bottom: 0; left: 0; width: 100%; border-radius: 0; padding: 8px 10px; gap: 8px;
             background: rgba(26,37,47,0.97); box-shadow: 0 -2px 12px rgba(0,0,0,0.3); box-sizing: border-box;
         }
-        /* vBeta13 FIX: was border-radius:8px !important, which didn't match the real
+        /* vBeta14 FIX: was border-radius:8px !important, which didn't match the real
            @media(480px) equivalent (12px !important, see .btn-print/.btn-pdf/.btn-save
            near line 1469) — buttons visibly got squarer corners only when the toggle
            was forced on. Corrected to 12px to match real narrow-viewport rendering. */
@@ -1889,7 +1918,7 @@
         body.force-mobile-main .container > .editor-box > div:first-child button { font-size: 14px !important;
                 padding: 13px 10px !important; }
         body.force-mobile-main label { font-size: 11px; margin-top: 12px; }
-        /* vBeta13 FIX: same :where() fix as the .editor-box copy of this rule above —
+        /* vBeta14 FIX: same :where() fix as the .editor-box copy of this rule above —
            see that comment for the full explanation. */
         :where(body.force-mobile-main) input, :where(body.force-mobile-main) select { padding: 12px 10px;
                 font-size: 15px;
@@ -2212,7 +2241,7 @@
                   and the Blocks Calculator's active wastage/round-to chips had
                   dark ink text on a dark fill — fixed, contrast verified). */
         }
-        /* vBeta13 FIX — RESTORED MISSING --glass-* ROOT TOKENS.
+        /* vBeta14 FIX — RESTORED MISSING --glass-* ROOT TOKENS.
            The comments above and on #cashBookModal both say the old "Liquid
            Glass" tokens are "still defined at :root" / "further down" — but a
            full-file search turned up zero definitions of --glass-bg, --glass-
@@ -2257,7 +2286,7 @@
             --tng-accent: var(--vista-purple);
             --tng-accent-bg: var(--vista-purple-tint);
             --tng-accent-text: var(--vista-ink);
-            /* vBeta13: added — .tng-step-btn was using --tng-accent (the vivid purple
+            /* vBeta14: added — .tng-step-btn was using --tng-accent (the vivid purple
                base) directly as a TEXT color at 2.48:1 contrast on white. Purple base
                is a fill token; Purple Ink is the one meant to sit on top of light
                surfaces as text (7.4:1). */
@@ -2355,7 +2384,7 @@
             font-size: 20px; font-weight: 800; line-height: 1; cursor: pointer; flex-shrink: 0; transition: background 0.15s ease;
         }
         #tonnageModal .tng-step-btn:hover { background: var(--vista-purple-tint); }
-        /* vBeta13 FIX: was background:var(--tng-accent) (vivid purple base) + white
+        /* vBeta14 FIX: was background:var(--tng-accent) (vivid purple base) + white
            text — 2.48:1, the same vivid-plus-white pattern fixed elsewhere. Ink
            background reads white text at 7.4:1. */
         #tonnageModal .tng-step-btn:active { background: var(--tng-accent-ink); color: #FFFFFF; }
@@ -2528,14 +2557,14 @@
         }
         #cashBookModal .cash-entry-form > div > div[style*="color:#2c3e50"] { color: var(--cb-ink) !important; }
         #cashBookModal #cbVoiceReviewPanel { background: rgba(191,90,242,0.14) !important; border-color: rgba(191,90,242,0.4) !important; }
-        /* vBeta13 FIX: the "I heard — confirm before adding" header's inline
+        /* vBeta14 FIX: the "I heard — confirm before adding" header's inline
            color:#6B3FA0 (Purple Ink) assumed the panel's original light-purple
            #F1E7FE background — it's since been reskinned dark by the rule right
            above, dropping this label to 1.58:1. Lightened to match the dark panel. */
         #cashBookModal #cbVoiceReviewPanel > div:first-child { color: #E3BCFC !important; }
         #cashBookModal #cbVoiceReviewPanel > div[style*="background:#FFFFFF"] { background: var(--cb-glass) !important; border-color: var(--cb-border) !important; }
         #cashBookModal #cbVoiceTranscript { color: var(--cb-muted) !important; }
-        /* vBeta13 FIX: this rule forced var(--cb-ink) (white, once the missing
+        /* vBeta14 FIX: this rule forced var(--cb-ink) (white, once the missing
            --glass-* tokens above were restored) onto #cbVoiceDir/Amt/Cat/Party —
            but those four sit on their OWN small white mini-cards
            (background:#FFFFFF) nested inside the purple voice-review panel, not
@@ -2829,7 +2858,7 @@
              production by design (per owner's explicit confirmation), so
              the badge below exists purely so no one mistakes this build for
              production. -->
-        <!-- vBeta13 FIX: color was #1C1C27 (near-black), left dark-on-dark against
+        <!-- vBeta14 FIX: color was #1C1C27 (near-black), left dark-on-dark against
              this #92400E (Amber Ink) solid fill — Amber Ink is meant to be TEXT on a
              light tint, not a background color of its own, so pairing it with dark
              text was the same class of bug as every other solid/dark button in the
@@ -2842,14 +2871,14 @@
              sister) can glance and confirm which build they're running.
              Tap to force-check for updates. Update this string (and the
              matching APP_VERSION const in the script block) on every release. -->
-        <!-- vBeta13 FIX: color was rgba(255,255,255,0.35) — white at low opacity,
+        <!-- vBeta14 FIX: color was rgba(255,255,255,0.35) — white at low opacity,
              a leftover from when this sat on a dark editor-box background. Vista's
              editor background is white now, so this was literally invisible white-
              on-white (the exact bug flagged in the audit). Switched to Ink Muted,
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #6E6C80); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta13</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta14</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- v73a: passive unsynced warning. Hidden by default and only
@@ -3230,7 +3259,7 @@
                          assigns the next C-number AND retroactively tags
                          every past document with this exact name, so their
                          whole history becomes visible under one ID at once. -->
-                    <!-- vBeta13 FIX: was background:var(--hp-amber) (vivid) + white text,
+                    <!-- vBeta14 FIX: was background:var(--hp-amber) (vivid) + white text,
                          2.04:1 contrast — the same vivid-base-plus-white anti-pattern fixed
                          elsewhere. Amber Tint + Amber Ink matches the rest of the app (~6.5:1). -->
                     <button id="btnMakeRepeatClient" onclick="makeRepeatClient()" style="display:none; margin-top:4px; background:var(--hp-amber-tint); color:var(--hp-amber-ink); border:none; padding:6px 10px; border-radius:var(--hp-radius-sm); cursor:pointer; font-size:11px; font-weight:bold; width:auto;">⭐ Make Repeat Client</button>
@@ -3424,7 +3453,7 @@
                             style="margin-top:5px; width:100%;">
                         <div id="supersedesRefSuggestBox" class="client-suggestions-box" style="top:100%;"></div>
                     </div>
-                    <!-- vBeta13 FIX: same vivid-base + white-text bug as Make Repeat Client above. -->
+                    <!-- vBeta14 FIX: same vivid-base + white-text bug as Make Repeat Client above. -->
                     <button onclick="openAmendmentDiff()" style="width:auto; margin:5px 0 0 0; background:var(--hp-amber-tint); color:var(--hp-amber-ink); padding:8px 12px; font-size:11px; border-radius:var(--hp-radius-sm);">🔍 View Changes</button>
                 </div>
             </div>
@@ -4343,7 +4372,7 @@
         <div id="ledgerBalanceBar" class="ledger-balance-bar" style="display:none;">
             <span id="ledgerClientName" style="font-weight:bold; font-size:15px;"></span>
             <div style="text-align:right;">
-                <!-- vBeta13 FIX: color was #6E6C80 (Ink Muted — a light-mode grey) on this
+                <!-- vBeta14 FIX: color was #6E6C80 (Ink Muted — a light-mode grey) on this
                      bar's own #2c3e50 navy background: 2.15:1. The bar already sets
                      color:#FFFFFF as its default (see .ledger-balance-bar); this inline
                      override just needed to stay a muted WHITE instead of a muted dark grey. -->
@@ -5011,7 +5040,7 @@
             <div id="cbVoiceReviewPanel" style="display:none; background:#F1E7FE; border:2px solid #6B3FA0; border-radius:8px; padding:12px; margin-bottom:12px;">
                 <div style="font-size:11px; font-weight:bold; color:#6B3FA0; text-transform:uppercase; margin-bottom:8px;">🎤 I heard — confirm before adding:</div>
                 <div id="cbVoiceTranscript" style="font-size:13px; color:#1C1C27; font-style:italic; margin-bottom:10px;"></div>
-                <!-- vBeta13 FIX: these four labels used color:var(--cb-muted,#6E6C80) —
+                <!-- vBeta14 FIX: these four labels used color:var(--cb-muted,#6E6C80) —
                      harmless while --cb-muted was undefined (fell back to the literal
                      grey), but once the missing --glass-* tokens were restored above,
                      --cb-muted resolved to translucent white, landing white text on
@@ -5091,7 +5120,7 @@
                          cbLinkedDoc (hidden), displays a human-readable pill. -->
                     <div id="cbInvoicePickerDisplay" onclick="openInvoicePicker()" style="margin-top:4px; padding:8px; border-radius:4px; cursor:pointer; font-size:13px; min-height:36px; display:flex; align-items:center; justify-content:space-between;">
                         <span id="cbInvoicePickerLabel" style="color:#6E6C80;">🔍 Search document...</span>
-                        <!-- vBeta13 FIX: was color:#A32A2E (Danger Ink), a dark red meant for
+                        <!-- vBeta14 FIX: was color:#A32A2E (Danger Ink), a dark red meant for
                              light backgrounds — sitting on Cash Book's dark glass input, that
                              was only 1.92:1. --glass-danger is the same red family already used
                              for dark-glass contexts elsewhere in this modal (e.g. .cb-row-out). -->
@@ -6031,7 +6060,7 @@
                 <button onclick="manualScanAndLink()" style="width:auto; margin:0; background:none; border:none; color:#1C7A3E; font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">🔗 Scan & link existing documents now…</button>
                 <button onclick="openRebuildRegistryChecklist()" style="width:auto; margin:0; background:none; border:none; color:#0B5A94; font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">🔄 Register repeat clients from documents…</button>
             </div>
-            <!-- vBeta13 FIX: color was #E1E1E6 (Surface Alt Strong — a near-white grey
+            <!-- vBeta14 FIX: color was #E1E1E6 (Surface Alt Strong — a near-white grey
                  meant for borders/insets, not text) on the plain white settings background:
                  1.3:1 contrast, effectively invisible. This is a destructive, irreversible
                  action, so it now uses Danger Ink like every other destructive control. -->
@@ -6468,7 +6497,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta13";
+    const APP_VERSION = "vBeta14";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -21874,7 +21903,7 @@
         let cashInHand = openingBalance + periodNet;
         _lastCashBookOpening = openingBalance;
 
-        // vBeta13 FIX: these four figures were hardcoded to the LIGHT-mode ink
+        // vBeta14 FIX: these four figures were hardcoded to the LIGHT-mode ink
         // hexes (#1C7A3E/#A32A2E/#0B5A94/#6E6C80) — fine on the cards' original
         // light tint fill, but the card background is overridden to dark glass
         // right above (see "Summary cards" comment), so on that dark card these
