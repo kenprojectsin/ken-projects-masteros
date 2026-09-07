@@ -190,8 +190,22 @@
            bites when content would otherwise exceed the viewport) — they just
            stop that horizontal scroll from ever reaching the page level, and
            make sure images/tables can't force it either. */
+        /* vBeta28 FIX (i2): body used to also set its own "overflow-x: hidden"
+           here. That's redundant on top of html's rule above, but it wasn't
+           harmless — per the CSS overflow-axis coupling rule, giving BOTH
+           html and body a non-visible overflow-x forces overflow-y to
+           compute as "auto" on BOTH of them too, which makes body a second,
+           independent scroll container nested inside html's. Body never
+           actually scrolls (its height is auto, so it never overflows
+           itself) — but any position:sticky descendant (like the homepage's
+           .doc-jumpnav-wrap) resolves "nearest scrolling ancestor" to body
+           first, gets stuck tracking a scrollport that never moves, and so
+           never clamps: it just scrolls off with everything else. Leaving
+           the horizontal-scroll guard on html alone (the actual root
+           scroller) keeps the original fix intact with only one scroll
+           container in the chain. */
         html { overflow-x: hidden; }
-        body { overflow-x: hidden; max-width: 100vw; }
+        body { max-width: 100vw; }
         img, table { max-width: 100%; }
         .container, .editor-box, .preview-box, .modal-content, .inline-ux-modal { max-width: 100vw; box-sizing: border-box; }
         
@@ -437,23 +451,25 @@
            that circle used --hp-blue-tint/--hp-blue-ink — an arbitrary blue
            with no relationship to the brand. Swapped to a tint of the
            logo's own navy (#2c3e50) instead, so all 15 tiles now read as
-           branded rather than generically "blue app UI". Not reusing the
-           existing --vista-slate-tint token here on purpose — that token is
-           deliberately plain neutral grey (it equals --vista-surface-alt,
-           chosen for slate BUTTONS that want to look quiet), which would
-           read as an uncolored, flat circle here rather than a tinted one.
-           A direct low-opacity navy tint plus a soft matching glow gives
-           the icon its own visible color identity, the way the other 14
-           color-token pairs already do for buttons/chips. */
+           branded rather than generically "blue app UI".
+           vBeta28 FIX (i3): that low-opacity tint read as "disabled/locked"
+           rather than branded — a nearly-invisible wash with a faint line
+           icon inside reads as a greyed-out control, not a live one.
+           Inverted per feedback: the circle is now a SOLID navy fill (the
+           logo's own #2c3e50 — same value, just used as a background now
+           instead of a 10% tint) with the icon itself in white, plus a
+           soft navy glow around the circle so it lifts off the tile
+           instead of sitting flush. Reads as a real button, not a locked
+           icon. */
         .analytics-grid-btn .ag-icon {
             width: 32px; height: 32px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            background: rgba(44, 62, 80, 0.10); flex-shrink: 0;
-            box-shadow: 0 0 0 5px rgba(44, 62, 80, 0.05);
+            background: #2c3e50; flex-shrink: 0;
+            box-shadow: 0 2px 5px rgba(44, 62, 80, 0.35), 0 0 0 5px rgba(44, 62, 80, 0.08);
             transition: background 0.2s ease, box-shadow 0.2s ease;
         }
-        .analytics-grid-btn:hover .ag-icon { background: rgba(44, 62, 80, 0.15); box-shadow: 0 0 0 6px rgba(44, 62, 80, 0.08); }
-        .analytics-grid-btn .ag-icon svg { width: 17px; height: 17px; color: var(--vista-slate-ink, #2c3e50); }
+        .analytics-grid-btn:hover .ag-icon { background: #24313F; box-shadow: 0 2px 6px rgba(44, 62, 80, 0.45), 0 0 0 6px rgba(44, 62, 80, 0.12); }
+        .analytics-grid-btn .ag-icon svg { width: 17px; height: 17px; color: #FFFFFF; }
 
         /* ============================================================
            v73a/v74c TRIAL — Blocks Calculator
@@ -759,8 +775,19 @@
         button { font-family: inherit; cursor: pointer; border: none; padding: 12px; border-radius: var(--hp-radius-sm, 4px); font-weight: bold; width: 100%; margin-top: 15px; font-size: 15px; color: white; transition: transform 0.1s ease, background-color 0.2s ease, filter 0.15s ease; }
         .editor-box button:hover { filter: brightness(1.08); }
         button:active, .action-trio-btn:active, .pressed-state { /* v84: .action-trio-btn added - the signature tile is a <div>, so it never got press feedback */ transform: scale(0.95); opacity: 0.85; box-shadow: inset 0 3px 5px rgba(0,0,0,0.4)!important; }
-        .btn-add { background: #0B5A94; }
-        .btn-mortar { background: #6B3FA0; margin-top: 8px; }
+        /* vBeta28 FIX (i4): these were two unrelated solid fills (#0B5A94
+           dark blue, #6B3FA0 purple) with white text — the app's oldest,
+           pre-Vista button style, sitting right next to the Vista tint+ink
+           buttons everywhere else on the same screen. "Random colors" per
+           feedback. Add-to-Document is the form's main confirm action, so
+           it gets the same mint tint+ink the app already uses for other
+           confirm/convert actions (Convert to Sales/Tax Invoice, Boss
+           Mode). Auto-Calculate Mortar keeps its own purple identity —
+           people already associate that hue with mortar — but as a proper
+           tint+ink pair with a matching glow instead of a flat solid fill,
+           so both read as the same modern button language. */
+        .btn-add { background: var(--hp-mint-tint, #EBFCEC); color: var(--hp-mint-ink, #1C7A3E); box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,122,62,0.35); }
+        .btn-mortar { background: var(--hp-purple-tint, #F1E7FE); color: var(--hp-purple-ink, #6B3FA0); margin-top: 8px; box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(107,63,160,0.30); }
         
         .action-bar { position: fixed; bottom: 20px; left: 5%; width: 90%; display: flex; gap: 10px; z-index: 1000; font-family: var(--vista-font, inherit); }
         .btn-print { flex: 1; background: var(--vista-surface-alt, #1C7A3E); color: var(--vista-ink, white); font-size: 16px; box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35); padding: 15px; border-radius: 16px; margin: 0;}
@@ -1466,12 +1493,19 @@
         .cash-out-row { background:#FDECEC; }
         .cash-balance-chip { display:inline-block; padding:3px 10px; border-radius:12px; font-weight:bold; font-size:13px; }
         .cash-book-summary { display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
-        .cash-book-card { flex:1; min-width:120px; padding:12px 14px; border-radius:6px; text-align:center; }
+        .cash-book-card { flex:1; min-width:120px; padding:12px 14px; border-radius:10px; text-align:center; border:1.5px solid transparent; box-shadow:0 1px 2px rgba(28,28,39,0.04); }
         .cash-book-card .cb-label { font-size:11px; font-weight:bold; text-transform:uppercase; color:#6E6C80; }
         .cash-book-card .cb-val { font-size:20px; font-weight:bold; margin-top:4px; }
-        .cb-in { background:#EBFCEC; border-left:4px solid #1C7A3E; }
-        .cb-out { background:#FDECEC; border-left:4px solid #A32A2E; }
-        .cb-bal { background:#E8F5FF; border-left:4px solid #0B5A94; }
+        /* vBeta28 FIX (i1): these three used to be a flat tint fill with a
+           thin 4px left bar — "outdated", per feedback, next to the punchy
+           filled tint+ink buttons (Convert to Sales Invoice, Boss Mode)
+           elsewhere in the app. Same tint fill, but now a full ink-tinted
+           border plus the same soft ambient glow shadow used for those
+           buttons, so the card itself reads as a raised, modern stat tile
+           instead of a pastel box with a stripe. */
+        .cb-in { background:#EBFCEC; border-color:rgba(28,122,62,0.28); box-shadow:0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -10px rgba(28,122,62,0.45); }
+        .cb-out { background:#FDECEC; border-color:rgba(229,72,77,0.30); box-shadow:0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -10px rgba(229,72,77,0.40); }
+        .cb-bal { background:#E8F5FF; border-color:rgba(11,90,148,0.28); box-shadow:0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -10px rgba(11,90,148,0.40); }
         .cash-entry-form { background:#EDEDF1; border-radius:6px; padding:14px; margin-bottom:16px; }
 
         /* --- BATCH 6: SITE MANAGER --- */
@@ -2869,7 +2903,16 @@
             --cb-success: var(--vista-mint-text);
             --cb-danger: var(--vista-danger);
             --cb-warn: var(--vista-amber);
-            --cb-info: var(--vista-blue);
+            /* vBeta28 FIX (i1): was var(--vista-blue) — the raw, bright brand
+               blue meant for icons/accents, not body text. Used as-is for
+               the Cash in Hand figure it sat at ~2:1 contrast against that
+               card's light blue tint (barely different from the tint
+               itself, which is exactly why the card read as "unchanged" —
+               it was nearly invisible). --vista-blue-ink is the readable
+               ink half of the same blue pair, same as every other --cb-*
+               color here (success/danger already point at an -ink-style
+               tone, not the raw hue). */
+            --cb-info: var(--vista-blue-ink);
             --cb-radius: var(--vista-radius-lg);
             --cb-radius-sm: var(--vista-radius-sm);
         }
@@ -2943,18 +2986,24 @@
            directly on the dark glass. White-on-white. Their original inline
            color:#2c3e50 was already correct for that white card and is now left
            alone — removed the override rather than the markup. */
-        /* Summary cards — same glass-card treatment as the Tonnage summary
-           card, keeping the meaningful green/red/blue accent colors as
-           left-border + figure color rather than a solid light fill (which
-           would look like a broken white card floating on dark glass). */
-        #cashBookModal .cash-book-card {
-            background: var(--cb-glass); border: 1px solid var(--cb-border); border-radius: var(--cb-radius-sm);
-            border-left-width: 4px;
+        /* vBeta28 FIX (i1): this block predates the vBeta24 --cb-* token
+           remap and still describes the old --glass-* system ("dark glass"
+           card, colored left-border for definition against it). Since
+           --cb-glass now resolves to a plain light grey (var(--vista-
+           surface-alt)), applying it to ALL FOUR cards — including the
+           three that already carry their own green/red/blue tint fill from
+           the base rule above — was silently painting over that tint with
+           flat grey, leaving only a thin colored bar and colored text. That
+           IS the "colors have not changed" bug: the card itself never
+           showed its color at all. Scoped the grey glass fill to the one
+           neutral card (Net This Period, no cb-in/out/bal class) and let
+           the other three keep their own tint + border + glow from the
+           base rule untouched. */
+        #cashBookModal .cash-book-card { border-radius: var(--cb-radius-sm); }
+        #cashBookModal .cash-book-card:not(.cb-in):not(.cb-out):not(.cb-bal) {
+            background: var(--cb-glass); border: 1.5px solid var(--cb-border);
         }
         #cashBookModal .cash-book-card .cb-label { color: var(--cb-muted); }
-        #cashBookModal .cb-in { border-left-color: var(--cb-success); }
-        #cashBookModal .cb-out { border-left-color: var(--cb-danger); }
-        #cashBookModal .cb-bal { border-left-color: var(--cb-accent); }
         /* Category-spend chips (built inline in JS with light-theme colors) */
         #cashBookModal #cashBookCategoryTotals > div:first-child { color: var(--cb-muted) !important; }
         /* VISTA 6: the category-spend chips are built in JS with the app's
@@ -3595,7 +3644,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #6E6C80); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta27</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta28</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -7478,7 +7527,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta27";
+    const APP_VERSION = "vBeta28";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
