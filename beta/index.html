@@ -314,6 +314,19 @@
            screen backdrop — .bill-layout itself (the actual printed/PDF
            page) stays pure white, untouched. */
         .preview-box { flex: 1; background: var(--hp-surface-alt, #EDEDF1); padding: 0; width: 100%; display: block; box-sizing: border-box; }
+        /* vBeta35: Cart Tonnage tracker shows in exactly one of its two
+           spots — desktop (below Auto-Calculate Mortar) above 1100px,
+           mobile (centered, just above the preview) at/under 1100px —
+           matching the same breakpoint .container itself stacks at. Both
+           spans are kept in sync by one line in updateCartPricing() (JS),
+           so which one is visible is purely a display toggle. */
+        .live-tonnage-mobile { display: none; }
+        @media (max-width: 1100px) {
+            .live-tonnage-desktop { display: none; }
+            .live-tonnage-mobile { display: block; }
+        }
+        body.force-mobile-main .live-tonnage-desktop { display: none; }
+        body.force-mobile-main .live-tonnage-mobile { display: block; }
         
         @media (max-width: 1100px) {
             .container { flex-direction: column; width: 100%; margin: 0; }
@@ -447,8 +460,12 @@
            they inherit the closed-select's white text and become invisible. */
         .action-trio-btn select.trio-select option { color: #1C1C27; background: #FFFFFF; }
         .trio-signature { background: var(--hp-purple-tint); color: var(--hp-purple-ink); position: relative; }
-        .trio-bossmode { background: var(--hp-mint-tint); color: var(--hp-mint-ink); }
-        .trio-bossmode.is-on { background: var(--hp-mint); color: var(--hp-mint-ink); box-shadow: inset 0 0 0 2px var(--hp-mint-ink); }
+        /* vBeta35: was mint (green) — same family as the Convert buttons
+           directly above this row, so the two blurred together at a
+           glance. Switched to amber (yellow/orange) purely for visual
+           separation; Boss Mode's actual on/off behavior is unchanged. */
+        .trio-bossmode { background: var(--hp-amber-tint); color: var(--hp-amber-ink); }
+        .trio-bossmode.is-on { background: var(--hp-amber); color: var(--hp-amber-ink); box-shadow: inset 0 0 0 2px var(--hp-amber-ink); }
         .trio-void { background: var(--hp-danger-tint); color: var(--hp-danger-ink); }
 
         /* ============================================================
@@ -472,6 +489,31 @@
            document you're about to create", not just a thin gap between
            two identically-flat grey blocks. */
         .analytics-section { background: var(--hp-surface-alt); border-radius: var(--hp-radius-md, 16px); padding: 12px 14px; margin-bottom: 14px; border: 1.5px solid var(--hp-border); }
+        /* vBeta35: Reports & Tools and Blocks Calculator bodies given the
+           same dark fill as their own active .section-tab header, with
+           text flipped to white, so this whole area visually separates
+           itself from the rest of the home page — user's request. Scoped
+           to just these two card bodies by re-pointing the --hp-* aliases
+           they and their children already read (see the alias block near
+           the top of .editor-box), rather than touching any global token —
+           nothing outside these two elements is affected.
+           TO REVERT: delete this rule block; the cards fall straight back
+           to the normal var(--hp-surface-alt) look with zero other changes
+           needed anywhere. */
+        #analyticsSectionBody, #blocksCalcBody {
+            /* NOTE: background is the literal ink hex (matching
+               .section-tab.active's own var(--hp-ink)), not var(--hp-ink)
+               itself — this same rule redefines --hp-ink to white for
+               child text below, and a custom property's new value applies
+               across its whole declaring rule (not just "from here down"),
+               so var(--hp-ink) here would have resolved to white too and
+               produced invisible white-on-white text. */
+            background: var(--vista-ink, #1C1C27); color: #FFFFFF;
+            --hp-ink: #FFFFFF; --hp-ink-muted: rgba(255,255,255,0.72);
+            --hp-surface: rgba(255,255,255,0.09); --hp-surface-alt: rgba(255,255,255,0.14);
+            --hp-surface-alt-strong: rgba(255,255,255,0.20); --hp-border: rgba(255,255,255,0.28);
+        }
+        #analyticsSectionBody label, #blocksCalcBody label { color: rgba(255,255,255,0.72); }
         /* vBeta18 FIX: was justify-content:space-between — meant for a title+chevron
            pair, but Project Manager (the only remaining user of this class since
            Reports & Tools/Blocks Calculator moved to .section-tab in vBeta17) has
@@ -3841,7 +3883,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta34</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta35</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -4191,18 +4233,42 @@
             </button>
         </div>
 
+        <!-- vBeta35: jump-nav bar moved up here from inside #salesInputs,
+             per user request ("info section should be below the tab
+             bar"), so it now sits above Info instead of below it. It's
+             still functionally scoped to the sales/quotation tab system
+             (Pricing/Customer/Product/Payment/Discount&Docs only exist
+             inside #salesInputs) — for voucher docs (RCM/EXP), which
+             don't have that tab system, switchAppMode() hides every pill
+             except Info, since Info is the only thing here that applies
+             to them. See switchAppMode() (JS) for the pill-hiding logic. -->
+        <div class="doc-jumpnav-wrap">
+            <div class="doc-jumpnav" id="docJumpNav">
+                <div class="doc-jumpnav-item active" data-target="docSectionInfo" onclick="jumpToDocSection('docSectionInfo')">Info</div>
+                <div class="doc-jumpnav-item" data-target="docSectionCustomer" onclick="jumpToDocSection('docSectionCustomer')">Customer</div>
+                <div class="doc-jumpnav-item" data-target="docSectionPricing" onclick="jumpToDocSection('docSectionPricing')">Pricing</div>
+                <div class="doc-jumpnav-item" data-target="docSectionProduct" onclick="jumpToDocSection('docSectionProduct')">Product</div>
+                <div class="doc-jumpnav-item" data-target="docSectionPayment" onclick="jumpToDocSection('docSectionPayment')">Payment</div>
+                <div class="doc-jumpnav-item" data-target="docSectionDiscountDocs" onclick="jumpToDocSection('docSectionDiscountDocs')">Discount &amp; Docs</div>
+            </div>
+        </div>
+
         <!-- vBeta34: Company Address / Document No. / Date grouped into
              their own section ("Info" — the user's suggested name, since
              "Header" would be too long a label to sit alongside Pricing/
              Customer/Product) so the document editor reads top-to-bottom
-             as Info -> Pricing -> Customer -> Product. Styled like the
-             .doc-section tab cards below for visual consistency, but has
-             to stay OUTSIDE the #salesInputs tab system: #salesInputs
-             (Pricing/Customer/Product/Payment/Discount&Docs) only renders
-             for sales-type documents (QUO/SAL/INV) — vouchers (ADV/RCP/
-             EXP/RCM) use the separate #voucherInputs block instead, and
-             this Info card is needed by BOTH, so it lives in the shared
-             area above that fork rather than inside either one. -->
+             as Info -> Customer -> Pricing -> Product (order per vBeta35).
+             Styled like the .doc-section tab cards below, and — vBeta35 —
+             wrapped in its own .doc-sections-wrap for the same tinted
+             backdrop those cards sit on, so Info now visually matches
+             them exactly. Still has to stay OUTSIDE the #salesInputs tab
+             system: #salesInputs (Pricing/Customer/Product/Payment/
+             Discount&Docs) only renders for sales-type documents (QUO/
+             SAL/INV) — vouchers (ADV/RCP/EXP/RCM) use the separate
+             #voucherInputs block instead, and this Info card is needed by
+             BOTH, so it lives in the shared area above that fork rather
+             than inside either one. -->
+        <div class="doc-sections-wrap" style="margin-bottom:0;">
         <div class="doc-section" id="docSectionInfo">
             <div class="doc-section-title">ℹ️ Info</div>
             <div style="margin-bottom:14px;">
@@ -4252,86 +4318,29 @@
             </div>
         </div>
         </div><!-- /docSectionInfo -->
+        </div><!-- /doc-sections-wrap (Info) -->
 
         <div id="salesInputs">
-            <!-- Vista 4 (carried into Vista 5): Customer/Product/Payment sticky jump-nav + isolated
+            <!-- Vista 4 (carried into Vista 5): Customer/Product/Payment isolated
                  section cards, scoped to the sales/quotation flow only.
                  Scrollspy (see docSectionObserver in JS) keeps the active
                  pill in sync with scroll position; clicking a pill jumps
-                 straight there. Purely a visual/navigation layer — no
-                 existing IDs, onclicks or field logic were touched, so
-                 nothing downstream needed to change. -->
-            <div class="doc-jumpnav-wrap">
-                <div class="doc-jumpnav" id="docJumpNav">
-                    <!-- vBeta34: Info added as the first stop, pointing at
-                         #docSectionInfo above (Company Address/Doc No./
-                         Date) — it lives outside #salesInputs (see that
-                         card's own comment for why) but the scrollspy here
-                         is just an IntersectionObserver over whatever
-                         .data-target ids are listed, so pointing one at an
-                         element outside this wrapper works the same as any
-                         other pill. -->
-                    <div class="doc-jumpnav-item active" data-target="docSectionInfo" onclick="jumpToDocSection('docSectionInfo')">Info</div>
-                    <div class="doc-jumpnav-item" data-target="docSectionPricing" onclick="jumpToDocSection('docSectionPricing')">Pricing</div>
-                    <div class="doc-jumpnav-item" data-target="docSectionCustomer" onclick="jumpToDocSection('docSectionCustomer')">Customer</div>
-                    <div class="doc-jumpnav-item" data-target="docSectionProduct" onclick="jumpToDocSection('docSectionProduct')">Product</div>
-                    <div class="doc-jumpnav-item" data-target="docSectionPayment" onclick="jumpToDocSection('docSectionPayment')">Payment</div>
-                    <div class="doc-jumpnav-item" data-target="docSectionDiscountDocs" onclick="jumpToDocSection('docSectionDiscountDocs')">Discount &amp; Docs</div>
-                </div>
-            </div>
+                 straight there. vBeta35: the jump-nav bar itself
+                 (.doc-jumpnav-wrap / #docJumpNav) moved OUT of here, up to
+                 the shared area above #docSectionInfo — see the comment
+                 there for why. Nothing else here changed. -->
 
             <!-- Tinted backdrop so the white section cards actually read as
                  separate boxes rather than blending into .editor-box's own
                  white background — matches the reviewed mockup's grey
                  page / white card contrast. -->
             <div class="doc-sections-wrap">
-            <div class="doc-section" id="docSectionPricing">
-            <!-- vBeta18: first tab in the 4-tab restructure — the Pricing
-                 Tier bar moved here verbatim from above the jump-nav (see
-                 the vBeta18 comment near the legacy tier dropdown) so tier
-                 selection is its own unhurried tab instead of one more
-                 thing crammed above the fold before Customer. -->
-            <div class="doc-section-title">💰 Pricing</div>
-            <!-- vBeta34: "⚙️ Pricing & Items" moved in here from its old
-                 standalone spot above the Doc No./Date row, per user
-                 request — it's about managing pricing/items, so it belongs
-                 inside the Pricing tab rather than floating above it. -->
-            <div class="master-bar" style="margin-top:0;">
-                <div style="flex:1;">
-                    <button class="btn-engine" onclick="openPricingEngine()">⚙️ Pricing & Items</button>
-                </div>
-            </div>
-            <div style="margin-top:12px;">
-                <label style="margin-top:0; margin-bottom:6px; color:var(--hp-blue-ink);">💰 Pricing Tier</label>
-                <!-- vBeta34: min-width:0 lets these flex:1 buttons actually
-                     shrink below their content's natural width instead of
-                     overflowing the row (the browser default is min-width:auto,
-                     which floors a flex item at its content size — the real
-                     reason "Sub-Dealer" had room to wrap on some devices).
-                     white-space:nowrap (also set in the .tier-bar-btn class)
-                     plus the tighter padding/font-size here mean it now
-                     shrinks as a single line instead of breaking. -->
-                <div id="tierBar" style="display:flex; gap:4px;">
-                    <button type="button" class="tier-bar-btn" data-tier="Customer" onclick="selectTier('Customer')" style="flex:1; min-width:0; margin:0; padding:10px 2px; font-size:11.5px; font-weight:bold; border-radius:5px; white-space:nowrap;">Customer</button>
-                    <button type="button" class="tier-bar-btn" data-tier="Engineer" onclick="selectTier('Engineer')" style="flex:1; min-width:0; margin:0; padding:10px 2px; font-size:11.5px; font-weight:bold; border-radius:5px; white-space:nowrap;">Engineer</button>
-                    <button type="button" class="tier-bar-btn" data-tier="Builder" onclick="selectTier('Builder')" style="flex:1; min-width:0; margin:0; padding:10px 2px; font-size:11.5px; font-weight:bold; border-radius:5px; white-space:nowrap;">Builder</button>
-                    <button type="button" class="tier-bar-btn" data-tier="Sub-Dealer" onclick="selectTier('Sub-Dealer')" style="flex:1; min-width:0; margin:0; padding:10px 2px; font-size:11.5px; font-weight:bold; border-radius:5px; white-space:nowrap;">Sub-Dealer</button>
-                </div>
-                <!-- Hidden value holder read by getCurrentTier() — kept as a real
-                     <select> (not a bare JS variable) so it round-trips through
-                     the same "read the DOM" pattern the rest of the pricing
-                     code already uses, and so nothing breaks if some other
-                     part of the app ever reads #tierBarActive directly. -->
-                <select id="tierBarActive" style="display:none;">
-                    <option value="Customer" selected>Customer</option>
-                    <option value="Engineer">Engineer</option>
-                    <option value="Builder">Builder</option>
-                    <option value="Sub-Dealer">Sub-Dealer</option>
-                </select>
-            </div>
-            </div><!-- /docSectionPricing -->
-
             <div class="doc-section" id="docSectionCustomer">
+            <!-- vBeta35: Customer now comes before Pricing (was Pricing,
+                 Customer, Product — user asked for Info -> Customer ->
+                 Pricing -> Product). Only the DOM order of this card and
+                 #docSectionPricing changed; the jump-nav pill order above
+                 was updated to match, nothing inside either card moved. -->
             <!-- vBeta15: section title mirrors the jump-nav pill's own label
                  (see #docJumpNav above) so scrolling deep into a long section
                  still shows which one you're in, without having to look back
@@ -4465,6 +4474,69 @@
             </div>
             </div><!-- /docSectionCustomer -->
 
+            <div class="doc-section" id="docSectionPricing">
+            <!-- vBeta18: first tab in the 4-tab restructure — the Pricing
+                 Tier bar moved here verbatim from above the jump-nav (see
+                 the vBeta18 comment near the legacy tier dropdown) so tier
+                 selection is its own unhurried tab instead of one more
+                 thing crammed above the fold before Customer.
+                 vBeta35: reordered to come after Customer (see that
+                 card's comment); the "Pricing Tier" label is hidden per
+                 user request (code kept intact — see style="display:none"
+                 below, remove it to bring the label back); and the
+                 Retail/Full Load toggle moved in here from the Product
+                 section, right below the Pricing & Items button, since
+                 it's really a pricing choice too. -->
+            <div class="doc-section-title">💰 Pricing</div>
+            <!-- vBeta34: "⚙️ Pricing & Items" moved in here from its old
+                 standalone spot above the Doc No./Date row, per user
+                 request — it's about managing pricing/items, so it belongs
+                 inside the Pricing tab rather than floating above it. -->
+            <div class="master-bar" style="margin-top:0;">
+                <div style="flex:1;">
+                    <button class="btn-engine" onclick="openPricingEngine()">⚙️ Pricing & Items</button>
+                </div>
+            </div>
+            <div style="margin-top:12px;">
+                <label style="display:none; margin-top:0; margin-bottom:6px; color:var(--hp-blue-ink);">💰 Pricing Tier</label>
+                <!-- vBeta34: min-width:0 lets these flex:1 buttons actually
+                     shrink below their content's natural width instead of
+                     overflowing the row (the browser default is min-width:auto,
+                     which floors a flex item at its content size — the real
+                     reason "Sub-Dealer" had room to wrap on some devices).
+                     white-space:nowrap (also set in the .tier-bar-btn class)
+                     plus the tighter padding/font-size here mean it now
+                     shrinks as a single line instead of breaking. -->
+                <div id="tierBar" style="display:flex; gap:4px;">
+                    <button type="button" class="tier-bar-btn" data-tier="Customer" onclick="selectTier('Customer')" style="flex:1; min-width:0; margin:0; padding:10px 2px; font-size:11.5px; font-weight:bold; border-radius:5px; white-space:nowrap;">Customer</button>
+                    <button type="button" class="tier-bar-btn" data-tier="Engineer" onclick="selectTier('Engineer')" style="flex:1; min-width:0; margin:0; padding:10px 2px; font-size:11.5px; font-weight:bold; border-radius:5px; white-space:nowrap;">Engineer</button>
+                    <button type="button" class="tier-bar-btn" data-tier="Builder" onclick="selectTier('Builder')" style="flex:1; min-width:0; margin:0; padding:10px 2px; font-size:11.5px; font-weight:bold; border-radius:5px; white-space:nowrap;">Builder</button>
+                    <button type="button" class="tier-bar-btn" data-tier="Sub-Dealer" onclick="selectTier('Sub-Dealer')" style="flex:1; min-width:0; margin:0; padding:10px 2px; font-size:11.5px; font-weight:bold; border-radius:5px; white-space:nowrap;">Sub-Dealer</button>
+                </div>
+                <!-- Hidden value holder read by getCurrentTier() — kept as a real
+                     <select> (not a bare JS variable) so it round-trips through
+                     the same "read the DOM" pattern the rest of the pricing
+                     code already uses, and so nothing breaks if some other
+                     part of the app ever reads #tierBarActive directly. -->
+                <select id="tierBarActive" style="display:none;">
+                    <option value="Customer" selected>Customer</option>
+                    <option value="Engineer">Engineer</option>
+                    <option value="Builder">Builder</option>
+                    <option value="Sub-Dealer">Sub-Dealer</option>
+                </select>
+            </div>
+            <!-- vBeta35: Retail vs Full Load — moved here verbatim from the
+                 Product section (was right above the Size+Brand picker).
+                 Same IDs/onclick/behavior, purely relocated. Still the
+                 rate suggested when a block product is picked, still
+                 defaults to Retail, still never silently re-prices
+                 anything already in the cart. -->
+            <div style="display:flex; gap:8px; margin-top:12px;">
+                <button type="button" id="btnDeliveryRetail" onclick="setDeliveryMode('Retail')" style="flex:1; margin:0; padding:9px; font-size:13px; background:var(--hp-ink); border:2px solid var(--hp-ink); color:#FFFFFF; font-weight:bold; border-radius:var(--hp-radius-sm);">🏬 Retail</button>
+                <button type="button" id="btnDeliveryLoad" onclick="setDeliveryMode('Wholesale')" style="flex:1; margin:0; padding:9px; font-size:13px; background:var(--hp-surface-alt-strong); border:2px solid transparent; color:var(--hp-ink-muted); font-weight:bold; border-radius:var(--hp-radius-sm);">🚛 Full Load</button>
+            </div>
+            </div><!-- /docSectionPricing -->
+
             <div class="doc-section" id="docSectionProduct">
             <div class="doc-section-title">📦 Product</div>
             <div id="taxToggleDiv" style="background: var(--hp-amber-tint); padding: 10px 13px; border-radius: var(--hp-radius-sm); margin-top: 12px; border: none;">
@@ -4474,24 +4546,24 @@
             </div>
             <hr style="border-color:var(--hp-border); margin: 14px 0;">
             
-            <label style="color:var(--hp-blue-ink); display:flex; justify-content: space-between; margin-top:0; margin-bottom: 8px;">
+            <!-- vBeta35: "Add Product / Advance" label hidden per user
+                 request (kept in the DOM, just display:none, in case it's
+                 wanted back) — this row now only exists as the anchor
+                 point it always structurally was; the actual tonnage
+                 tracker moved out of it entirely, see the two
+                 .live-tonnage-display spans (one near #btnMortar for
+                 desktop, one just above .preview-box for mobile) and the
+                 media-query pair right after .preview-box's own CSS rule
+                 that shows exactly one of them at a time. -->
+            <label style="display:none; color:var(--hp-blue-ink); justify-content: space-between; margin-top:0; margin-bottom: 8px;">
                 <span>Add Product / Advance</span>
-                <span id="liveTonnageTracker" style="color:var(--hp-amber-ink); font-weight:normal;">Cart Tonnage: 0.00 T</span>
             </label>
 
-            <!-- Retail vs Full Load — manual choice, no dropdown, defaults
-                 to Retail. This is the actual rate that gets suggested in
-                 the box below when you pick a block product — it is NOT
-                 automatically guessed from cart tonnage anymore. Once an
-                 item is added to the cart, its price never changes because
-                 of this toggle or anything else, unless "Allow auto-update
-                 price in cart" is explicitly turned on in Pricing settings
-                 (off by default). -->
-            <div style="display:flex; gap:8px; margin-bottom:10px;">
-                <button type="button" id="btnDeliveryRetail" onclick="setDeliveryMode('Retail')" style="flex:1; margin:0; padding:9px; font-size:13px; background:var(--hp-ink); border:2px solid var(--hp-ink); color:#FFFFFF; font-weight:bold; border-radius:var(--hp-radius-sm);">🏬 Retail</button>
-                <button type="button" id="btnDeliveryLoad" onclick="setDeliveryMode('Wholesale')" style="flex:1; margin:0; padding:9px; font-size:13px; background:var(--hp-surface-alt-strong); border:2px solid transparent; color:var(--hp-ink-muted); font-weight:bold; border-radius:var(--hp-radius-sm);">🚛 Full Load</button>
-            </div>
-            
+            <!-- vBeta35: Retail vs Full Load toggle moved out of here into
+                 the Pricing tab (#docSectionPricing), per user request —
+                 it's the same #btnDeliveryRetail/#btnDeliveryLoad
+                 elements, just relocated, not duplicated. -->
+
             <!-- v70: SIZE GRID + BRAND PICKER — replaces scrolling through
                  8 separate "AAC Block N Inch (Brand)" dropdown entries with
                  a 4-cell size grid plus one brand dropdown that compose the
@@ -4512,8 +4584,15 @@
                  rollback. -->
             <div id="blockPickerBox" style="background:var(--hp-surface-alt); border:none; border-radius:var(--hp-radius-md,16px); padding:12px 14px; margin-bottom:10px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <label style="margin:0; color:var(--hp-ink-muted);">🧱 AAC Block — Size &amp; Brand</label>
-                    <a href="javascript:void(0)" onclick="toggleLegacyProductUI(true)" style="font-size:10px; color:var(--hp-ink-muted); text-decoration:underline;">Use old dropdown instead</a>
+                    <label style="margin:0; color:var(--hp-ink-muted); white-space:nowrap;">🧱 AAC Block — Size &amp; Brand</label>
+                    <!-- vBeta35: "Use old dropdown instead" hidden per user
+                         request — the link is untouched (toggleLegacyProductUI
+                         still works, the legacy dropdown below is still fully
+                         intact), just no longer shown here. Also crowded the
+                         label onto two lines on narrow phones; hiding it lets
+                         the label sit on one line without needing its own fix.
+                         TO REVERT: remove style="display:none" below. -->
+                    <a href="javascript:void(0)" onclick="toggleLegacyProductUI(true)" style="display:none; font-size:10px; color:var(--hp-ink-muted); text-decoration:underline;">Use old dropdown instead</a>
                 </div>
                 <div id="blockSizeGrid" style="display:flex; gap:6px; margin-bottom:8px;">
                     <button type="button" class="size-grid-btn" data-size="4" onclick="selectBlockSize(4)" style="flex:1; margin:0; padding:10px 4px; font-size:14px; font-weight:bold; border-radius:var(--hp-radius-sm); background:var(--hp-surface); border:2px solid var(--hp-border); color:var(--hp-ink-muted);">4"</button>
@@ -4600,6 +4679,12 @@
             <button class="btn-add" id="btnAddItemMain" onclick="addItem()" style="margin-top:10px;">+ Add to Document</button>
             <!-- U10: Mortar button sits below Add so workflow is: pick product → qty → rate → Add → then auto-mortar if needed -->
             <button class="btn-mortar" id="btnMortar" onclick="autoAddMortar()" style="margin-top:8px;">🪄 Auto-Calculate Mortar</button>
+            <!-- vBeta35: Cart Tonnage tracker's desktop home — see the
+                 matching mobile instance just above .preview-box, and the
+                 .live-tonnage-display media-query pair that shows only one
+                 of the two at a time. Both spans are kept in sync by the
+                 same single line in updateLiveTonnage() (JS). -->
+            <div class="live-tonnage-display live-tonnage-desktop" style="text-align:center; margin-top:8px; color:var(--hp-amber-ink); font-weight:bold; font-size:12.5px;">Cart Tonnage: 0.00 T</div>
 
             <!-- F22: Multi-Advance Linking (for INV/SAL) -->
             <!-- #4: Discount / Round-Off — reduces the printed invoice total
@@ -4805,6 +4890,12 @@
             </div>
         </div>
     </div>
+
+    <!-- vBeta35: Cart Tonnage tracker's mobile home — see the matching
+         desktop instance below #btnMortar, and the .live-tonnage-display
+         media-query pair (near .preview-box's own CSS rule) that shows
+         only one of the two at a time. -->
+    <div class="live-tonnage-display live-tonnage-mobile" style="text-align:center; margin:0 0 10px; color:var(--hp-amber-ink); font-weight:bold; font-size:12.5px;">Cart Tonnage: 0.00 T</div>
 
     <div class="preview-box">
         <!-- v66: PREVIEW FIT MODE.
@@ -7921,7 +8012,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta34";
+    const APP_VERSION = "vBeta35";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -10333,6 +10424,24 @@
     // collapses the card + its nav pill if not — so a Quotation's Payment
     // card doesn't sit there as an empty white box.
     function syncDocSectionVisibility() {
+        // vBeta35: getComputedStyle(child).display does NOT inherit "none"
+        // from a hidden ANCESTOR — it's the element's own computed value,
+        // unaffected by rendering — so once the jump-nav pills moved
+        // outside #salesInputs (see that card's own comment near
+        // #docSectionInfo) this loop could no longer tell "genuinely empty
+        // card" apart from "whole #salesInputs is display:none" (RCM/EXP)
+        // purely from each card's own children. Before that move this
+        // never mattered: the whole nav bar sat inside #salesInputs too,
+        // so it was invisible right along with it. Explicit short-circuit
+        // restores the same end result for RCM/EXP.
+        let salesHidden = document.getElementById('salesInputs').style.display === 'none';
+        if (salesHidden) {
+            ['docSectionPricing', 'docSectionCustomer', 'docSectionProduct', 'docSectionPayment', 'docSectionDiscountDocs'].forEach(function(id) {
+                let pill = document.querySelector('.doc-jumpnav-item[data-target="' + id + '"]');
+                if (pill) pill.style.display = 'none';
+            });
+            return;
+        }
         ['docSectionPricing', 'docSectionCustomer', 'docSectionProduct', 'docSectionPayment', 'docSectionDiscountDocs'].forEach(function(id) {
             let sec = document.getElementById(id);
             if (!sec) return;
@@ -14024,7 +14133,12 @@
     // updates live regardless, purely for visibility.
     function updateCartPricing() {
         let currentTonnage = calculateTotalTonnage();
-        document.getElementById('liveTonnageTracker').innerText = `Cart Tonnage: ${currentTonnage.toFixed(2)} T`;
+        // vBeta35: now two on-page copies (desktop, near Auto-Calculate
+        // Mortar; mobile, above the preview) shown one-at-a-time via CSS —
+        // .live-tonnage-display targets both, not just the old single id.
+        document.querySelectorAll('.live-tonnage-display').forEach(el => {
+            el.innerText = `Cart Tonnage: ${currentTonnage.toFixed(2)} T`;
+        });
 
         if (pricingConfig.allowAutoUpdatePriceInCart) {
             cart.forEach(item => {
@@ -14689,6 +14803,16 @@
 
         sIn.style.display = isSales ? 'block' : 'none';
         vIn.style.display = (isVoucher || isCrn) ? 'block' : 'none';
+        // vBeta35: the jump-nav bar now lives in the shared area above
+        // #docSectionInfo (see that card's own comment) so it's visible
+        // for every doc type. Its Customer/Pricing/Product/Payment/
+        // Discount&Docs pills — collapsed to just Info for RCM/EXP, where
+        // #salesInputs above is hidden — are handled by
+        // syncDocSectionVisibility(), which already runs after every
+        // switchAppMode() call (see the wrap lower in this file) and now
+        // short-circuits correctly for that case; the Info pill isn't in
+        // its list, so it always stays visible.
+
         // CRN shows both layouts
         sLay.style.display = isSales ? 'flex' : 'none';
         vLay.style.display = isVoucher ? 'block' : 'none';
@@ -16454,6 +16578,13 @@
     function renderBundleChips() {
         var host = document.getElementById('bundleChips');
         if (!host) return;
+        // vBeta35: Bundles ("Save cart as bundle" + saved-bundle chips)
+        // hidden entirely per user request ("i do not want it now") — the
+        // feature itself (getItemBundles/saveItemBundles/applyItemBundle/
+        // saveCurrentCartAsBundle/deleteItemBundle) is fully intact and
+        // untouched, this is the only line stopping it from ever showing.
+        // TO REVERT: delete this early return.
+        host.style.display = 'none'; return;
         var typeEl = document.getElementById('docType');
         if (!typeEl || ['INV', 'SAL', 'QUO', 'CRN'].indexOf(typeEl.value) === -1) {
             host.style.display = 'none';
