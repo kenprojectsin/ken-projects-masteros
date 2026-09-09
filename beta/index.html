@@ -721,6 +721,23 @@
         .section-tab-body.open { display: block; margin-top: -10px; }
         #analyticsSectionBody.open { border-top-left-radius: 0; }
         #blocksCalcBody.open { border-top-right-radius: 0; }
+        /* vBeta47: Reports & Tools / Blocks Calculator already collapse when
+           their own tab is tapped again — but that tab scrolls out of view
+           once you're deep in a long grid (Blocks Calculator especially, once
+           several wall rows are added), so closing meant scrolling back up
+           first. This mirrors the tab's own toggle right where you actually
+           are when you're done — centered, subtle (this is a dismiss action,
+           not a primary one), sitting on the section's own dark background. */
+        .section-collapse-btn {
+            display: block; width: auto; margin: 14px auto 0; padding: 8px 20px;
+            background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.72);
+            border: none; border-radius: var(--hp-radius-pill, 999px);
+            font-size: 12px; font-weight: 700; letter-spacing: 0.2px; cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: none;
+        }
+        .section-collapse-btn:hover { background: rgba(255,255,255,0.14); filter: none; }
+        .section-collapse-btn:active { background: rgba(255,255,255,0.2); transform: scale(0.97); opacity: 1; box-shadow: none !important; }
         .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
         .analytics-grid-btn {
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
@@ -4139,7 +4156,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta46</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta47</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -4291,6 +4308,7 @@
                  button that already lived there, since backup/restore
                  belongs with the rest of Data & Sync rather than floating
                  under the Reports & Tools grid. -->
+            <button type="button" class="section-collapse-btn" onclick="toggleAnalyticsSection()">▲ Close</button>
         </div>
 
         <!-- v73a TRIAL FEATURE — BLOCKS CALCULATOR
@@ -4359,6 +4377,7 @@
                     <button type="button" id="btnBlocksToSal" onclick="convertBlocksCalcToDoc('SAL')" style="flex:1; margin:0; background:var(--hp-mint-tint); color:var(--hp-mint-ink); font-size:12px; padding:10px;" disabled>🧾 Convert to Sales Invoice</button>
                 </div>
                 <div id="blocksCalcQueueBanner" style="display:none; margin-top:10px; background:var(--hp-amber-tint); color:var(--hp-amber-ink); padding:8px 10px; border-radius:5px; font-size:12px; font-weight:bold; text-align:center;"></div>
+            <button type="button" class="section-collapse-btn" onclick="toggleBlocksCalcCollapse()">▲ Close</button>
         </div><!-- /blocksCalcBody -->
 
         <!-- vBeta37: Doc Type selector, its Convert/Amend row, and the Pen
@@ -8387,7 +8406,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta46";
+    const APP_VERSION = "vBeta47";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
