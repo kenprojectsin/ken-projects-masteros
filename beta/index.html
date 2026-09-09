@@ -205,7 +205,14 @@
            declaration. .bill-layout explicitly resets both of these back
            to the old stack/behavior so the printed/PDF document is
            completely unaffected — see the comment there. */
-        body { font-family: 'Lato', -apple-system, 'Segoe UI', sans-serif; font-synthesis: none; background: #E8F5FF; margin: 0; padding: 0; padding-bottom: 100px; }
+        /* vBeta38 nf7: body used to default to #E8F5FF (a leftover legacy
+           blue-tint page background from before the Vista grey design
+           system) — the fixed action-bar's own reserved bottom-padding
+           (100px) meant that pale blue was exactly what showed through
+           just above the Save/PDF/Print bar whenever content didn't fully
+           reach it. Switched to the same neutral grey the rest of the app
+           already sits on. */
+        body { font-family: 'Lato', -apple-system, 'Segoe UI', sans-serif; font-synthesis: none; background: var(--vista-surface-alt, #EDEDF1); margin: 0; padding: 0; padding-bottom: 100px; }
         /* v63: GLOBAL HORIZONTAL-SCROLL SAFETY NET.
            Root cause of "not mobile responsive" reports: individual pieces of UI
            (added across many feature passes) can be a few px wider than the
@@ -284,6 +291,31 @@
             transition: background .18s ease, color .18s ease;
         }
         .doc-jumpnav-item.active { background: var(--hp-ink); color: #FFFFFF; }
+        /* vBeta38 nf6: a second, much smaller section-nav sitting right
+           where the form sections end and the live document preview
+           begins — for someone who's scrolled well past the top jumpnav
+           and wants to jump straight to another section without scrolling
+           all the way back up. It lives in the markup as a SIBLING of
+           .editor-box and .preview-box (same place .live-tonnage-mobile
+           already sits, always display:none there for exactly this
+           reason) — at desktop widths, .container lays those two out as a
+           2-column flex ROW, so anything visible between them becomes an
+           unwanted THIRD column and the whole row overflows past the
+           viewport (caught during regression testing: every doc type
+           failed the print-safety pixel-diff, even though the print path
+           itself never touches this element — the overflow alone was
+           enough to shift .bill-layout's rendered size). display:none by
+           default; only switched on inside the @media(max-width:1100px)
+           mobile layout below, where .container stacks to a single column
+           and this can safely sit in normal flow, sticky near the bottom
+           so it doesn't just scroll away before it's ever useful. */
+        .doc-quicknav-wrap { display: none; justify-content: center; margin: 14px 0; }
+        .doc-quicknav { display: flex; align-items: center; gap: 10px; background: var(--hp-surface); padding: 6px 10px; border-radius: 20px; box-shadow: 0 2px 12px -2px rgba(28,28,39,0.25), 0 0 0 1.5px var(--hp-border); }
+        .doc-quicknav-arrow { width: auto; margin: 0; padding: 2px 4px; background: none; box-shadow: none; color: var(--hp-ink-muted); font-size: 18px; font-weight: bold; line-height: 1; }
+        .doc-quicknav-arrow:active { transform: scale(0.85); }
+        .doc-quicknav-dots { display: flex; align-items: center; gap: 7px; }
+        .doc-quicknav-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--hp-border); cursor: pointer; transition: background .15s ease, transform .15s ease; }
+        .doc-quicknav-dot.active { background: var(--hp-ink); transform: scale(1.4); }
         .doc-sections-wrap {
             background: var(--hp-surface-alt); border-radius: var(--hp-radius-lg);
             padding: 14px 14px 2px; margin: 0 -6px 4px;
@@ -302,7 +334,23 @@
            Zeroing both paddings (the two wraps already touch with no
            space between them — see the squared-off corners above) leaves
            just that same 16px card margin, matching every other gap. */
-        .info-sections-wrap { border-radius: var(--hp-radius-lg) var(--hp-radius-lg) 0 0; padding-bottom: 0; }
+        /* vBeta38 nf4: #docSectionInfo's own margin-bottom (16px, from the
+           shared .doc-section rule) was collapsing straight through this
+           wrap's zero-padding bottom edge — CSS margin collapsing — so the
+           wrap's own grey background never actually painted across that
+           16px gap. What showed there instead was .editor-box's white
+           background peeking through underneath, reading as a seam/stripe
+           between the Info and Customer cards even though both wraps are
+           the same grey. display:flow-root establishes a new block
+           formatting context, which stops the collapse: the 16px stays
+           the same visible size (still just the one card's normal
+           margin-bottom, no added space) but now renders as part of THIS
+           wrap's own box, filled with its real grey background — same
+           continuous-grey look Customer/Pricing/Product already have
+           between each other (they never had this problem since they're
+           siblings inside one shared wrap, not two separate wrap elements
+           butted together). */
+        .info-sections-wrap { border-radius: var(--hp-radius-lg) var(--hp-radius-lg) 0 0; padding-bottom: 0; display: flow-root; }
         #salesInputs > .doc-sections-wrap { border-radius: 0 0 var(--hp-radius-lg) var(--hp-radius-lg); margin-top: 0; padding-top: 0; }
         .doc-section {
             background: var(--hp-surface); border-radius: var(--hp-radius-lg);
@@ -317,8 +365,20 @@
             /* On mobile .editor-box loses its own scroll container (becomes
                position:relative/overflow-visible — see the 1100px breakpoint
                above), so the nav sticks to the page viewport instead. Give
-               it a touch more breathing room there. */
-            .doc-jumpnav-wrap { top: 0; padding-top: 6px; margin: -6px -6px 14px; padding-left: 6px; padding-right: 6px; }
+               it a touch more breathing room there.
+               vBeta38 nf4: the -6px/-6px margin here already stretches this
+               wrap's own outer edge to match the cards' (both extend the
+               same amount past the normal content column — see
+               .doc-sections-wrap's own -6px margin). But this rule ALSO put
+               6px of padding back on the left/right, which just re-narrowed
+               the actual visible pill (.doc-jumpnav) by that same 6px on
+               each side — a mismatch invisible in the wrap's own box model
+               but obvious once you compare the dark pill's edges against
+               the card's edges below it. Dropped so the pill fills the
+               wrap's full (card-matching) width. padding-top stays: that's
+               vertical breathing room under the sticky top edge, unrelated
+               to this. */
+            .doc-jumpnav-wrap { top: 0; padding-top: 6px; margin: -6px -6px 14px; }
         }
         /* vBeta34: was "transparent", letting the app-wide body blue
            (#E8F5FF) show through behind the white A4 preview sheet — user
@@ -347,6 +407,13 @@
         @media (max-width: 1100px) {
             .container { flex-direction: column; width: 100%; margin: 0; }
             .editor-box { flex: none; width: 100%; position: relative; top: 0; max-height: none; overflow-y: visible; border-radius: 0; }
+            /* vBeta38 nf6: only here, where .container stacks to a single
+               column (.editor-box/.preview-box no longer share a flex
+               row), is it safe to actually show this — see the base
+               .doc-quicknav-wrap rule for why it's display:none above
+               this breakpoint. Sticky near the viewport bottom so it
+               doesn't just scroll away the moment it's reached. */
+            .doc-quicknav-wrap { display: flex; position: sticky; bottom: 66px; z-index: 900; }
             .preview-box { padding: 20px 10px; }
         }
 
@@ -469,7 +536,12 @@
         /* ============================================================
            U7: Signature / Boss Mode / Void — uniform grouped row
         ============================================================ */
-        .action-trio-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; margin-bottom: 4px; }
+        /* vBeta38 nf3: this row previously sat directly on .doc-header-card's
+           own grey ground with no surface of its own — same grey behind
+           tinted pills read as unfinished/un-enclosed. Wrapping it in its
+           own white card (like doctype-spotlight's dark pill already has
+           its own enclosed look) gives it a matching, distinct surface. */
+        .action-trio-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; margin-bottom: 0; background: var(--hp-surface); padding: 10px; border-radius: var(--hp-radius-sm, 12px); box-shadow: inset 0 0 0 1.5px var(--hp-border); }
         .action-trio-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 6px; border-radius: var(--hp-radius-sm, 6px); border: none; cursor: pointer; font-size: 11px; font-weight: 700; text-align: center; min-height: 58px; width: 100%; margin: 0; box-sizing: border-box; }
         .action-trio-btn .trio-icon { font-size: 20px; line-height: 1; display: flex; align-items: center; justify-content: center; }
         .action-trio-btn .trio-icon svg { width: 20px; height: 20px; display: block; }
@@ -518,12 +590,31 @@
            document you're about to create", not just a thin gap between
            two identically-flat grey blocks. */
         .analytics-section { background: var(--hp-surface-alt); border-radius: var(--hp-radius-md, 16px); padding: 12px 14px; margin-bottom: 14px; }
+        /* vBeta38 nf1: Project Manager's row (font-size 13px, no icon glyph
+           the size of an emoji-in-a-circle) rendered 7px shorter than New
+           Doc/View List (15px font, 12px padding => 43px) and 3px shorter
+           than the Reports & Tools/Blocks Calculator tabs (now also pinned
+           to 43px, see .section-tab) — this pins Project Manager to that
+           same 43px so all four home-row controls read as one consistent
+           height. Overrides just the padding/sizing from the shared
+           .analytics-section rule above; background/radius/margin stay. */
+        .analytics-section.pm-row { height: 43px; box-sizing: border-box; padding: 0 14px; display: flex; align-items: center; }
+        .analytics-section.pm-row .analytics-section-title { margin: 0; }
         /* vBeta34 originally put this border on the shared .analytics-section
            class itself, which is also what Project Manager's own button uses
            (see its onclick="openProjectManager()" row) — giving Project
            Manager an unwanted grey outline it never asked for. vBeta36 FIX:
            scoped the border to just the two tab bodies it was meant for. */
         #analyticsSectionBody, #blocksCalcBody { border: 1.5px solid rgba(255,255,255,0.15); }
+        /* vBeta38 nf2: when a panel is open (merged flush against its active
+           tab above), its own top border reads as a bright hairline sitting
+           right on the seam — since the tab above it has no matching border,
+           this was the "thin white line" between the tab and the panel. Drop
+           just the top edge of the border on whichever side is actually
+           flush; left/right/bottom keep their border for contrast against
+           the page's light background. */
+        #analyticsSectionBody.open { border-top: none; }
+        #blocksCalcBody.open { border-top: none; }
         /* vBeta35: Reports & Tools and Blocks Calculator bodies given the
            same dark fill as their own active .section-tab header, so this
            whole area visually separates itself from the rest of the home
@@ -571,10 +662,24 @@
            keeps all 4 corners rounded, staying visually separate to the
            side — only whichever tab is actually open "merges" downward. */
         .section-tab-row { display: flex; gap: 8px; margin-bottom: 10px; }
-        .section-tab { flex: 1; background: var(--hp-surface-alt); border-radius: var(--hp-radius-md, 16px); padding: 12px 10px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 800; color: var(--hp-ink); cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; transition: background .15s ease, color .15s ease; text-align: center; }
+        /* vBeta38 nf1: explicit height so this row's tabs match New Doc/View
+           List/Project Manager exactly (was 40px vs their 43px — see the
+           same fix on .analytics-section.pm-row below). */
+        .section-tab { flex: 1; height: 43px; box-sizing: border-box; background: var(--hp-surface-alt); border-radius: var(--hp-radius-md, 16px); padding: 0 10px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 800; color: var(--hp-ink); cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; transition: background .15s ease, color .15s ease; text-align: center; }
         .section-tab.active { background: var(--hp-ink); color: #FFFFFF; border-radius: var(--hp-radius-md, 16px) var(--hp-radius-md, 16px) 0 0; }
         .section-tab-body { display: none; }
-        .section-tab-body.open { display: block; margin-top: -10px; border-top-left-radius: 0; border-top-right-radius: 0; }
+        .section-tab-body.open { display: block; margin-top: -10px; }
+        /* vBeta38 nf2: only the side actually under an ACTIVE tab gets its
+           top corner squared off (flush merge). The far corner has nothing
+           sitting on top of it — reportsToolsTab is the LEFT tab, so only
+           analyticsSectionBody's top-LEFT corner squares; blocksCalcTab is
+           the RIGHT tab, so only blocksCalcBody's top-RIGHT corner squares.
+           Squaring BOTH corners on either panel (the old behavior) left a
+           harsh square corner floating under the inactive tab's rounded
+           pill on the far side — one of the two "needs rounded corners"
+           spots flagged. */
+        #analyticsSectionBody.open { border-top-left-radius: 0; }
+        #blocksCalcBody.open { border-top-right-radius: 0; }
         .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
         .analytics-grid-btn {
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
@@ -3953,7 +4058,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta37</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta38</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -4039,7 +4144,7 @@
              one-off pill button, then sits directly above them so all three
              read as one family — Project Manager the single "apex" row,
              Reports & Tools + Blocks Calculator side by side underneath it. -->
-        <div class="analytics-section" style="cursor:pointer;" onclick="openProjectManager()">
+        <div class="analytics-section pm-row" style="cursor:pointer;" onclick="openProjectManager()">
             <div class="analytics-section-title"><span>🏗️ Project Manager</span></div>
         </div>
         <button id="btnWhatsApp" onclick="shareOnWhatsApp()" style="display:none; flex:1; margin:0; background:#1C7A3E; font-size:12.5px; padding:9px 4px; box-shadow:none;">📲 WhatsApp</button>
@@ -4699,7 +4804,11 @@
                  deleted — see "Use old dropdown instead" — hidden by
                  default, one click to bring back for a full, instant
                  rollback. -->
-            <div id="blockPickerBox" style="background:var(--hp-surface-alt); border:none; border-radius:var(--hp-radius-md,16px); padding:12px 14px; margin-bottom:10px;">
+            <!-- vBeta38 nf7: padding-bottom trimmed 12px->8px — combined with
+                 #blockPickerPreview now collapsing to nothing when it has no
+                 text (see JS), this closes most of the empty grey space that
+                 used to sit below the Brand select before the card ended. -->
+            <div id="blockPickerBox" style="background:var(--hp-surface-alt); border:none; border-radius:var(--hp-radius-md,16px); padding:12px 14px 8px; margin-bottom:10px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <label style="margin:0; color:var(--hp-ink-muted); white-space:nowrap;">🧱 AAC Block — Size &amp; Brand</label>
                     <!-- vBeta35: "Use old dropdown instead" hidden per user
@@ -4720,7 +4829,12 @@
                 <select id="blockBrandSelect" onchange="handleBlockBrandChange()" style="margin-top:0;">
                     <option value="">(No Brand)</option>
                 </select>
-                <div id="blockPickerPreview" style="font-size:11px; color:var(--hp-ink-muted); margin-top:6px; min-height:14px;"></div>
+                <!-- vBeta38 nf7: dropped the fixed min-height:14px reservation
+                     — this div now starts display:none (see JS) and only
+                     appears once a size is actually picked, instead of
+                     permanently holding open ~20px of empty space below the
+                     Brand select before anything is selected. -->
+                <div id="blockPickerPreview" style="display:none; font-size:11px; color:var(--hp-ink-muted); margin-top:6px;"></div>
             </div>
 
                         <!-- LEGACY PRODUCT DROPDOWN — v70: hidden by default (the Size+Brand
@@ -5023,6 +5137,26 @@
          found — updateCartPricing() (JS) still keeps both spans' text in
          sync even while hidden, so re-showing this is a one-line CSS
          change away. -->
+    <!-- vBeta38 nf6: quick section nav — see .doc-quicknav-wrap CSS above
+         for why this is sticky rather than a plain in-flow row. Same 6
+         sections/ids as #docJumpNav at the top; jumpToDocSection() and
+         syncDocSectionVisibility() are both extended (see JS) to keep
+         these dots in sync with that nav rather than duplicating logic. -->
+    <div class="doc-quicknav-wrap no-print" id="docQuickNav">
+        <div class="doc-quicknav">
+            <button type="button" class="doc-quicknav-arrow" onclick="quickNavStep(-1)" aria-label="Previous section">‹</button>
+            <div class="doc-quicknav-dots">
+                <span class="doc-quicknav-dot active" data-target="docSectionInfo" onclick="jumpToDocSection('docSectionInfo')" title="Info"></span>
+                <span class="doc-quicknav-dot" data-target="docSectionCustomer" onclick="jumpToDocSection('docSectionCustomer')" title="Customer"></span>
+                <span class="doc-quicknav-dot" data-target="docSectionPricing" onclick="jumpToDocSection('docSectionPricing')" title="Pricing"></span>
+                <span class="doc-quicknav-dot" data-target="docSectionProduct" onclick="jumpToDocSection('docSectionProduct')" title="Product"></span>
+                <span class="doc-quicknav-dot" data-target="docSectionPayment" onclick="jumpToDocSection('docSectionPayment')" title="Payment"></span>
+                <span class="doc-quicknav-dot" data-target="docSectionDiscountDocs" onclick="jumpToDocSection('docSectionDiscountDocs')" title="Discount & Docs"></span>
+            </div>
+            <button type="button" class="doc-quicknav-arrow" onclick="quickNavStep(1)" aria-label="Next section">›</button>
+        </div>
+    </div>
+
     <div class="live-tonnage-display live-tonnage-mobile" style="display:none; text-align:center; margin:0 0 10px; color:var(--hp-amber-ink); font-weight:bold; font-size:12.5px;">Cart Tonnage: 0.00 T</div>
 
     <div class="preview-box">
@@ -8146,7 +8280,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta37";
+    const APP_VERSION = "vBeta38";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -10046,15 +10180,21 @@
     // handleProductSelect() pipeline — same as if the old dropdown had
     // been used directly.
     function applyBlockPickerSelection() {
+        // vBeta38 nf7: this div now starts (and returns to) display:none —
+        // it only takes up space while it actually has something to say.
         if (!currentBlockSize) {
-            document.getElementById('blockPickerPreview').innerText = 'Pick a size to continue.';
+            let p = document.getElementById('blockPickerPreview');
+            p.innerText = 'Pick a size to continue.';
+            p.style.display = 'block';
             return;
         }
         let brand = document.getElementById('blockBrandSelect').value;
         let name = composeBlockProductName(currentBlockSize, brand);
         setProdSelectValue(name);
         handleProductSelect();
-        document.getElementById('blockPickerPreview').innerText = `Selected: ${name}`;
+        let p = document.getElementById('blockPickerPreview');
+        p.innerText = `Selected: ${name}`;
+        p.style.display = 'block';
     }
 
     // Ensures #prodSelect has an <option> matching the given value (adding
@@ -10506,11 +10646,32 @@
         navItems.forEach(it => it.classList.remove('active'));
         let tapped = document.querySelector('.doc-jumpnav-item[data-target="' + id + '"]');
         if (tapped) tapped.classList.add('active');
+        // vBeta38 nf6: keep the sticky quicknav dots (bottom of the form)
+        // in lockstep with the top jumpnav pills — same data-target ids.
+        let quickDots = document.querySelectorAll('#docQuickNav .doc-quicknav-dot');
+        quickDots.forEach(d => d.classList.remove('active'));
+        let tappedDot = document.querySelector('#docQuickNav .doc-quicknav-dot[data-target="' + id + '"]');
+        if (tappedDot) tappedDot.classList.add('active');
         docJumpNavSuppressUntil = Date.now() + 700; // roughly a smooth-scroll's duration
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+    // vBeta38 nf6: steps the quicknav to the previous/next section (dir -1/1)
+    // relative to whichever dot is currently active, then reuses
+    // jumpToDocSection() for the actual scroll+highlight — same visible
+    // ordering as #docJumpNav, so the arrows walk it in reading order.
+    // Sections hidden by syncDocSectionVisibility() (RCM/EXP collapse to
+    // just Info) are skipped since their dots are display:none there too.
+    function quickNavStep(dir) {
+        let dots = Array.from(document.querySelectorAll('#docQuickNav .doc-quicknav-dot')).filter(d => getComputedStyle(d).display !== 'none');
+        if (!dots.length) return;
+        let activeIdx = dots.findIndex(d => d.classList.contains('active'));
+        if (activeIdx === -1) activeIdx = 0;
+        let next = Math.max(0, Math.min(dots.length - 1, activeIdx + dir));
+        jumpToDocSection(dots[next].getAttribute('data-target'));
+    }
     (function initDocSectionScrollspy() {
         let navItems = document.querySelectorAll('#docJumpNav .doc-jumpnav-item');
+        let quickDots = document.querySelectorAll('#docQuickNav .doc-quicknav-dot');
         let sections = Array.from(navItems).map(it => document.getElementById(it.getAttribute('data-target'))).filter(Boolean);
         if (!sections.length) return;
         let obs = new IntersectionObserver(function(entries) {
@@ -10521,6 +10682,7 @@
                 if (idx === -1) return;
                 navItems.forEach(it => it.classList.remove('active'));
                 navItems[idx].classList.add('active');
+                if (quickDots[idx]) { quickDots.forEach(d => d.classList.remove('active')); quickDots[idx].classList.add('active'); }
             });
         }, { rootMargin: '-56px 0px -55% 0px', threshold: 0 });
         sections.forEach(s => obs.observe(s));
@@ -10606,6 +10768,9 @@
             ['docSectionPricing', 'docSectionCustomer', 'docSectionProduct', 'docSectionPayment', 'docSectionDiscountDocs'].forEach(function(id) {
                 let pill = document.querySelector('.doc-jumpnav-item[data-target="' + id + '"]');
                 if (pill) pill.style.display = 'none';
+                // vBeta38 nf6: the sticky quicknav dots mirror the pills 1:1.
+                let dot = document.querySelector('#docQuickNav .doc-quicknav-dot[data-target="' + id + '"]');
+                if (dot) dot.style.display = 'none';
             });
             return;
         }
@@ -10622,6 +10787,8 @@
             sec.style.display = hasVisibleChild ? '' : 'none';
             let pill = document.querySelector('.doc-jumpnav-item[data-target="' + id + '"]');
             if (pill) pill.style.display = hasVisibleChild ? '' : 'none';
+            let dot = document.querySelector('#docQuickNav .doc-quicknav-dot[data-target="' + id + '"]');
+            if (dot) dot.style.display = hasVisibleChild ? '' : 'none';
         });
     }
     // Non-invasive wrap — switchAppMode() itself is untouched, this just
@@ -12914,6 +13081,11 @@
     // too (via the hook below) since adding rows changes the page height.
     window.addEventListener('resize', applyPreviewFit);
     window.addEventListener('orientationchange', () => setTimeout(applyPreviewFit, 150));
+    // vBeta38 nf5: re-fit the Document No. field's font-size on rotation/
+    // resize too — the box's own pixel width changes even though its
+    // flex ratio doesn't.
+    window.addEventListener('resize', () => { if (typeof fitDocNoText === 'function') fitDocNoText(); });
+    window.addEventListener('orientationchange', () => setTimeout(() => { if (typeof fitDocNoText === 'function') fitDocNoText(); }, 150));
 
     function exportToPDF() {
         return new Promise((resolve) => {
@@ -15162,6 +15334,27 @@
         }
     }
 
+    // vBeta38 nf5: auto-shrinks the Document No. field's own font-size just
+    // enough to keep the full value on-screen. A single fixed font-size
+    // (15px) fit fine on some phones but still let the tail of a longer
+    // document number (e.g. "KT/QUO26-27/02") scroll out of view on
+    // another — device font metrics and OS text-scaling both nudge how
+    // wide the same string actually renders, so guessing one safe size for
+    // every device isn't reliable. This measures the ACTUAL rendered width
+    // on THIS device and steps the size down only if it doesn't fit,
+    // stepping back up toward the normal 15px if a shorter value fits fine.
+    function fitDocNoText() {
+        let el = document.getElementById('docNoIn');
+        if (!el) return;
+        const MAX_SIZE = 15, MIN_SIZE = 10;
+        el.style.fontSize = MAX_SIZE + 'px';
+        let size = MAX_SIZE;
+        while (size > MIN_SIZE && el.scrollWidth > el.clientWidth) {
+            size -= 1;
+            el.style.fontSize = size + 'px';
+        }
+    }
+
     function updateInfo() {
         updateVoidButtonState();
         let type = document.getElementById('docType').value;
@@ -15171,6 +15364,13 @@
             document.getElementById('dispDate').innerText = formatDateDisplay(dateVal);
         }
         document.getElementById('dispDocNo').innerText = document.getElementById('docNoIn').value;
+        fitDocNoText(); // vBeta38 nf5: shrink the Document No. INPUT's own
+        // font-size (not the print preview span above, which already wraps
+        // fine) just enough that the full number stays on-screen, since a
+        // fixed font-size that fits comfortably on one phone still clipped
+        // the tail end of the number on another (font metrics/accessibility
+        // text-scale vary by device — this reacts to whatever actually
+        // rendered instead of guessing one safe size for every device).
 
         // F9: Supersedes reference display
         let supRef = document.getElementById('supersedesRef').value || '';
@@ -15425,7 +15625,7 @@
         let brandSel = document.getElementById('blockBrandSelect');
         if (brandSel) brandSel.value = '';
         let preview = document.getElementById('blockPickerPreview');
-        if (preview) preview.innerText = '';
+        if (preview) { preview.innerText = ''; preview.style.display = 'none'; } // vBeta38 nf7: collapse, don't just clear
     }
 
     function removeItem(index) {
@@ -17345,7 +17545,7 @@
         let brandSelReset = document.getElementById('blockBrandSelect');
         if (brandSelReset) brandSelReset.value = '';
         let previewReset = document.getElementById('blockPickerPreview');
-        if (previewReset) previewReset.innerText = '';
+        if (previewReset) { previewReset.innerText = ''; previewReset.style.display = 'none'; } // vBeta38 nf7: collapse, don't just clear
         setDateInToday();
         validateGSTINField(); // G3: hide any stale validation message from the previous document
         document.getElementById('btnMakeRepeatClient').style.display = 'none'; // clientNameIn is now blank — no client to register yet
