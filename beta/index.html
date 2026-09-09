@@ -236,7 +236,21 @@
            the horizontal-scroll guard on html alone (the actual root
            scroller) keeps the original fix intact with only one scroll
            container in the chain. */
-        html { overflow-x: hidden; }
+        /* vBeta46: the app has no dark theme at all — every color here is
+           hand-picked for a white/light-grey UI. Without an explicit
+           color-scheme, some Android Chrome builds still auto-apply a dark
+           skin to NATIVE form controls (date/month pickers, the calendar
+           glyph, select dropdowns) whenever the OS is in dark mode, even
+           though the page itself stays fully light and unaffected — the
+           browser is deciding independently, not reading this stylesheet.
+           The reported symptom was exactly that: the date-range filter's
+           "mm/dd/yyyy" text and calendar icon read as blank/invisible on a
+           real phone (white-on-white) while looking completely normal in
+           every desktop check, because desktop Chrome doesn't have this
+           auto-dark behavior for native widgets. Declaring the scheme here
+           removes the guesswork — every native control renders with its
+           light-mode appearance regardless of the device's system theme. */
+        html { overflow-x: hidden; color-scheme: light; }
         body { max-width: 100vw; }
         img, table { max-width: 100%; }
         .container, .editor-box, .preview-box, .modal-content, .inline-ux-modal { max-width: 100vw; box-sizing: border-box; }
@@ -1264,8 +1278,16 @@
            and all modals previously shared the same z-index — meaning
            which one visually won depended on DOM order, not open order.
            These get a higher z-index so they always render on top of
-           whatever else happens to be open underneath them. */
-        #advancePoolModal, #reviewAmbiguousDocsModal, #unregisteredAdvSearchModal { z-index: 2100; }
+           whatever else happens to be open underneath them.
+           vBeta46: #docItemSummaryModal (the long-press item summary from
+           the Cloud Document Manager) has this exact bug and was missed —
+           it sits BEFORE #docModal in the DOM, so at the shared z-index
+           #docModal (opened later, painted later) always won the stacking
+           order. The popup opened, filled in correctly, and was completely
+           invisible every time — reported as "the QUO/RCP badge long-press
+           doesn't do anything," but it affected every doc type equally,
+           since the cause is stacking order, not the per-type content. */
+        #advancePoolModal, #reviewAmbiguousDocsModal, #unregisteredAdvSearchModal, #docItemSummaryModal { z-index: 2100; }
         .modal-content { background: white; width: 95%; max-width: 1150px; border-radius: 8px; padding: 20px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #EDEDF1; padding-bottom: 10px; margin-bottom: 15px; }
         .modal-header h2 { margin: 0; color: #2c3e50; display: flex; align-items: center; gap: 15px;}
@@ -1388,8 +1410,13 @@
            still a clear win on the original — three separately-bordered
            pills stacked three-deep became one card two lines tall — and it
            holds the harder rule: nothing clips, nothing scrolls sideways. */
-        #docModal .filter-bar #docDateRangeRow { flex-wrap: wrap !important; gap: 6px !important; }
-        #docModal #docDateRangeRow > * { min-width: 0 !important; }
+        #docModal .filter-bar #docDateRangeRow { flex-wrap: wrap !important; gap: 10px !important; }
+        /* vBeta46: the row's direct children are now the two .drr-group
+           wrappers, not the individual controls — min-width:0 here lets a
+           GROUP shrink/wrap as a whole rather than letting the row squeeze
+           an individual date field down to unreadable width. */
+        #docModal #docDateRangeRow > * { min-width: 0 !important; flex: 0 0 auto !important; }
+        #docModal #docDateRangeRow .drr-group { flex-wrap: nowrap !important; }
         /* vBeta34 FIX: these were "flex: 1 1 140px" — the flex-grow:1 was
            meant to keep the two wrapped lines visually aligned/symmetric,
            but a native date input doesn't paint any content into the extra
@@ -4112,7 +4139,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta45</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta46</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -5500,8 +5527,19 @@
      price (or the amount for a receipt/voucher). See startDocTypeLongPress()/
      showDocItemSummary() for the wiring, bound to each doc-type chip in
      renderDocList(). Sits above #docModal so it can pop up over the list
-     without closing it. -->
-<div id="docItemSummaryModal" class="modal-overlay" onclick="if(event.target===this) closeDocItemSummary()" style="display:none; z-index:2000;">
+     without closing it.
+     vBeta46 FIX: "Sits above #docModal" was the stated intent from day one,
+     but this inline style set z-index:2000 — the exact same value as the
+     .modal-overlay base class, i.e. no advantage at all, and an inline
+     style always outranks any external rule regardless of z-index value. So
+     the #docItemSummaryModal z-index:2100 CSS rule (added alongside the
+     other stacked-modal fixes) could never win here. The popup was opening
+     with the right content every time, just permanently hidden behind
+     #docModal, which paints later in the DOM at the same effective
+     z-index. Dropped the inline z-index so the CSS rule actually applies —
+     same fix pattern as advancePoolModal/reviewAmbiguousDocsModal/
+     unregisteredAdvSearchModal, none of which carry an inline override. -->
+<div id="docItemSummaryModal" class="modal-overlay" onclick="if(event.target===this) closeDocItemSummary()" style="display:none;">
     <div class="modal-content doc-summary-card">
         <div class="modal-header" style="margin-bottom:10px; padding-bottom:8px;">
             <h2 id="docItemSummaryTitle" style="font-size:15px;">Document</h2>
@@ -5603,12 +5641,27 @@
                  the room. Every id, handler and input type is unchanged —
                  this is purely the wrapper markup collapsing from three
                  boxes into one. -->
-            <div id="docDateRangeRow" style="display:flex; align-items:center; gap:6px; background:#FFFFFF; border:1px solid #E1E1E6; border-radius:var(--rad-md); padding:5px 8px;">
-                <input type="date" id="docFilterFrom" onchange="document.getElementById('docFilterMonth').value=''; renderDocList();" style="border:none; padding:2px; width:auto;">
-                <span style="color:#5F5D70; font-size:11px; flex:0 0 auto;">to</span>
-                <input type="date" id="docFilterTo" onchange="document.getElementById('docFilterMonth').value=''; renderDocList();" style="border:none; padding:2px; width:auto;">
-                <input type="month" id="docFilterMonth" onchange="applyQuickMonthFilter()" style="border:none; padding:2px; width:auto; border-left:1px solid #E1E1E6; padding-left:8px;">
-                <button onclick="clearDateFilter()" style="width:auto; margin-top:0; flex:0 0 auto; background:#EDEDF1; color:#1C1C27; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px; font-weight:bold;">Clear</button>
+            <!-- vBeta46 FIX: plain flex-wrap on four siblings wraps wherever
+                 space runs out, not wherever it reads cleanly — "to" could be
+                 orphaned at the end of a line, and the month field's own
+                 border-left (meant to sit right after the date-range group)
+                 could start a line with nothing to its left, floating as a
+                 stray tick mark with dead space beside it. Two explicit
+                 groups fix both: [From to To] and [Month Clear] each wrap as
+                 one unit — "to" can never separate from its dates, and the
+                 divider moved to the SECOND GROUP'S OWN left edge, so it only
+                 ever appears attached to real content (the month field),
+                 never dangling alone. -->
+            <div id="docDateRangeRow" style="display:flex; align-items:center; gap:10px; background:#FFFFFF; border:1px solid #E1E1E6; border-radius:var(--rad-md); padding:5px 8px;">
+                <div class="drr-group" style="display:flex; align-items:center; gap:6px;">
+                    <input type="date" id="docFilterFrom" onchange="document.getElementById('docFilterMonth').value=''; renderDocList();" style="border:none; padding:2px; width:auto;">
+                    <span style="color:#5F5D70; font-size:11px; flex:0 0 auto;">to</span>
+                    <input type="date" id="docFilterTo" onchange="document.getElementById('docFilterMonth').value=''; renderDocList();" style="border:none; padding:2px; width:auto;">
+                </div>
+                <div class="drr-group" style="display:flex; align-items:center; gap:6px; border-left:1px solid #E1E1E6; padding-left:8px;">
+                    <input type="month" id="docFilterMonth" onchange="applyQuickMonthFilter()" style="border:none; padding:2px; width:auto;">
+                    <button onclick="clearDateFilter()" style="width:auto; margin-top:0; flex:0 0 auto; background:#EDEDF1; color:#1C1C27; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px; font-weight:bold;">Clear</button>
+                </div>
             </div>
 
             <input type="text" id="searchFilter" placeholder="Search Phone Number, Client, Doc No, or Items..." onkeyup="renderDocList()">
@@ -8334,7 +8387,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta45";
+    const APP_VERSION = "vBeta46";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
