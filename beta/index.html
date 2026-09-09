@@ -270,7 +270,7 @@
            Locked 2026-09-04. */
         .doc-jumpnav-wrap {
             position: sticky; top: 0; z-index: 15;
-            background: var(--hp-surface); padding: 0 0 10px 0; margin: 0 0 14px 0;
+            background: var(--hp-surface); padding: 0 0 10px 0; margin: 16px 0 14px 0;
             border-bottom: 1px solid var(--hp-border);
         }
         .doc-jumpnav {
@@ -288,6 +288,22 @@
             background: var(--hp-surface-alt); border-radius: var(--hp-radius-lg);
             padding: 14px 14px 2px; margin: 0 -6px 4px;
         }
+        /* vBeta36: Info's own wrap (above) and #salesInputs's wrap (right
+           below it) are two separate .doc-sections-wrap elements that used
+           to each round all 4 corners, reading as two stacked bubbles with
+           a seam between — see the comment on #docSectionInfo's wrap div.
+           Squaring off the touching edges (Info's bottom, sales wrap's
+           top) makes the two read as one continuous card for every
+           sales-type doc. */
+        /* vBeta37 FIX: this wrap's own bottom padding (14px) plus the sales
+           wrap's own top padding (14px) stacked on top of #docSectionInfo's
+           normal 16px card margin-bottom, making the Info→Customer gap
+           44px vs. the usual 16px between every other pair of cards.
+           Zeroing both paddings (the two wraps already touch with no
+           space between them — see the squared-off corners above) leaves
+           just that same 16px card margin, matching every other gap. */
+        .info-sections-wrap { border-radius: var(--hp-radius-lg) var(--hp-radius-lg) 0 0; padding-bottom: 0; }
+        #salesInputs > .doc-sections-wrap { border-radius: 0 0 var(--hp-radius-lg) var(--hp-radius-lg); margin-top: 0; padding-top: 0; }
         .doc-section {
             background: var(--hp-surface); border-radius: var(--hp-radius-lg);
             border: 1px solid var(--hp-border); box-shadow: var(--hp-shadow);
@@ -428,7 +444,20 @@
            distinct, separate card — matching the comment above that this
            is meant to be "the single most important selector in the
            form", not a visual continuation of whatever's above it. */
-        .doctype-spotlight { background: var(--hp-surface-alt); padding: 12px 14px; border-radius: var(--hp-radius-md, 16px); margin: 16px 0 10px; border: 1.5px solid var(--hp-border); box-shadow: var(--hp-shadow, 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35)); }
+        /* vBeta37: Doc Type + Convert/Amend + Pen Signature/Boss Mode/Void
+           now share one card (.doc-header-card, below) instead of each
+           being its own loose block — per request, so this whole "about
+           the document as a whole" cluster reads as one group, clearly
+           separated from the Info/Customer/Pricing/Product tabs below it.
+           .doctype-spotlight keeps its OWN look (dark pill select, label)
+           but no longer draws its own background/border/shadow — that
+           would double up with the new outer card. */
+        .doc-header-card {
+            background: var(--hp-surface-alt); padding: 14px 14px 10px; border-radius: var(--hp-radius-md, 16px);
+            margin: 16px 0 20px; border: 1.5px solid var(--hp-border);
+            box-shadow: var(--hp-shadow, 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35));
+        }
+        .doctype-spotlight { background: none; padding: 0; border-radius: 0; margin: 0 0 10px; border: none; box-shadow: none; }
         .doctype-spotlight label { color: var(--hp-ink-muted); font-size: 10px; margin: 0 0 6px 0; opacity: 1; }
         /* vBeta15: dark background needs its own white-stroke arrow — the
            base `select` rule's grey (--hp-ink-muted) arrow is tuned for the
@@ -488,32 +517,35 @@
            there's a real visual boundary between "the calculator" and "the
            document you're about to create", not just a thin gap between
            two identically-flat grey blocks. */
-        .analytics-section { background: var(--hp-surface-alt); border-radius: var(--hp-radius-md, 16px); padding: 12px 14px; margin-bottom: 14px; border: 1.5px solid var(--hp-border); }
+        .analytics-section { background: var(--hp-surface-alt); border-radius: var(--hp-radius-md, 16px); padding: 12px 14px; margin-bottom: 14px; }
+        /* vBeta34 originally put this border on the shared .analytics-section
+           class itself, which is also what Project Manager's own button uses
+           (see its onclick="openProjectManager()" row) — giving Project
+           Manager an unwanted grey outline it never asked for. vBeta36 FIX:
+           scoped the border to just the two tab bodies it was meant for. */
+        #analyticsSectionBody, #blocksCalcBody { border: 1.5px solid rgba(255,255,255,0.15); }
         /* vBeta35: Reports & Tools and Blocks Calculator bodies given the
-           same dark fill as their own active .section-tab header, with
-           text flipped to white, so this whole area visually separates
-           itself from the rest of the home page — user's request. Scoped
-           to just these two card bodies by re-pointing the --hp-* aliases
-           they and their children already read (see the alias block near
-           the top of .editor-box), rather than touching any global token —
-           nothing outside these two elements is affected.
+           same dark fill as their own active .section-tab header, so this
+           whole area visually separates itself from the rest of the home
+           page — user's request.
+           vBeta36 FIX: the first pass (re-pointing the --hp-* aliases so
+           descendant text flipped to white) broke contrast everywhere a
+           child already sits on its OWN light/tinted box — the wall-row
+           card, the grid buttons, the wastage/round-up pills, the segmented
+           controls — since those boxes kept their real (untouched) tint
+           backgrounds while their text silently went white-on-white or
+           white-on-light. Per user feedback: only the outer panel itself
+           should go dark; every box inside it should read exactly as it
+           did before (light grey/tinted, normal dark ink), unchanged.
+           Fix: only set this outer background/color — no alias
+           overrides — so every descendant simply keeps reading its normal
+           light-theme tokens, same as it always has.
            TO REVERT: delete this rule block; the cards fall straight back
            to the normal var(--hp-surface-alt) look with zero other changes
            needed anywhere. */
         #analyticsSectionBody, #blocksCalcBody {
-            /* NOTE: background is the literal ink hex (matching
-               .section-tab.active's own var(--hp-ink)), not var(--hp-ink)
-               itself — this same rule redefines --hp-ink to white for
-               child text below, and a custom property's new value applies
-               across its whole declaring rule (not just "from here down"),
-               so var(--hp-ink) here would have resolved to white too and
-               produced invisible white-on-white text. */
             background: var(--vista-ink, #1C1C27); color: #FFFFFF;
-            --hp-ink: #FFFFFF; --hp-ink-muted: rgba(255,255,255,0.72);
-            --hp-surface: rgba(255,255,255,0.09); --hp-surface-alt: rgba(255,255,255,0.14);
-            --hp-surface-alt-strong: rgba(255,255,255,0.20); --hp-border: rgba(255,255,255,0.28);
         }
-        #analyticsSectionBody label, #blocksCalcBody label { color: rgba(255,255,255,0.72); }
         /* vBeta18 FIX: was justify-content:space-between — meant for a title+chevron
            pair, but Project Manager (the only remaining user of this class since
            Reports & Tools/Blocks Calculator moved to .section-tab in vBeta17) has
@@ -528,15 +560,29 @@
            squeezed into its own half — and opening one closes the other, true
            tab exclusivity rather than two independent accordions. See
            selectHeaderTab() in JS. */
+        /* vBeta37: when a tab is open, its bottom corners square off and
+           its body's margin-top pulls up flush against it (no rounded gap
+           between them) — the two read as one solid block, per request.
+           Using the OPEN BODY's own negative margin-top rather than
+           changing the row/tab's own margin keeps the row's normal 10px
+           breathing room intact for the (common) collapsed state, where
+           neither tab is open and this margin is all that separates the
+           tab row from whatever card sits below it. The INACTIVE tab
+           keeps all 4 corners rounded, staying visually separate to the
+           side — only whichever tab is actually open "merges" downward. */
         .section-tab-row { display: flex; gap: 8px; margin-bottom: 10px; }
         .section-tab { flex: 1; background: var(--hp-surface-alt); border-radius: var(--hp-radius-md, 16px); padding: 12px 10px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 800; color: var(--hp-ink); cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; transition: background .15s ease, color .15s ease; text-align: center; }
-        .section-tab.active { background: var(--hp-ink); color: #FFFFFF; }
+        .section-tab.active { background: var(--hp-ink); color: #FFFFFF; border-radius: var(--hp-radius-md, 16px) var(--hp-radius-md, 16px) 0 0; }
         .section-tab-body { display: none; }
-        .section-tab-body.open { display: block; }
+        .section-tab-body.open { display: block; margin-top: -10px; border-top-left-radius: 0; border-top-right-radius: 0; }
         .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
         .analytics-grid-btn {
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
-            background: var(--hp-surface);
+            /* vBeta37: was var(--hp-surface) — pure white, per request
+               changed to the app's normal light-grey card tone so these
+               tiles read as boxes on the dark panel rather than stark
+               white rectangles. */
+            background: var(--hp-surface-alt);
             color: var(--hp-ink); border: none; border-radius: var(--hp-radius-sm, 12px); cursor: pointer;
             padding: 11px 4px; font-size: 10.5px; font-weight: 700; min-height: 58px;
             width: 100%; margin: 0; box-sizing: border-box; text-align: center;
@@ -561,14 +607,16 @@
            instead of sitting flush. Reads as a real button, not a locked
            icon. */
         .analytics-grid-btn .ag-icon {
-            width: 32px; height: 32px; border-radius: 50%;
+            /* vBeta37: 32px -> 36px, icon svg 17px -> 19px, per request
+               ("icons can be slightly larger"). */
+            width: 36px; height: 36px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             background: #2c3e50; flex-shrink: 0;
             box-shadow: 0 2px 5px rgba(44, 62, 80, 0.35), 0 0 0 5px rgba(44, 62, 80, 0.08);
             transition: background 0.2s ease, box-shadow 0.2s ease;
         }
         .analytics-grid-btn:hover .ag-icon { background: #24313F; box-shadow: 0 2px 6px rgba(44, 62, 80, 0.45), 0 0 0 6px rgba(44, 62, 80, 0.12); }
-        .analytics-grid-btn .ag-icon svg { width: 17px; height: 17px; color: #FFFFFF; }
+        .analytics-grid-btn .ag-icon svg { width: 19px; height: 19px; color: #FFFFFF; }
 
         /* ============================================================
            v73a/v74c TRIAL — Blocks Calculator
@@ -936,6 +984,17 @@
            so both read as the same modern button language. */
         .btn-add { background: var(--hp-mint-tint, #EBFCEC); color: var(--hp-mint-ink, #1C7A3E); box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,122,62,0.35); }
         .btn-mortar { background: var(--hp-purple-tint, #F1E7FE); color: var(--hp-purple-ink, #6B3FA0); margin-top: 8px; box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(107,63,160,0.30); }
+        /* vBeta37 FIX: autoAddMortar() used to add the shared .pressed-state
+           class (same rule as button:active — scale(0.95), dimmed opacity,
+           a hard inset shadow) for a full 2 seconds as its "Bags Appended!"
+           success indicator. That class is meant for the instant a finger
+           is actually down on a button; held for 2 whole seconds it reads
+           as the button being stuck/broken (dark, scaled-down, unresponsive-
+           looking), not as a success confirmation — exactly the "ugly" and
+           "doesn't return to its color" complaint. Dedicated flash style
+           instead: a green success tint, no scale/dimming, so the button
+           visibly still looks alive while it shows the confirmation text. */
+        .btn-mortar.mortar-success-flash { background: var(--hp-mint-tint, #EBFCEC) !important; color: var(--hp-mint-ink, #1C7A3E) !important; box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,124,62,0.30) !important; }
         
         .action-bar { position: fixed; bottom: 20px; left: 5%; width: 90%; display: flex; gap: 10px; z-index: 1000; font-family: var(--vista-font, inherit); }
         .btn-print { flex: 1; background: var(--vista-surface-alt, #1C7A3E); color: var(--vista-ink, white); font-size: 16px; box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35); padding: 15px; border-radius: 16px; margin: 0;}
@@ -1923,7 +1982,18 @@
                source order (this rule, being later, wins) applies consistently to
                both — same fix needed at every breakpoint this pattern repeats, see
                the two :where(body.force-mobile-main) rules below. */
-            input:not([type="checkbox"]):not([type="radio"]), select {
+            /* vBeta36 FIX: same "different box shape" bug as Title/Client
+               Name above, this time between #docNoIn (a real <input>) and
+               #dateInDisplay (a <span class="date-display-text"> standing
+               in for the transparent native date input on top of it — see
+               that field's own comment). Only real <input>/<select>
+               elements matched this rule, so the date span kept its
+               desktop-only radius/padding/font-size at this breakpoint
+               while Document No. picked up the tighter mobile values —
+               added .date-display-text alongside them here and at the
+               two :where(body.force-mobile-main) copies below so all
+               three always track together. */
+            input:not([type="checkbox"]):not([type="radio"]), select, .date-display-text {
                 padding: 12px 10px;
                 font-size: 15px; /* iOS won't auto-zoom if font-size >= 16px,
                                     but 15px is close enough with our viewport tag */
@@ -2225,7 +2295,7 @@
            zeroes the ancestor part, so .doctype-spotlight select/.master-bar
            select's own pill rules are untouched — this only fixes input vs select
            tracking each other within THIS rule. */
-        :where(body.force-mobile-main .editor-box) input:not([type="checkbox"]):not([type="radio"]), :where(body.force-mobile-main .editor-box) select {
+        :where(body.force-mobile-main .editor-box) input:not([type="checkbox"]):not([type="radio"]), :where(body.force-mobile-main .editor-box) select, :where(body.force-mobile-main .editor-box) .date-display-text {
             padding: 12px 10px; font-size: 15px; border-radius: 6px;
         }
         body.force-mobile-main .editor-box input::placeholder { font-size: 14px; }
@@ -2415,7 +2485,7 @@
            vBeta18 FIX: added the same :not([type=checkbox]):not([type=radio])
            qualifier as the .editor-box copy above — see its comment for why a bare
            "input" here loses to the base rule specifically for <input> elements. */
-        :where(body.force-mobile-main) input:not([type="checkbox"]):not([type="radio"]), :where(body.force-mobile-main) select { padding: 12px 10px;
+        :where(body.force-mobile-main) input:not([type="checkbox"]):not([type="radio"]), :where(body.force-mobile-main) select, :where(body.force-mobile-main) .date-display-text { padding: 12px 10px;
                 font-size: 15px;
                 border-radius: 6px; }
         body.force-mobile-main input::placeholder { font-size: 14px; }
@@ -3883,7 +3953,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta35</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta37</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -3998,6 +4068,17 @@
                 <button id="btnAnalyticsClients" class="analytics-grid-btn" onclick="openClientList()"><span class="ag-icon" data-vicon="clients"></span><span>Clients</span></button>
                 <button id="btnAnalyticsSites" class="analytics-grid-btn" onclick="openSitesManager()"><span class="ag-icon" data-vicon="sites"></span><span>Sites</span></button>
                 <button id="btnAnalyticsBrandAssets" class="analytics-grid-btn" onclick="openBrandAssets()"><span class="ag-icon" data-vicon="brand"></span><span>Brand Assets</span></button>
+                <!-- vBeta36: 3 new tiles added above the last row per
+                     request — Dummy is a deliberate placeholder for a
+                     future tool (shows a "coming soon" toast, nothing
+                     else), Documents reuses the same Cloud Document
+                     Manager as the "📂 View List" button above, and
+                     Pricing reuses the same Pricing Engine as "⚙️ Pricing
+                     & Items" inside the Pricing tab — both are just
+                     shortcuts into existing features, not new ones. -->
+                <button id="btnAnalyticsDummy" class="analytics-grid-btn" onclick="showToast('More tools coming soon', 'info')"><span class="ag-icon" data-vicon="dummy"></span><span>Dummy</span></button>
+                <button id="btnAnalyticsDocuments" class="analytics-grid-btn" onclick="openSavedDocs()"><span class="ag-icon" data-vicon="documents"></span><span>Documents</span></button>
+                <button id="btnAnalyticsPricing" class="analytics-grid-btn" onclick="openPricingEngine()"><span class="ag-icon" data-vicon="pricing"></span><span>Pricing</span></button>
                 <button id="btnAnalyticsAllProjects" class="analytics-grid-btn" onclick="openAllProjectsOverview()"><span class="ag-icon" data-vicon="allprojects"></span><span>All Projects</span></button>
                 <!-- v68: Search Everything disabled per request — not working
                      right now and not currently needed. Kept commented out,
@@ -4017,18 +4098,13 @@
                 <button id="btnAnalyticsTonnage" class="analytics-grid-btn" onclick="openTonnageCalc()"><span class="ag-icon" data-vicon="tonnage"></span><span>Tonnage</span></button>
                 <button id="btnAnalyticsProjects" class="analytics-grid-btn" onclick="openContracts()"><span class="ag-icon" data-vicon="letterpad"></span><span>Letterpad</span></button>
             </div>
-            <!-- Improvement #1: full data backup/export — deliberately understated
-                 (text link, not a button) since this is a safety-net action rather
-                 than a daily workflow step. -->
-            <div style="text-align:center; margin-top:10px;">
-                <button onclick="downloadFullBackup()" style="width:auto; margin:0; background:none; border:none; color:var(--hp-ink-muted); font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">💾 Download full data backup (.json)</button>
-                <span style="color:var(--hp-ink-muted); font-size:11px;"> · </span>
-                <!-- G1: Restore from backup. A different (warmer/amber) color
-                     than the export link, signaling this is a different KIND
-                     of action — destructive, not just informational — even
-                     though both sit in the same understated row. -->
-                <button onclick="openRestoreModal()" style="width:auto; margin:0; background:none; border:none; color:var(--hp-amber-ink); font-size:11px; cursor:pointer; text-decoration:underline; padding:4px;">📥 Restore from backup</button>
-            </div>
+            <!-- vBeta37: "Download full data backup" and "Restore from
+                 backup" moved out of here per request — both now live
+                 inside Data & Sync's own "Recovery & Backup" tab
+                 (#dsTabRecovery), alongside the "Download full backup now"
+                 button that already lived there, since backup/restore
+                 belongs with the rest of Data & Sync rather than floating
+                 under the Reports & Tools grid. -->
         </div>
 
         <!-- v73a TRIAL FEATURE — BLOCKS CALCULATOR
@@ -4099,6 +4175,12 @@
                 <div id="blocksCalcQueueBanner" style="display:none; margin-top:10px; background:var(--hp-amber-tint); color:var(--hp-amber-ink); padding:8px 10px; border-radius:5px; font-size:12px; font-weight:bold; text-align:center;"></div>
         </div><!-- /blocksCalcBody -->
 
+        <!-- vBeta37: Doc Type selector, its Convert/Amend row, and the Pen
+             Signature/Boss Mode/Void row all grouped into one card
+             (.doc-header-card) — per request, so this "about the document
+             as a whole" cluster is visually one group with real spacing
+             below it before the Info/Customer/Pricing/Product tab bar. -->
+        <div class="doc-header-card">
         <!-- U5: Doc Type gets its own dedicated, visually prominent block —
              it's the single most important selector in the form. -->
         <div class="doctype-spotlight">
@@ -4232,6 +4314,7 @@
                 <span id="voidToggleLabel">Void</span>
             </button>
         </div>
+        </div><!-- /doc-header-card -->
 
         <!-- vBeta35: jump-nav bar moved up here from inside #salesInputs,
              per user request ("info section should be below the tab
@@ -4267,20 +4350,33 @@
              SAL/INV) — vouchers (ADV/RCP/EXP/RCM) use the separate
              #voucherInputs block instead, and this Info card is needed by
              BOTH, so it lives in the shared area above that fork rather
-             than inside either one. -->
-        <div class="doc-sections-wrap" style="margin-bottom:0;">
+             than inside either one.
+             vBeta36 FIX: this wrap and #salesInputs's own wrap right below
+             it are two separate elements sitting almost flush — each with
+             ALL FOUR corners rounded — so together they read as two
+             stacked "bubbles" with an awkward seam between them instead of
+             one continuous card. .info-sections-wrap (below) squares off
+             just this wrap's BOTTOM corners so it butts cleanly into the
+             sales wrap's now-squared-off TOP corners (see
+             "#salesInputs > .doc-sections-wrap" CSS) — the two read as one
+             uninterrupted shape for sales-type docs. For RCM/EXP, where
+             the sales wrap never renders, Info is still a normal complete
+             card — its bottom just isn't rounded, which is a non-issue
+             with nothing below it. -->
+        <div class="doc-sections-wrap info-sections-wrap" style="margin-bottom:0;">
         <div class="doc-section" id="docSectionInfo">
             <div class="doc-section-title">ℹ️ Info</div>
-            <div style="margin-bottom:14px;">
-                <label style="margin:0 0 4px 0; display:block;">Company Address (for this document)</label>
-                <select id="addressOptionSelect" onchange="applyAddressOption()" style="width:100%;">
-                </select>
-            </div>
         <!-- U8: Doc No field widened now that Boss Mode no longer crowds this row.
              Added a live collision warning instead of locking characters (see
-             checkDocNoCollision in JS) since the FY portion changes every April. -->
+             checkDocNoCollision in JS) since the FY portion changes every April.
+             vBeta37: flex ratio pushed further toward Doc No. (was 1.6/1,
+             now 2.2/0.8) — on some real phones the doc number string
+             (e.g. "KT/QUO26-27/0257") was wide enough at the old ratio to
+             get clipped/scrolled inside its own input, showing only its
+             last couple of characters, while Date only ever needs to fit
+             "09 SEP 2026" and had room to spare. -->
         <div id="docNoDateRow" style="display:flex; gap:10px; margin: 0;">
-            <div style="flex:1.6;">
+            <div style="flex:2.2;">
                 <label style="margin-top:0; display:flex; justify-content:space-between; align-items:center;">
                     <span>Document No.</span>
                     <span onclick="useNextDocNo()" style="cursor:pointer; text-transform:none; font-weight:normal; color:var(--hp-blue-ink); font-size:11px;" title="Fill in the next available number for this document type">🔢 <span style="text-decoration:underline;">Use Next</span></span>
@@ -4288,7 +4384,7 @@
                 <input type="text" id="docNoIn" onkeyup="updateInfo(); checkDocNoCollision();" style="margin-top:5px; font-size:15px; font-weight:bold; letter-spacing:0.3px;">
                 <div id="docNoWarning" class="docno-warning">⚠️ This document number already exists — saving may overwrite it.</div>
             </div>
-            <div style="flex:1;">
+            <div style="flex:0.8;">
                 <label style="margin-top:0;">Date</label>
                 <!-- vBeta34: a bare native <input type="date"> displays in
                      whatever date FORMAT the phone's OS locale is set to
@@ -4316,6 +4412,30 @@
                     <input type="date" id="dateIn" onchange="updateInfo(); renderDateInDisplay();" aria-label="Document date" style="position:absolute; inset:0; width:100%; height:100%; margin:0; padding:0; opacity:0; border:0; cursor:pointer;">
                 </div>
             </div>
+        </div>
+        <!-- vBeta37: Company Address moved below Document No./Date (was
+             above it) per request, and switched from a dropdown to a
+             single toggle button — with only 2 address options actually
+             in use right now, a full <select> was more UI than the choice
+             needs. #addressOptionSelect itself is UNCHANGED and still the
+             real source of truth (still populated by
+             populateAddressOptionSelect(), still read by
+             applyAddressOption()) — just hidden, so this is a display-only
+             swap: toggleAddressOption() (JS) flips its value between the
+             two options and calls the exact same applyAddressOption() the
+             old dropdown's onchange did. Nothing about how the address
+             data itself is stored, edited (Brand Assets → Address
+             Options), or applied to the document has changed — restoring
+             the dropdown, if ever wanted back, is just un-hiding it and
+             hiding this button. -->
+        <div style="margin-top:14px;">
+            <label style="margin:0 0 4px 0; display:block;">Company Address (for this document)</label>
+            <button type="button" id="btnAddressToggle" onclick="toggleAddressOption()" style="width:100%; margin:0; text-align:left; display:flex; align-items:center; justify-content:space-between; background:var(--hp-surface); box-shadow:inset 0 0 0 1.5px var(--hp-border); color:var(--hp-ink); font-weight:700; padding:12px 14px; border-radius:var(--hp-radius-sm, 4px);">
+                <span id="btnAddressToggleLabel">Option 1</span>
+                <span style="font-size:11px; font-weight:normal; color:var(--hp-ink-muted);">tap to switch ⇄</span>
+            </button>
+            <select id="addressOptionSelect" onchange="applyAddressOption()" style="display:none;">
+            </select>
         </div>
         </div><!-- /docSectionInfo -->
         </div><!-- /doc-sections-wrap (Info) -->
@@ -4488,16 +4608,13 @@
                  section, right below the Pricing & Items button, since
                  it's really a pricing choice too. -->
             <div class="doc-section-title">💰 Pricing</div>
-            <!-- vBeta34: "⚙️ Pricing & Items" moved in here from its old
-                 standalone spot above the Doc No./Date row, per user
-                 request — it's about managing pricing/items, so it belongs
-                 inside the Pricing tab rather than floating above it. -->
-            <div class="master-bar" style="margin-top:0;">
-                <div style="flex:1;">
-                    <button class="btn-engine" onclick="openPricingEngine()">⚙️ Pricing & Items</button>
-                </div>
-            </div>
-            <div style="margin-top:12px;">
+            <!-- vBeta34: "⚙️ Pricing & Items" used to launch from here.
+                 vBeta37: removed per request — it's now redundant with the
+                 "Pricing" tile in the Reports & Tools grid (added in
+                 vBeta36), which opens the exact same openPricingEngine().
+                 No functionality lost, just one fewer duplicate entry
+                 point. -->
+            <div style="margin-top:0;">
                 <label style="display:none; margin-top:0; margin-bottom:6px; color:var(--hp-blue-ink);">💰 Pricing Tier</label>
                 <!-- vBeta34: min-width:0 lets these flex:1 buttons actually
                      shrink below their content's natural width instead of
@@ -4683,8 +4800,11 @@
                  matching mobile instance just above .preview-box, and the
                  .live-tonnage-display media-query pair that shows only one
                  of the two at a time. Both spans are kept in sync by the
-                 same single line in updateLiveTonnage() (JS). -->
-            <div class="live-tonnage-display live-tonnage-desktop" style="text-align:center; margin-top:8px; color:var(--hp-amber-ink); font-weight:bold; font-size:12.5px;">Cart Tonnage: 0.00 T</div>
+                 same single line in updateCartPricing() (JS).
+                 vBeta36: hidden alongside its mobile twin per user
+                 feedback — parked, not deleted, until a proper home is
+                 found for it. -->
+            <div class="live-tonnage-display live-tonnage-desktop" style="display:none; text-align:center; margin-top:8px; color:var(--hp-amber-ink); font-weight:bold; font-size:12.5px;">Cart Tonnage: 0.00 T</div>
 
             <!-- F22: Multi-Advance Linking (for INV/SAL) -->
             <!-- #4: Discount / Round-Off — reduces the printed invoice total
@@ -4894,8 +5014,16 @@
     <!-- vBeta35: Cart Tonnage tracker's mobile home — see the matching
          desktop instance below #btnMortar, and the .live-tonnage-display
          media-query pair (near .preview-box's own CSS rule) that shows
-         only one of the two at a time. -->
-    <div class="live-tonnage-display live-tonnage-mobile" style="text-align:center; margin:0 0 10px; color:var(--hp-amber-ink); font-weight:bold; font-size:12.5px;">Cart Tonnage: 0.00 T</div>
+         only one of the two at a time.
+         vBeta36: hidden per user feedback — sitting directly on the page's
+         own blue background (nothing wraps it, unlike everything inside
+         .preview-box below, which sits on that box's grey backdrop) made
+         it read as a stray blue strip, and the relocation "felt weird" on
+         its own merits too. Parked (not deleted) until a proper home is
+         found — updateCartPricing() (JS) still keeps both spans' text in
+         sync even while hidden, so re-showing this is a one-line CSS
+         change away. -->
+    <div class="live-tonnage-display live-tonnage-mobile" style="display:none; text-align:center; margin:0 0 10px; color:var(--hp-amber-ink); font-weight:bold; font-size:12.5px;">Cart Tonnage: 0.00 T</div>
 
     <div class="preview-box">
         <!-- v66: PREVIEW FIT MODE.
@@ -7069,10 +7197,16 @@
                 <br><br>
                 <b>Note:</b> snapshots live in this browser's storage, so they cannot survive clearing browser/site data. For that, use the full backup below and keep the file somewhere safe.
             </div>
-            <div style="margin-bottom:15px;">
+            <div style="margin-bottom:15px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
                 <button onclick="downloadFullBackup()" style="width:auto; margin:0; background:#1C7A3E; padding:10px 16px; font-size:13px;">💾 Download full backup now</button>
+                <!-- vBeta37: "Restore from backup" moved in here from the
+                     Reports & Tools panel per request — same
+                     openRestoreModal(), just relocated to sit next to its
+                     counterpart (the download button) inside Data & Sync,
+                     which is where a restore action belongs anyway. -->
+                <button onclick="openRestoreModal()" style="width:auto; margin:0; background:#92400E; padding:10px 16px; font-size:13px;">📥 Restore from backup</button>
                 <!-- vBeta31: age of the last successful full backup — see renderLastBackupStamp() -->
-                <div id="lastBackupStamp" style="font-size:12px; color:var(--vista-ink-muted,#5F5D70); margin-top:8px;"></div>
+                <div id="lastBackupStamp" style="font-size:12px; color:var(--vista-ink-muted,#5F5D70); margin-top:0; width:100%;"></div>
             </div>
             <div id="dataRecoveryBody"></div>
         </div>
@@ -8012,7 +8146,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta35";
+    const APP_VERSION = "vBeta37";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -8451,6 +8585,30 @@
         if (!el) return;
         el.innerHTML = `GSTIN: <b>${opt.gstin || '—'}</b><br><br>` + opt.lines.map(l => `${l}<br>`).join('');
         try { localStorage.setItem('kenLastAddressOption', String(idx)); } catch(e) {}
+        // vBeta37: keep the visible toggle button's label in sync with
+        // whatever #addressOptionSelect (still the real value, just
+        // hidden) is currently set to.
+        let btnLabel = document.getElementById('btnAddressToggleLabel');
+        if (btnLabel) btnLabel.innerText = opt.name || `Option ${idx + 1}`;
+    }
+
+    // vBeta37: replaces the old dropdown for picking a company address —
+    // with only 2 options in real use, a single tap-to-switch button is
+    // less UI than a <select> for the same choice. Cycles through
+    // whatever getAddressOptions() actually returns (2 entries normally,
+    // but this loops cleanly even if that ever changes) by writing the
+    // new index into the hidden #addressOptionSelect and calling the same
+    // applyAddressOption() the old dropdown's onchange called — so every
+    // downstream effect (GSTIN/address block, last-used memory) is
+    // identical to before, only the control surface changed.
+    function toggleAddressOption() {
+        let options = getAddressOptions();
+        if (options.length < 2) return;
+        let sel = document.getElementById('addressOptionSelect');
+        let idx = (parseInt(sel.value) || 0) + 1;
+        if (idx >= options.length) idx = 0;
+        sel.value = idx;
+        applyAddressOption();
     }
 
     function populateAddressOptionSelect() {
@@ -8460,6 +8618,8 @@
         sel.innerHTML = options.map((o,i) => `<option value="${i}">${o.name}</option>`).join('');
         let last = parseInt(localStorage.getItem('kenLastAddressOption')) || 0;
         sel.value = last;
+        let btnLabel = document.getElementById('btnAddressToggleLabel');
+        if (btnLabel) btnLabel.innerText = (options[last] && options[last].name) || `Option ${last + 1}`;
     }
 
     function toggleTermsEdit() {
@@ -10275,7 +10435,14 @@
         brand: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>',
         allprojects: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>',
         tonnage: '<path d="M12 3v18"/><path d="M9 3h6"/><path d="M5 7h6M13 7h6"/><path d="M5 7l-3 7a3 3 0 0 0 6 0z"/><path d="M19 7l-3 7a3 3 0 0 0 6 0z"/>',
-        letterpad: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/>'
+        letterpad: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/>',
+        /* vBeta36: 3 new grid entries added above the last row per request. */
+        documents: '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2Z"/>',
+        pricing: '<path d="M20.59 13.41 13 21l-9-9V4h8l8.59 8.59a2 2 0 0 1 0 2.82Z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+        // Placeholder icon for "Dummy" — a dashed circle, deliberately
+        // distinct from every real tool's solid-line icon so it visually
+        // reads as "not a real feature yet" even before tapping it.
+        dummy: '<circle cx="12" cy="12" r="9" stroke-dasharray="3.5 3.5"/>'
     };
     function renderVistaGridIcons() {
         document.querySelectorAll('.ag-icon[data-vicon]').forEach(function(el) {
@@ -15245,7 +15412,15 @@
         // now-cleared #prodSelect underneath it.
         currentBlockSize = null;
         document.querySelectorAll('.size-grid-btn').forEach(btn => {
-            btn.style.background = '#2c3e50'; btn.style.borderColor = '#0B5A94'; btn.style.color = '#5F5D70';
+            // vBeta37 FIX: this used to hardcode background:#2c3e50 (dark
+            // navy) with color:#5F5D70 (a muted grey meant for LIGHT
+            // backgrounds) — near-unreadable dark-on-dark, and nothing
+            // like the real inactive look selectBlockSize() itself uses
+            // (var(--hp-surface)/var(--hp-border)/var(--hp-ink-muted)).
+            // That's exactly the "ugly dark blue stuck after adding a
+            // product" bug — this reset path just never matched the
+            // actual inactive state. Now it does.
+            btn.style.background = 'var(--hp-surface)'; btn.style.borderColor = 'var(--hp-border)'; btn.style.color = 'var(--hp-ink-muted)';
         });
         let brandSel = document.getElementById('blockBrandSelect');
         if (brandSel) brandSel.value = '';
@@ -15417,8 +15592,13 @@
         let mBtn = document.getElementById('btnMortar');
         let originalText = mBtn.innerText;
         mBtn.innerText = `🪄 ${bags} Bags Appended!`;
-        mBtn.classList.add('pressed-state');
-        setTimeout(() => { mBtn.innerText = originalText; mBtn.classList.remove('pressed-state'); }, 2000);
+        // vBeta37 FIX: was 'pressed-state' (see its CSS comment) — that's
+        // the momentary tap-feedback class (scale down, dim, inset
+        // shadow), which held for a full 2s made the button look stuck.
+        // '.mortar-success-flash' is a real success-confirmation look
+        // (green tint, no scale/dim) that doesn't fight its own message.
+        mBtn.classList.add('mortar-success-flash');
+        setTimeout(() => { mBtn.innerText = originalText; mBtn.classList.remove('mortar-success-flash'); }, 1400);
     }
 
     // ============================================================
@@ -17152,7 +17332,15 @@
         document.getElementById('prodSelect').value = '';
         currentBlockSize = null;
         document.querySelectorAll('.size-grid-btn').forEach(btn => {
-            btn.style.background = '#2c3e50'; btn.style.borderColor = '#0B5A94'; btn.style.color = '#5F5D70';
+            // vBeta37 FIX: this used to hardcode background:#2c3e50 (dark
+            // navy) with color:#5F5D70 (a muted grey meant for LIGHT
+            // backgrounds) — near-unreadable dark-on-dark, and nothing
+            // like the real inactive look selectBlockSize() itself uses
+            // (var(--hp-surface)/var(--hp-border)/var(--hp-ink-muted)).
+            // That's exactly the "ugly dark blue stuck after adding a
+            // product" bug — this reset path just never matched the
+            // actual inactive state. Now it does.
+            btn.style.background = 'var(--hp-surface)'; btn.style.borderColor = 'var(--hp-border)'; btn.style.color = 'var(--hp-ink-muted)';
         });
         let brandSelReset = document.getElementById('blockBrandSelect');
         if (brandSelReset) brandSelReset.value = '';
