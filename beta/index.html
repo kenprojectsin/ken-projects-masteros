@@ -614,7 +614,10 @@
            .analytics-section-title rule already has justify-content:center
            for ITS content, but that only matters once the title itself
            spans the row's full width again. */
-        .analytics-section.pm-row { height: 43px; box-sizing: border-box; padding: 0 14px; display: flex; align-items: center; justify-content: center; }
+        /* vBeta44: margin-bottom overridden from .analytics-section's 14px to
+           8px so the gap BELOW Project Manager matches the 8px gap ABOVE it
+           (which comes from the New Doc/View List row's own margin-bottom). */
+        .analytics-section.pm-row { height: 43px; box-sizing: border-box; padding: 0 14px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; }
         .analytics-section.pm-row .analytics-section-title { margin: 0; }
         /* vBeta34 originally put this border on the shared .analytics-section
            class itself, which is also what Project Manager's own button uses
@@ -688,9 +691,18 @@
            struck from the far top corner), so the tab flows into the panel the
            way a folder tab does instead of stepping into it. Sized to the gap
            exactly so it never paints under the neighbouring tab. */
-        .section-tab.active::after { content: ""; position: absolute; bottom: 0; width: 8px; height: 8px; pointer-events: none; }
-        #reportsToolsTab.active::after { right: -8px; background: radial-gradient(circle 8px at 100% 0, transparent 7.4px, var(--hp-ink) 8.1px); }
-        #blocksCalcTab.active::after { left: -8px; background: radial-gradient(circle 8px at 0 0, transparent 7.4px, var(--hp-ink) 8.1px); }
+        .section-tab.active::after { content: ""; position: absolute; bottom: -1px; width: 9px; height: 9px; pointer-events: none; }
+        /* vBeta44: two seam fixes. (1) The box is 9x9 rather than 8x8 and is
+           pulled 1px past the tab edge and 1px below the panel line, so it
+           always OVERLAPS both neighbours — at fractional device pixel ratios
+           the fillet's edges and the panel's top edge used to round to
+           different device rows, leaving a hairline nick. The overlap strips
+           land on ink-on-ink, so they are invisible. (2) The gradient ramp is
+           now centred exactly on 8px (7.75→8.25) instead of sitting short at
+           7.4→8.1, which had pulled the arc's endpoints ~0.25px inside the
+           tab edge and panel line and read as a misaligned, blurry curve. */
+        #reportsToolsTab.active::after { right: -8px; width: 9px; background: radial-gradient(circle 8px at 100% 0, transparent 7.85px, var(--hp-ink) 8.15px); }
+        #blocksCalcTab.active::after { left: -8px; width: 9px; background: radial-gradient(circle 8px at 0 0, transparent 7.85px, var(--hp-ink) 8.15px); }
         .section-tab-body { display: none; }
         .section-tab-body.open { display: block; margin-top: -10px; }
         #analyticsSectionBody.open { border-top-left-radius: 0; }
@@ -1091,6 +1103,33 @@
         button { font-family: inherit; cursor: pointer; border: none; padding: 12px; border-radius: var(--hp-radius-sm, 4px); font-weight: bold; width: 100%; margin-top: 15px; font-size: 15px; color: white; transition: transform 0.1s ease, background-color 0.2s ease, filter 0.15s ease; }
         .editor-box button:hover { filter: brightness(1.08); }
         button:active, .action-trio-btn:active, .pressed-state { /* v84: .action-trio-btn added - the signature tile is a <div>, so it never got press feedback */ transform: scale(0.95); opacity: 0.85; box-shadow: inset 0 3px 5px rgba(0,0,0,0.4)!important; }
+        /* vBeta45: the press rule above replaces box-shadow outright (with
+           !important), which erases any inset ring that IS a control's border
+           — the control looks borderless while pressed, and on touch that
+           state lingers. A sweep of every <button>/.action-trio-btn/
+           .pressed-state in the app found exactly four such controls; each
+           re-declares both shadows together, ring first, press shading over
+           it. Anything added later that draws its border with an inset
+           box-shadow needs the same one-line companion rule.
+           #bossModeBtn matters most of the four — there the ring is not
+           decoration, it is the ON-state indicator. .tng-preset-btn is scoped
+           :not(.active) because the SELECTED preset is deliberately ringless
+           (see its .active rule, box-shadow: none) and must stay that way. */
+        #btnAddressToggle:active,
+        #btnForceMobileToggle:active { box-shadow: inset 0 0 0 1.5px var(--hp-border), inset 0 3px 5px rgba(0,0,0,0.4) !important; }
+        #bossModeBtn.is-on:active { box-shadow: inset 0 0 0 2px var(--hp-amber-ink), inset 0 3px 5px rgba(0,0,0,0.4) !important; }
+        #tonnageModal .tng-preset-btn:not(.active):active { box-shadow: inset 0 0 0 1.5px rgba(28,28,39,0.06), inset 0 3px 5px rgba(0,0,0,0.4) !important; }
+        /* vBeta44: touch devices latch :hover after a tap and only clear it on
+           the next tap elsewhere, so a tapped button kept its hover tint and
+           looked stuck in a different colour (reported on Auto-Calculate
+           Mortar, Convert to Sales Invoice, and the report tiles). Hover is
+           meaningless without a hovering pointer, so drop the tint there —
+           desktop hover is untouched. */
+        @media (hover: none) {
+            .btn:hover, .editor-box button:hover, .btn-bulk:hover:not(.disabled-bulk), .btn-db:hover:not(:disabled), .client-autofill-banner:hover { filter: none; }
+            .analytics-grid-btn:hover { background: var(--hp-surface-alt); }
+            .analytics-grid-btn:hover .ag-icon { background: #2c3e50; box-shadow: 0 2px 5px rgba(44, 62, 80, 0.35), 0 0 0 5px rgba(44, 62, 80, 0.08); }
+        }
         /* vBeta28 FIX (i4): these were two unrelated solid fills (#0B5A94
            dark blue, #6B3FA0 purple) with white text — the app's oldest,
            pre-Vista button style, sitting right next to the Vista tint+ink
@@ -4073,7 +4112,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta43</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta45</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -8295,7 +8334,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta43";
+    const APP_VERSION = "vBeta45";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
