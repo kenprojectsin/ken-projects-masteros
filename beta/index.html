@@ -667,24 +667,25 @@
            squeezed into its own half — and opening one closes the other, true
            tab exclusivity rather than two independent accordions. See
            selectHeaderTab() in JS. */
-        /* vBeta39: reverted the vBeta37/38 flush-square merge (tab's bottom
-           corners squared off, panel's touching top corner squared off to
-           match) — per feedback the panel should stay fully rounded,
-           including that one corner that used to square off. Both the tab
-           and the panel body now just keep their normal uniform 16px
-           radius on every corner; margin-top:-10 on the open body (below)
-           still pulls it up close under the tab with no visible gap, and
-           border-top:none (further down) still keeps that seam from
-           reading as a bright hairline — this only reverts the RADIUS
-           part of that merge, not the spacing/border fixes. */
+        /* vBeta40: restored the vBeta38 nf2 asymmetric corners after
+           vBeta39 over-corrected. Confirmed with a marked-up screenshot:
+           the LEFT edge (where the active tab sits directly above,
+           reportsToolsTab) stays square/flush — that's the intentional
+           merge with the tab above it, keep as-is. Only the RIGHT edge
+           (the "outside" corner, nothing sitting above it there) should be
+           rounded. Same logic mirrored for blocksCalcTab, which is the
+           RIGHT-hand tab — its panel squares off on the right (under the
+           tab) and stays rounded on the left (outside). */
         .section-tab-row { display: flex; gap: 8px; margin-bottom: 10px; }
         /* vBeta38 nf1: explicit height so this row's tabs match New Doc/View
            List/Project Manager exactly (was 40px vs their 43px — see the
            same fix on .analytics-section.pm-row below). */
         .section-tab { flex: 1; height: 43px; box-sizing: border-box; background: var(--hp-surface-alt); border-radius: var(--hp-radius-md, 16px); padding: 0 10px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 800; color: var(--hp-ink); cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; transition: background .15s ease, color .15s ease; text-align: center; }
-        .section-tab.active { background: var(--hp-ink); color: #FFFFFF; }
+        .section-tab.active { background: var(--hp-ink); color: #FFFFFF; border-radius: var(--hp-radius-md, 16px) var(--hp-radius-md, 16px) 0 0; }
         .section-tab-body { display: none; }
         .section-tab-body.open { display: block; margin-top: -10px; }
+        #analyticsSectionBody.open { border-top-left-radius: 0; }
+        #blocksCalcBody.open { border-top-right-radius: 0; }
         .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
         .analytics-grid-btn {
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
@@ -4063,7 +4064,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta39</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta40</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -8285,7 +8286,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta39";
+    const APP_VERSION = "vBeta40";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
