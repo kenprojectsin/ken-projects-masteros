@@ -680,8 +680,17 @@
         /* vBeta38 nf1: explicit height so this row's tabs match New Doc/View
            List/Project Manager exactly (was 40px vs their 43px — see the
            same fix on .analytics-section.pm-row below). */
-        .section-tab { flex: 1; height: 43px; box-sizing: border-box; background: var(--hp-surface-alt); border-radius: var(--hp-radius-md, 16px); padding: 0 10px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 800; color: var(--hp-ink); cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; transition: background .15s ease, color .15s ease; text-align: center; }
+        .section-tab { position: relative; flex: 1; height: 43px; box-sizing: border-box; background: var(--hp-surface-alt); border-radius: var(--hp-radius-md, 16px); padding: 0 10px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 800; color: var(--hp-ink); cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; transition: background .15s ease, color .15s ease; text-align: center; }
         .section-tab.active { background: var(--hp-ink); color: #FFFFFF; border-radius: var(--hp-radius-md, 16px) var(--hp-radius-md, 16px) 0 0; }
+        /* vBeta43: the active tab used to meet the panel below it at a hard 90°
+           notch. This pseudo-element fills the 8px inter-tab gap at that
+           junction with a CONCAVE fillet (ink everywhere except a quarter-disc
+           struck from the far top corner), so the tab flows into the panel the
+           way a folder tab does instead of stepping into it. Sized to the gap
+           exactly so it never paints under the neighbouring tab. */
+        .section-tab.active::after { content: ""; position: absolute; bottom: 0; width: 8px; height: 8px; pointer-events: none; }
+        #reportsToolsTab.active::after { right: -8px; background: radial-gradient(circle 8px at 100% 0, transparent 7.4px, var(--hp-ink) 8.1px); }
+        #blocksCalcTab.active::after { left: -8px; background: radial-gradient(circle 8px at 0 0, transparent 7.4px, var(--hp-ink) 8.1px); }
         .section-tab-body { display: none; }
         .section-tab-body.open { display: block; margin-top: -10px; }
         #analyticsSectionBody.open { border-top-left-radius: 0; }
@@ -4064,7 +4073,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta42</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta43</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -8286,7 +8295,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta42";
+    const APP_VERSION = "vBeta43";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
