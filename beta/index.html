@@ -738,20 +738,30 @@
         }
         .section-collapse-btn:hover { background: rgba(255,255,255,0.14); filter: none; }
         .section-collapse-btn:active { background: rgba(255,255,255,0.2); transform: scale(0.97); opacity: 1; box-shadow: none !important; }
-        .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+        /* vBeta50 — "Option D" from the design canvas, chosen over a grouped
+           list, a compact grid with a recents shelf, and two-column caption
+           cards. The arrangement is exactly what shipped before (same 3
+           columns, same 18 tools, same order); what changed is that each
+           tile's light-grey CARD is gone. 18 identical grey rectangles was
+           the thing making this read as a web page — the boxes carried no
+           information, they just drew a border around every item. Without
+           them the icons themselves become the grid, which is how a phone
+           home screen looks, and the space the borders were using goes to
+           the icon and label instead: circle 36->42px, glyph 19->22px,
+           label 10.5->12px. Row gap does the separating that the card edges
+           used to. */
+        .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px 8px; }
         .analytics-grid-btn {
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
-            /* vBeta37: was var(--hp-surface) — pure white, per request
-               changed to the app's normal light-grey card tone so these
-               tiles read as boxes on the dark panel rather than stark
-               white rectangles. */
-            background: var(--hp-surface-alt);
-            color: var(--hp-ink); border: none; border-radius: var(--hp-radius-sm, 12px); cursor: pointer;
-            padding: 11px 4px; font-size: 10.5px; font-weight: 700; min-height: 58px;
-            width: 100%; margin: 0; box-sizing: border-box; text-align: center;
-            box-shadow: 0 1px 2px rgba(28,28,39,0.05);
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px;
+            background: none; box-shadow: none;
+            /* Labels sit straight on the section's dark ink panel now, so
+               they are white rather than ink-on-grey. */
+            color: #FFFFFF; border: none; border-radius: var(--hp-radius-sm, 12px); cursor: pointer;
+            padding: 2px; font-size: 12px; font-weight: 800; min-height: 0;
+            width: 100%; margin: 0; box-sizing: border-box; text-align: center; line-height: 1.2;
+            -webkit-tap-highlight-color: transparent;
         }
-        .analytics-grid-btn:hover { background: var(--hp-surface-alt-strong); filter: none; }
+        .analytics-grid-btn:hover { background: none; filter: none; }
         /* vBeta5 F1: was font-size:18px on a raw emoji glyph. Now a small
            tinted circle (one shared color for every icon, per request)
            with an inline-SVG line icon inside, set via data-vicon + JS —
@@ -768,18 +778,30 @@
            instead of a 10% tint) with the icon itself in white, plus a
            soft navy glow around the circle so it lifts off the tile
            instead of sitting flush. Reads as a real button, not a locked
-           icon. */
+           icon.
+           vBeta50: that inversion is now undone, deliberately — it was the
+           right call while the circle sat on a light-grey tile, but Option D
+           removed the tile, so a solid navy circle would be dark-on-dark
+           against the panel. Back to a pale circle with the navy glyph
+           inside: on the dark panel the circle is the thing that carries the
+           light, which is what makes the icon read at a glance without any
+           box around it. #2c3e50 is still the only accent colour here, just
+           on the glyph instead of the fill. The navy glow is gone too — it
+           existed to lift the circle off a white tile, and against dark ink
+           it only muddied the edge. */
         .analytics-grid-btn .ag-icon {
             /* vBeta37: 32px -> 36px, icon svg 17px -> 19px, per request
-               ("icons can be slightly larger"). */
-            width: 36px; height: 36px; border-radius: 50%;
+               ("icons can be slightly larger"). vBeta50: 36 -> 42 / 19 -> 22,
+               spending the space the removed tile borders freed up. */
+            width: 42px; height: 42px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            background: #2c3e50; flex-shrink: 0;
-            box-shadow: 0 2px 5px rgba(44, 62, 80, 0.35), 0 0 0 5px rgba(44, 62, 80, 0.08);
-            transition: background 0.2s ease, box-shadow 0.2s ease;
+            background: #DCE3E9; flex-shrink: 0;
+            box-shadow: none;
+            transition: background 0.2s ease, transform 0.12s ease;
         }
-        .analytics-grid-btn:hover .ag-icon { background: #24313F; box-shadow: 0 2px 6px rgba(44, 62, 80, 0.45), 0 0 0 6px rgba(44, 62, 80, 0.12); }
-        .analytics-grid-btn .ag-icon svg { width: 19px; height: 19px; color: #FFFFFF; }
+        .analytics-grid-btn:hover .ag-icon { background: #EDF1F4; }
+        .analytics-grid-btn:active .ag-icon { transform: scale(0.94); }
+        .analytics-grid-btn .ag-icon svg { width: 22px; height: 22px; color: #2c3e50; }
 
         /* ============================================================
            v73a/v74c TRIAL — Blocks Calculator
@@ -1168,8 +1190,12 @@
            desktop hover is untouched. */
         @media (hover: none) {
             .btn:hover, .editor-box button:hover, .btn-bulk:hover:not(.disabled-bulk), .btn-db:hover:not(:disabled), .client-autofill-banner:hover { filter: none; }
-            .analytics-grid-btn:hover { background: var(--hp-surface-alt); }
-            .analytics-grid-btn:hover .ag-icon { background: #2c3e50; box-shadow: 0 2px 5px rgba(44, 62, 80, 0.35), 0 0 0 5px rgba(44, 62, 80, 0.08); }
+            /* vBeta50: hover now barely does anything (the tile it used to
+               tint is gone), but it still has to be neutralised on touch —
+               a tapped element keeps :hover with no pointer to move away,
+               so the last-tapped icon would otherwise stay lit. */
+            .analytics-grid-btn:hover { background: none; }
+            .analytics-grid-btn:hover .ag-icon { background: #DCE3E9; }
         }
         /* vBeta28 FIX (i4): these were two unrelated solid fills (#0B5A94
            dark blue, #6B3FA0 purple) with white text — the app's oldest,
@@ -2389,9 +2415,15 @@
             .action-trio-btn .trio-icon svg { width: 18px; height: 18px; }
 
             /* --- ANALYTICS GRID --- */
-            .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-            .analytics-grid-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
-            .analytics-grid-btn .ag-icon { width: 28px; height: 28px; } .analytics-grid-btn .ag-icon svg { width: 15px; height: 15px; }
+            /* vBeta50: these three lines used to shrink the grid hard on a
+               phone (28px circle, 10px label) because three BOXED tiles per
+               row left almost no room. Option D removed the boxes, so the
+               room is there — this now keeps the full-size treatment rather
+               than cancelling it, which is the whole point of the redesign
+               (and the phone is the only device this screen is used on). */
+            .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 16px 6px; }
+            .analytics-grid-btn { min-height: 0; font-size: 11.5px; padding: 2px; border-radius: 8px; }
+            .analytics-grid-btn .ag-icon { width: 42px; height: 42px; } .analytics-grid-btn .ag-icon svg { width: 22px; height: 22px; }
             .analytics-section { padding: 10px; }
 
             /* --- BOTTOM ACTION BAR --- */
@@ -2631,9 +2663,12 @@
         body.force-mobile-main .action-trio-btn .trio-icon { font-size: 18px; }
         body.force-mobile-main .action-trio-btn .trio-icon svg { width: 18px; height: 18px; }
 
-        body.force-mobile-main .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        body.force-mobile-main .analytics-grid-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
-        body.force-mobile-main .analytics-grid-btn .ag-icon { width: 28px; height: 28px; } .analytics-grid-btn .ag-icon svg { width: 15px; height: 15px; }
+        /* vBeta50: force-mobile copy of the Option D sizing — this is the
+           block the INSTALLED PWA runs, so leaving the old 28px/10px values
+           here would have meant the redesign only showed up in the browser. */
+        body.force-mobile-main .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 16px 6px; }
+        body.force-mobile-main .analytics-grid-btn { min-height: 0; font-size: 11.5px; padding: 2px; border-radius: 8px; }
+        body.force-mobile-main .analytics-grid-btn .ag-icon { width: 42px; height: 42px; } .analytics-grid-btn .ag-icon svg { width: 22px; height: 22px; }
         body.force-mobile-main .analytics-section { padding: 10px; }
 
         body.force-mobile-main .action-bar {
@@ -2845,9 +2880,12 @@
         body.force-mobile-main .action-trio-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
         body.force-mobile-main .action-trio-btn .trio-icon { font-size: 18px; }
         body.force-mobile-main .action-trio-btn .trio-icon svg { width: 18px; height: 18px; }
-        body.force-mobile-main .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        body.force-mobile-main .analytics-grid-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
-        body.force-mobile-main .analytics-grid-btn .ag-icon { width: 28px; height: 28px; } .analytics-grid-btn .ag-icon svg { width: 15px; height: 15px; }
+        /* vBeta50: force-mobile copy of the Option D sizing — this is the
+           block the INSTALLED PWA runs, so leaving the old 28px/10px values
+           here would have meant the redesign only showed up in the browser. */
+        body.force-mobile-main .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 16px 6px; }
+        body.force-mobile-main .analytics-grid-btn { min-height: 0; font-size: 11.5px; padding: 2px; border-radius: 8px; }
+        body.force-mobile-main .analytics-grid-btn .ag-icon { width: 42px; height: 42px; } .analytics-grid-btn .ag-icon svg { width: 22px; height: 22px; }
         body.force-mobile-main .analytics-section { padding: 10px; }
         body.force-mobile-main .action-bar { bottom: 0; left: 0; width: 100%;
                 border-radius: 0;
@@ -2952,7 +2990,8 @@
         body.force-mobile-main .analytics-table td button { padding: 4px 6px !important; font-size: 10px !important; margin: 1px !important; }
         body.force-mobile-main .action-bar { padding: 6px 8px; gap: 6px; }
         body.force-mobile-main .btn-print, body.force-mobile-main .btn-pdf, body.force-mobile-main .btn-save { font-size: 11px !important; padding: 10px 4px !important; }
-        body.force-mobile-main .analytics-grid-btn, body.force-mobile-main .action-trio-btn { font-size: 9px; min-height: 52px; }
+        body.force-mobile-main .analytics-grid-btn { font-size: 10.5px; min-height: 0; }
+        body.force-mobile-main .action-trio-btn { font-size: 9px; min-height: 52px; }
         /* Ported from the 1100px block — same container/editor-box/preview-box
            split as above, listed here too since the 1100px source block is
            the FIRST one to apply as viewport narrows and this replaces all
@@ -2962,7 +3001,8 @@
         @media (max-width: 360px) {
             .action-bar { padding: 6px 8px; gap: 6px; }
             .btn-print, .btn-pdf, .btn-save { font-size: 11px !important; padding: 10px 4px !important; }
-            .analytics-grid-btn, .action-trio-btn { font-size: 9px; min-height: 52px; }
+            .analytics-grid-btn { font-size: 10.5px; min-height: 0; }
+            .action-trio-btn { font-size: 9px; min-height: 52px; }
         }
 
 
@@ -4299,7 +4339,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta49</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta50</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -8592,7 +8632,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta49";
+    const APP_VERSION = "vBeta50";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
