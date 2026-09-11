@@ -1453,11 +1453,34 @@
            — exactly what the user's screenshot showed. Dropped grow to 0:
            the 140px floor (still needed so the placeholder never clips)
            stays, the inputs just no longer stretch beyond it. */
-        #docModal #docDateRangeRow input[type="date"] { flex: 0 1 140px; min-width: 140px !important; }
-        #docModal #docDateRangeRow input[type="month"] { flex: 0 1 140px; min-width: 140px !important; }
+        /* vBeta49: the sizing that used to live on the inputs now lives on
+           the .dfilter-field wrapper, because the input itself is invisible
+           and stretched over the wrapper — it is the wrapper that has to
+           hold the line's width. */
+        #docModal #docDateRangeRow .dfilter-field { flex: 0 1 140px; min-width: 140px !important; }
         #docModal #docDateRangeRow input {
             font-size: 12px !important; margin: 0 !important; box-shadow: none !important;
             background: transparent !important;
+        }
+        /* vBeta49 — visible-text overlay for the date/month filters. The
+           <span> is what you actually read (the app draws it, so no browser
+           dark-mode pass can blank it out); the real input is stretched
+           transparent across the same box so tapping anywhere still opens
+           the native picker. opacity:0 rather than visibility:hidden, since
+           a hidden input can't receive the tap that opens the picker. */
+        .dfilter-field { position: relative; display: inline-flex; align-items: center; }
+        .dfilter-text {
+            display: block; width: 100%; box-sizing: border-box;
+            padding: 5px 8px; background: #FFFFFF; border: 1px solid #E1E1E6;
+            border-radius: 8px; color: #1C1C27; font-size: 12px; font-weight: 700;
+            letter-spacing: 0.2px; white-space: nowrap; overflow: hidden;
+            text-overflow: ellipsis; pointer-events: none; text-align: center;
+        }
+        .dfilter-text.dfilter-empty { color: #8A8A99; font-weight: 600; }
+        .dfilter-field input {
+            position: absolute; inset: 0; width: 100% !important; height: 100%;
+            margin: 0 !important; padding: 0 !important; border: 0 !important;
+            opacity: 0; cursor: pointer; min-width: 0 !important;
         }
         /* The green "All documents backed up" chip is pure reassurance — it
            says nothing is wrong. It was taking a full block plus 10px of
@@ -1482,9 +1505,13 @@
                columns were crushed and their text overlapped instead of
                scrolling. Rows now size to content; min-width:100% keeps
                narrow tables filling the screen as before. */
+            /* vBeta49: the `thead, tbody { display:table; ... }` line that used
+               to sit here split the header and body into two independently
+               sized tables — see the long explanation on .analytics-table
+               below. Removed, so the stock/report tables that legitimately
+               stay tables (Stock by location has one column per location)
+               keep their columns aligned while still scrolling. */
             .doc-list-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            .doc-list-table thead, .doc-list-table tbody { display: table; width: max-content; min-width: 100%; table-layout: auto; }
-            .doc-list-table tr { display: table-row; }
             .doc-list-table th, .doc-list-table td { white-space: nowrap; }
 
             /* ============================================================
@@ -1870,10 +1897,80 @@
                so small tables are unaffected. `white-space: nowrap` on cells
                is what makes each column take the width its text actually
                needs, guaranteeing text can never overlap. */
+            /* vBeta49 ROOT-CAUSE FIX (the column-misalignment bug) — the line
+               below this comment used to also say:
+
+                   .analytics-table thead, .analytics-table tbody {
+                       display: table; width: max-content; min-width: 100%;
+                       table-layout: auto; }
+
+               ...which is what actually broke the header alignment. Once the
+               table itself is `display:block` it stops being a table box, so
+               telling thead and tbody to each be `display:table` makes them
+               TWO INDEPENDENT TABLES with two independent column models —
+               column 1 in the header sized itself from the word "Date" (38px)
+               while column 1 in the body sized itself from "03 APR 2026"
+               (73px). Measured at 390px wide: header total 351px vs body
+               total 557px. That is the "first column is a different width
+               than its title" report, and it is also why scrolling right
+               ran out of header.
+
+               Removing those two lines is the whole fix: with only
+               `display:block` on the table, the browser wraps the row groups
+               in ONE anonymous table box, so thead and tbody share a single
+               column model again and every column lines up. The table still
+               scrolls, which is what the wide matrix reports (Stock by
+               location) genuinely need. Everything else gets cards instead —
+               see .rpt-cards below. */
             .analytics-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            .analytics-table thead, .analytics-table tbody { display: table; width: max-content; min-width: 100%; table-layout: auto; }
-            .analytics-table tr { display: table-row; }
             .analytics-table th, .analytics-table td { white-space: nowrap; }
+
+            /* vBeta49 MOBILE CARD LAYOUT for report tables.
+               Generalised from the .outstanding-flat-table block further down,
+               which had been doing exactly this for one table since v79 — the
+               same treatment now reaches all ~20 report tables at once,
+               because enhanceReportTables() stamps the data-label attributes
+               automatically from each table's own <th> text and adds the
+               .rpt-cards class. A table it can't safely convert (no <thead>,
+               or a colspan banner header like Outstanding's grouped view)
+               simply doesn't get the class and keeps the aligned-scroll
+               behaviour above. */
+            .analytics-table.rpt-cards { display: block; overflow-x: visible; }
+            .analytics-table.rpt-cards thead { display: none; }
+            .analytics-table.rpt-cards tbody { display: block; width: auto; min-width: 0; }
+            .analytics-table.rpt-cards tr {
+                display: block; background: #FFFFFF; border: 1px solid #E1E1E6;
+                border-radius: 12px; margin-bottom: 10px; padding: 10px 12px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            }
+            .analytics-table.rpt-cards td {
+                display: flex; justify-content: space-between; align-items: center;
+                gap: 12px; white-space: normal; border: none;
+                border-bottom: 1px solid #EDEDF1; padding: 7px 0;
+                text-align: left !important; background: none !important;
+            }
+            .analytics-table.rpt-cards td:last-child { border-bottom: none; }
+            .analytics-table.rpt-cards td::before {
+                content: attr(data-label);
+                font-size: 10px; font-weight: 800; color: #5F5D70;
+                text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0;
+            }
+            /* A cell whose column header is blank (the action-button columns)
+               has nothing worth labelling — it spans the card instead. */
+            .analytics-table.rpt-cards td[data-label=""]::before,
+            .analytics-table.rpt-cards td.card-nolabel::before { content: none; }
+            .analytics-table.rpt-cards td[data-label=""],
+            .analytics-table.rpt-cards td.card-nolabel { flex-wrap: wrap; justify-content: flex-start; gap: 6px; }
+            .analytics-table.rpt-cards tr:hover td { background: none; }
+            /* Total/spacer rows are built with colspan, so the labeller skips
+               them (a positional label would be wrong) — they keep no
+               data-label at all. Those cells just show their value, and a
+               genuinely empty one is dropped rather than leaving a blank
+               line inside the card. */
+            .analytics-table.rpt-cards td:not([data-label]) { justify-content: flex-end; }
+            .analytics-table.rpt-cards td:not([data-label]):empty { display: none; }
+            .analytics-table.rpt-cards tr.total-row { border-color: #0B5A94; border-width: 1.5px; background: #E8F5FF; }
+            .analytics-table.rpt-cards tr.total-row td { border-bottom-color: rgba(11,90,148,0.18); }
 
             /* v79 (item 5): Outstanding is 8 columns with 5 action buttons —
                the worst offender for sideways scrolling on a phone. Scoped to
@@ -2630,9 +2727,10 @@
         body.force-mobile-main.preview-fit .bill-layout .unified-footer { flex-direction: row; gap: 15px; }
         body.force-mobile-main.preview-fit .bill-layout .signature-box-condensed { border-left: 1px solid #EDEDF1; padding-left: 12px; align-items: flex-end !important; text-align: right !important; }
         body.force-mobile-main.preview-fit .bill-layout .terms-box-condensed { border-left: 1px solid #EDEDF1; padding-left: 12px; }
+        /* vBeta49: split-table line removed here too — this force-mobile copy
+           is what the INSTALLED PWA actually runs, so leaving it behind would
+           have meant the bug was only fixed in the browser. */
         body.force-mobile-main .doc-list-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        body.force-mobile-main .doc-list-table thead, body.force-mobile-main .doc-list-table tbody { display: table; width: max-content; min-width: 100%; table-layout: auto; }
-        body.force-mobile-main .doc-list-table tr { display: table-row; }
         body.force-mobile-main .doc-list-table th, body.force-mobile-main .doc-list-table td { white-space: nowrap; }
         body.force-mobile-main .modal-content { width: 100%; max-width: 100%; padding: 12px; border-radius: 0; max-height: 100vh; }
         body.force-mobile-main .modal-header h2 { font-size: 16px; gap: 8px; }
@@ -2640,9 +2738,35 @@
         body.force-mobile-main .period-select-row { flex-direction: column; align-items: stretch !important; gap: 6px !important; }
         body.force-mobile-main .period-select-row input[type="date"], body.force-mobile-main .period-select-row select { width: 100% !important; }
         body.force-mobile-main .analytics-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        body.force-mobile-main .analytics-table thead, body.force-mobile-main .analytics-table tbody { display: table; width: max-content; min-width: 100%; table-layout: auto; }
-        body.force-mobile-main .analytics-table tr { display: table-row; }
         body.force-mobile-main .analytics-table th, body.force-mobile-main .analytics-table td { white-space: nowrap; }
+        /* vBeta49: card layout, mirroring the @media (max-width:700px) block. */
+        body.force-mobile-main .analytics-table.rpt-cards { display: block; overflow-x: visible; }
+        body.force-mobile-main .analytics-table.rpt-cards thead { display: none; }
+        body.force-mobile-main .analytics-table.rpt-cards tbody { display: block; width: auto; min-width: 0; }
+        body.force-mobile-main .analytics-table.rpt-cards tr {
+            display: block; background: #FFFFFF; border: 1px solid #E1E1E6;
+            border-radius: 12px; margin-bottom: 10px; padding: 10px 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        body.force-mobile-main .analytics-table.rpt-cards td {
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 12px; white-space: normal; border: none;
+            border-bottom: 1px solid #EDEDF1; padding: 7px 0 !important;
+            text-align: left !important; background: none !important;
+        }
+        body.force-mobile-main .analytics-table.rpt-cards td:last-child { border-bottom: none; }
+        body.force-mobile-main .analytics-table.rpt-cards td::before {
+            content: attr(data-label);
+            font-size: 10px; font-weight: 800; color: #5F5D70;
+            text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0;
+        }
+        body.force-mobile-main .analytics-table.rpt-cards td[data-label=""]::before,
+        body.force-mobile-main .analytics-table.rpt-cards td.card-nolabel::before { content: none; }
+        body.force-mobile-main .analytics-table.rpt-cards td[data-label=""],
+        body.force-mobile-main .analytics-table.rpt-cards td.card-nolabel { flex-wrap: wrap; justify-content: flex-start; gap: 6px; }
+        body.force-mobile-main .analytics-table.rpt-cards td:not([data-label]) { justify-content: flex-end; }
+        body.force-mobile-main .analytics-table.rpt-cards td:not([data-label]):empty { display: none; }
+        body.force-mobile-main .analytics-table.rpt-cards tr.total-row { border-color: #0B5A94; border-width: 1.5px; background: #E8F5FF; }
         body.force-mobile-main .modal-content [style*="grid-template-columns"]:not(.keep-grid) { grid-template-columns: 1fr 1fr !important;
                 gap: 8px !important; }
         body.force-mobile-main .cash-book-summary, body.force-mobile-main #advPoolSummary { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
@@ -3278,12 +3402,21 @@
            flat pill) while keeping Vista 1's exact colors (ink/tint) —
            the one deliberate change out of the "Pick your Vista 2" pass. */
         #tonnageModal .tng-btn-reset {
-            background: var(--vista-surface-alt); color: var(--tng-muted); border: none; padding: 13px; border-radius: 12px; font-weight: 700;
+            background: var(--vista-danger-tint); color: var(--vista-danger-ink); border: none; padding: 13px; border-radius: 12px; font-weight: 700;
             width: 100%; margin-top: 16px; font-size: 14px; cursor: pointer; text-transform: none;
             box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35);
             transition: background 0.2s ease, color 0.2s ease, box-shadow 0.15s ease;
         }
-        #tonnageModal .tng-btn-reset:hover { background: var(--vista-danger-tint); color: var(--vista-danger); box-shadow: 0 1px 2px rgba(229,72,77,0.08), 0 6px 16px -8px rgba(229,72,77,0.35); }
+        /* vBeta49: this button used to be neutral grey and only turned red on
+           :hover — which on a touchscreen means it looks grey until you tap
+           it, and then STAYS red afterwards (a tapped element keeps :hover
+           until you tap elsewhere, since there's no pointer to move away).
+           So the one moment it was red was the moment the warning had already
+           stopped being useful. It's a destructive action, so it now reads
+           red from the start, matching Clear All in the Blocks Calculator;
+           hover just deepens it slightly on desktop. */
+        #tonnageModal .tng-btn-reset:hover { background: var(--vista-danger); color: #FFFFFF; box-shadow: 0 1px 2px rgba(229,72,77,0.08), 0 6px 16px -8px rgba(229,72,77,0.35); }
+        @media (hover: none) { #tonnageModal .tng-btn-reset:hover { background: var(--vista-danger-tint); color: var(--vista-danger-ink); } }
 
         /* Settings sub-modal — nested above #tonnageModal (z-index set inline) */
         #tonnageSettingsModal {
@@ -4166,7 +4299,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta48</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta49</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -4290,7 +4423,16 @@
                      & Items" inside the Pricing tab — both are just
                      shortcuts into existing features, not new ones. -->
                 <button id="btnAnalyticsDummy" class="analytics-grid-btn" onclick="showToast('More tools coming soon', 'info')"><span class="ag-icon" data-vicon="dummy"></span><span>Dummy</span></button>
-                <button id="btnAnalyticsDocuments" class="analytics-grid-btn" onclick="openSavedDocs()"><span class="ag-icon" data-vicon="documents"></span><span>Documents</span></button>
+                <!-- vBeta49: this tile was "Documents", a second way into the
+                     same Cloud Document Manager the "📂 View List" button at
+                     the top of the home screen already opens — so renaming it
+                     to Vault costs nothing: View List still covers the old
+                     job. Vault opens the shared Google Drive folder where the
+                     scanned/out-of-app paperwork lives, which had no entry
+                     point in the app at all before. Opens in a new tab so the app
+                     (and any half-typed document in it) is never navigated
+                     away from. -->
+                <button id="btnAnalyticsVault" class="analytics-grid-btn" onclick="openVault()"><span class="ag-icon" data-vicon="documents"></span><span>Vault</span></button>
                 <button id="btnAnalyticsPricing" class="analytics-grid-btn" onclick="openPricingEngine()"><span class="ag-icon" data-vicon="pricing"></span><span>Pricing</span></button>
                 <button id="btnAnalyticsAllProjects" class="analytics-grid-btn" onclick="openAllProjectsOverview()"><span class="ag-icon" data-vicon="allprojects"></span><span>All Projects</span></button>
                 <!-- v68: Search Everything disabled per request — not working
@@ -5691,14 +5833,38 @@
                  divider moved to the SECOND GROUP'S OWN left edge, so it only
                  ever appears attached to real content (the month field),
                  never dangling alone. -->
+            <!-- vBeta49 FIX (the "date range is invisible" report): vBeta46
+                 added color-scheme:light to stop Android re-skinning these
+                 native pickers dark, and it still came back invisible on the
+                 real device — because Chrome's "Auto Dark Mode for Web
+                 Contents" re-colours the text INSIDE a native date widget
+                 regardless of what the page asks for. There is no CSS that
+                 reliably wins that argument, so the fix is to stop asking:
+                 each field now draws its own text in a <span> the app
+                 controls, with the real input sitting transparent on top of
+                 it. Tapping still opens the exact same native picker and the
+                 same .value is still what renderDocList() filters on —
+                 nothing about how dates are picked or stored changed, only
+                 who paints the characters. This is the same overlay pattern
+                 the document's own date field has used since vBeta34
+                 (#dateInDisplay). -->
             <div id="docDateRangeRow" style="display:flex; align-items:center; gap:10px; background:#FFFFFF; border:1px solid #E1E1E6; border-radius:var(--rad-md); padding:5px 8px;">
                 <div class="drr-group" style="display:flex; align-items:center; gap:6px;">
-                    <input type="date" id="docFilterFrom" onchange="document.getElementById('docFilterMonth').value=''; renderDocList();" style="border:none; padding:2px; width:auto;">
+                    <span class="dfilter-field">
+                        <span class="dfilter-text" id="docFilterFromText">From</span>
+                        <input type="date" id="docFilterFrom" aria-label="From date" onchange="document.getElementById('docFilterMonth').value=''; renderDocFilterDates(); renderDocList();">
+                    </span>
                     <span style="color:#5F5D70; font-size:11px; flex:0 0 auto;">to</span>
-                    <input type="date" id="docFilterTo" onchange="document.getElementById('docFilterMonth').value=''; renderDocList();" style="border:none; padding:2px; width:auto;">
+                    <span class="dfilter-field">
+                        <span class="dfilter-text" id="docFilterToText">To</span>
+                        <input type="date" id="docFilterTo" aria-label="To date" onchange="document.getElementById('docFilterMonth').value=''; renderDocFilterDates(); renderDocList();">
+                    </span>
                 </div>
                 <div class="drr-group" style="display:flex; align-items:center; gap:6px; border-left:1px solid #E1E1E6; padding-left:8px;">
-                    <input type="month" id="docFilterMonth" onchange="applyQuickMonthFilter()" style="border:none; padding:2px; width:auto;">
+                    <span class="dfilter-field">
+                        <span class="dfilter-text" id="docFilterMonthText">Month</span>
+                        <input type="month" id="docFilterMonth" aria-label="Quick month filter" onchange="applyQuickMonthFilter()">
+                    </span>
                     <button onclick="clearDateFilter()" style="width:auto; margin-top:0; flex:0 0 auto; background:#EDEDF1; color:#1C1C27; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px; font-weight:bold;">Clear</button>
                 </div>
             </div>
@@ -8426,7 +8592,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta48";
+    const APP_VERSION = "vBeta49";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -9696,6 +9862,20 @@
         { key: 'RAJA',  label: '✍️ Signature — Raja',  hint: 'Used when "Sign: Raja" is selected' },
         { key: 'MEHAR', label: '✍️ Signature — Mehar', hint: 'Used when "Sign: Mehar" is selected' }
     ];
+
+    /* vBeta49 — Vault tile (Reports & Tools). Opens the shared Google Drive
+       folder holding the paperwork that lives outside the app (scans,
+       photos, supplier docs). Kept as a named constant rather than inline in
+       the onclick so the folder can be repointed in one obvious place.
+       noopener/noreferrer because this leaves the app's own origin. */
+    const VAULT_DRIVE_URL = 'https://drive.google.com/drive/folders/1upptylqDjd4Yhl4VzX3faB-BRUuyw497';
+    function openVault() {
+        let w = window.open(VAULT_DRIVE_URL, '_blank', 'noopener,noreferrer');
+        // Some installed-PWA webviews refuse window.open and return null —
+        // fall back to navigating this window rather than doing nothing at
+        // all, which would read as a dead button.
+        if (!w) location.href = VAULT_DRIVE_URL;
+    }
 
     function openBrandAssets() {
         renderBrandAssets();
@@ -18540,6 +18720,7 @@
         flushOfflineDocQueue();
 
         // Open instantly from cache — don't block the modal on a cloud round-trip
+        renderDocFilterDates(); // vBeta49: paint the date-filter labels before the modal is seen
         renderDocList();
         document.getElementById('docModal').style.display = 'flex';
 
@@ -18614,6 +18795,80 @@
     function isMobileDocView() {
         return window.innerWidth <= 700 || document.body.classList.contains('force-mobile-main');
     }
+
+    /* ============================================================
+       vBeta49 — AUTOMATIC MOBILE CARDS FOR REPORT TABLES
+       ------------------------------------------------------------
+       There are ~20 .analytics-table reports (Ledger, Cash Book, Audit,
+       All Projects, Summary, GSTR, Trips, Advance Pool, ...), each built
+       by its own render function. Converting them to phone-friendly cards
+       the old way would have meant hand-writing data-label="..." onto
+       every <td> in all 20 renderers — a lot of duplicated strings that
+       would silently drift out of sync the first time a column was
+       renamed.
+
+       Instead this reads each table's OWN <th> text and stamps the
+       matching data-label onto the cells underneath, then flags the table
+       with .rpt-cards so the CSS can turn it into cards on a phone. The
+       labels can therefore never disagree with the headers — they ARE the
+       headers — and a new report picks this up for free with no extra code.
+
+       Deliberately skipped (left as an aligned, scrollable table):
+         - tables with no <thead> (restore/dispatch previews)
+         - tables whose header row uses colspan — e.g. Outstanding's
+           grouped view, where the "header" is a client banner rather than
+           column names, so positional labels would be nonsense
+         - rows whose cell count doesn't match the header (spacer/total
+           rows built with colspan)
+       ============================================================ */
+    function enhanceReportTables() {
+        let tables = document.querySelectorAll('table.analytics-table:not([data-rpt-scanned])');
+        for (let t = 0; t < tables.length; t++) {
+            let tbl = tables[t];
+            tbl.setAttribute('data-rpt-scanned', '1');
+            let headRow = tbl.tHead && tbl.tHead.rows.length ? tbl.tHead.rows[0] : null;
+            if (!headRow) continue;
+            let headCells = headRow.cells;
+            let banner = false;
+            let labels = [];
+            for (let i = 0; i < headCells.length; i++) {
+                if (headCells[i].colSpan > 1) { banner = true; break; }
+                labels.push((headCells[i].textContent || '').trim());
+            }
+            if (banner || labels.length === 0) continue;
+            for (let b = 0; b < tbl.tBodies.length; b++) {
+                let rows = tbl.tBodies[b].rows;
+                for (let r = 0; r < rows.length; r++) {
+                    let cells = rows[r].cells;
+                    if (cells.length !== labels.length) continue;
+                    for (let c = 0; c < cells.length; c++) {
+                        if (cells[c].colSpan > 1) continue;
+                        if (!cells[c].hasAttribute('data-label')) cells[c].setAttribute('data-label', labels[c]);
+                    }
+                }
+            }
+            tbl.classList.add('rpt-cards');
+        }
+    }
+
+    /* Every report renderer writes its table with innerHTML, so rather than
+       adding a call to 20 functions (and needing to remember it for the
+       21st), watch for the tables appearing. Only childList is observed and
+       the pass only sets attributes, so this can't re-trigger itself; the
+       work is coalesced to at most once per animation frame. */
+    (function watchForReportTables() {
+        let queued = false;
+        function flush() { queued = false; try { enhanceReportTables(); } catch (e) { console.warn('table enhance skipped:', e); } }
+        function schedule() { if (!queued) { queued = true; requestAnimationFrame(flush); } }
+        function start() {
+            try {
+                new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
+            } catch (e) { console.warn('table observer unavailable:', e); }
+            flush();
+        }
+        if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+    })();
+
     let currentDocPage = 1;
 
     // A3: remembers the last anchor checkbox clicked, for shift-click range select
@@ -18627,10 +18882,39 @@
         renderDocList();
     }
 
+    /* vBeta49: paints the visible text for the three date-range filter
+       fields (see the markup note on #docDateRangeRow). Called after every
+       place their .value changes, so the label can never drift from the
+       value the list is actually filtered by. */
+    function renderDocFilterDates() {
+        let MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        function paint(inputId, textId, placeholder, isMonth) {
+            let el = document.getElementById(inputId);
+            let disp = document.getElementById(textId);
+            if (!el || !disp) return;
+            if (!el.value) {
+                disp.textContent = placeholder;
+                disp.classList.add('dfilter-empty');
+                return;
+            }
+            disp.classList.remove('dfilter-empty');
+            let parts = el.value.split('-');
+            let y = Number(parts[0]), m = Number(parts[1]);
+            if (!y || !m || m < 1 || m > 12) { disp.textContent = el.value; return; }
+            disp.textContent = isMonth
+                ? MONTHS[m - 1] + ' ' + y
+                : String(Number(parts[2])).padStart(2, '0') + ' ' + MONTHS[m - 1] + ' ' + y;
+        }
+        paint('docFilterFrom', 'docFilterFromText', 'From', false);
+        paint('docFilterTo', 'docFilterToText', 'To', false);
+        paint('docFilterMonth', 'docFilterMonthText', 'Month', true);
+    }
+
     function clearDateFilter() {
         document.getElementById('docFilterFrom').value = '';
         document.getElementById('docFilterTo').value = '';
         document.getElementById('docFilterMonth').value = '';
+        renderDocFilterDates();
         currentDocPage = 1;
         renderDocList();
     }
@@ -18645,6 +18929,7 @@
         let toIso = d => toLocalISO(d);
         document.getElementById('docFilterFrom').value = toIso(firstDay);
         document.getElementById('docFilterTo').value = toIso(lastDay);
+        renderDocFilterDates();
         currentDocPage = 1;
         renderDocList();
     }
