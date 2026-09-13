@@ -236,7 +236,21 @@
            the horizontal-scroll guard on html alone (the actual root
            scroller) keeps the original fix intact with only one scroll
            container in the chain. */
-        html { overflow-x: hidden; }
+        /* vBeta46: the app has no dark theme at all — every color here is
+           hand-picked for a white/light-grey UI. Without an explicit
+           color-scheme, some Android Chrome builds still auto-apply a dark
+           skin to NATIVE form controls (date/month pickers, the calendar
+           glyph, select dropdowns) whenever the OS is in dark mode, even
+           though the page itself stays fully light and unaffected — the
+           browser is deciding independently, not reading this stylesheet.
+           The reported symptom was exactly that: the date-range filter's
+           "mm/dd/yyyy" text and calendar icon read as blank/invisible on a
+           real phone (white-on-white) while looking completely normal in
+           every desktop check, because desktop Chrome doesn't have this
+           auto-dark behavior for native widgets. Declaring the scheme here
+           removes the guesswork — every native control renders with its
+           light-mode appearance regardless of the device's system theme. */
+        html { overflow-x: hidden; color-scheme: light; }
         body { max-width: 100vw; }
         img, table { max-width: 100%; }
         .container, .editor-box, .preview-box, .modal-content, .inline-ux-modal { max-width: 100vw; box-sizing: border-box; }
@@ -707,20 +721,123 @@
         .section-tab-body.open { display: block; margin-top: -10px; }
         #analyticsSectionBody.open { border-top-left-radius: 0; }
         #blocksCalcBody.open { border-top-right-radius: 0; }
-        .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
-        .analytics-grid-btn {
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
-            /* vBeta37: was var(--hp-surface) — pure white, per request
-               changed to the app's normal light-grey card tone so these
-               tiles read as boxes on the dark panel rather than stark
-               white rectangles. */
-            background: var(--hp-surface-alt);
-            color: var(--hp-ink); border: none; border-radius: var(--hp-radius-sm, 12px); cursor: pointer;
-            padding: 11px 4px; font-size: 10.5px; font-weight: 700; min-height: 58px;
-            width: 100%; margin: 0; box-sizing: border-box; text-align: center;
-            box-shadow: 0 1px 2px rgba(28,28,39,0.05);
+        /* vBeta47: Reports & Tools / Blocks Calculator already collapse when
+           their own tab is tapped again — but that tab scrolls out of view
+           once you're deep in a long grid (Blocks Calculator especially, once
+           several wall rows are added), so closing meant scrolling back up
+           first. This mirrors the tab's own toggle right where you actually
+           are when you're done — centered, subtle (this is a dismiss action,
+           not a primary one), sitting on the section's own dark background. */
+        .section-collapse-btn {
+            display: block; width: auto; margin: 14px auto 0; padding: 8px 20px;
+            background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.72);
+            border: none; border-radius: var(--hp-radius-pill, 999px);
+            font-size: 12px; font-weight: 700; letter-spacing: 0.2px; cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: none;
         }
-        .analytics-grid-btn:hover { background: var(--hp-surface-alt-strong); filter: none; }
+        .section-collapse-btn:hover { background: rgba(255,255,255,0.14); filter: none; }
+        .section-collapse-btn:active { background: rgba(255,255,255,0.2); transform: scale(0.97); opacity: 1; box-shadow: none !important; }
+        /* vBeta50 — "Option D" from the design canvas, chosen over a grouped
+           list, a compact grid with a recents shelf, and two-column caption
+           cards. The arrangement is exactly what shipped before (same 3
+           columns, same 18 tools, same order); what changed is that each
+           tile's light-grey CARD is gone. 18 identical grey rectangles was
+           the thing making this read as a web page — the boxes carried no
+           information, they just drew a border around every item. Without
+           them the icons themselves become the grid, which is how a phone
+           home screen looks, and the space the borders were using goes to
+           the icon and label instead: circle 36->42px, glyph 19->22px,
+           label 10.5->12px. Row gap does the separating that the card edges
+           used to. */
+        /* vBeta51 (16b-1) — All Projects summary cards. Only rendered on a
+           phone; desktop keeps the table. */
+        .proj-card { background: var(--vista-surface, #FFFFFF); border: 1px solid var(--vista-border-solid, #E1E1E6); border-radius: 12px; padding: 12px 13px; margin-bottom: 9px; }
+        .proj-card-head { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .proj-card-id { font-size: 10px; font-weight: 900; color: #5F5D70; background: #EDEDF1; border-radius: 5px; padding: 2px 6px; flex-shrink: 0; }
+        .proj-card-name { font-size: 14px; font-weight: 800; color: #1C1C27; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+        .proj-card-status { padding: 3px 9px; border-radius: 999px; font-size: 9.5px; font-weight: 800; white-space: nowrap; flex-shrink: 0; }
+        .proj-card-meta { font-size: 10px; font-weight: 600; color: #5F5D70; margin-top: 3px; }
+        .proj-card-figs { display: flex; align-items: flex-end; gap: 18px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #EDEDF1; cursor: pointer; }
+        .proj-fig-label { display: block; font-size: 9px; font-weight: 800; color: #5F5D70; text-transform: uppercase; letter-spacing: 0.4px; }
+        .proj-fig-value { display: block; font-size: 13px; font-weight: 900; font-variant-numeric: tabular-nums; margin-top: 1px; }
+        .proj-card-more { margin-left: auto; font-size: 10.5px; font-weight: 800; color: #5F5D70; white-space: nowrap; }
+        .proj-card-detail { margin-top: 10px; padding-top: 10px; border-top: 1px solid #EDEDF1; }
+        .proj-detail-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; }
+        .proj-detail-row > span:first-child { font-size: 10px; font-weight: 800; color: #5F5D70; text-transform: uppercase; letter-spacing: 0.4px; }
+        .proj-detail-row > span:last-child { font-size: 12px; font-weight: 700; color: #1C1C27; font-variant-numeric: tabular-nums; }
+        .proj-card-open { width: 100%; margin: 10px 0 0; padding: 10px; background: #EDEDF1; color: #1C1C27; border: none; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; }
+
+        /* ============================================================
+           vBeta51 — LETTERPAD (page 18). Real tabs, a toolbar that lives with
+           the text, print-safe colour swatches, and a staged scan upload.
+           ============================================================ */
+        /* 15e turned .engine-tab-bar into a 2-column grid so Pricing's four
+           tabs wrap as pairs. Letterpad has THREE, which in two columns wraps
+           2+1 and leaves Actions orphaned — the exact thing 15e set out to
+           stop. Three columns for this bar specifically. */
+        .let-tab-bar { grid-template-columns: repeat(3, 1fr) !important; }
+        .let-tab-content { display: none; }
+        .let-tab-content.active { display: block; }
+        /* The sheet lives inside the Write tab now, so a hidden tab would mean
+           printing and PDF export capture nothing. Both actions switch to
+           Write first (see printLetterheadContent / exportLetterheadToPDF),
+           and this is the belt-and-braces for the print stylesheet. */
+        body.letterhead-printing .let-tab-content { display: block !important; }
+
+        .let-view-bar { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+        .let-view-label { font-size: 10px; font-weight: 800; color: #5F5D70; text-transform: uppercase; letter-spacing: 0.4px; }
+        .let-view-seg { display: flex; gap: 2px; background: #EDEDF1; border-radius: 9px; padding: 3px; flex: 1; }
+        .let-view-btn { flex: 1; margin: 0; padding: 8px 2px; font-size: 11.5px; font-weight: 800; border: none; border-radius: 7px; background: transparent; color: #5F5D70; cursor: pointer; }
+        .let-view-btn.active { background: #FFFFFF; color: #1C1C27; box-shadow: 0 1px 2px rgba(28,28,39,0.12); }
+
+        .let-toolbar { position: relative; background: #EDEDF1; border-radius: 10px; padding: 8px; margin-bottom: 10px; }
+        .let-tb-row { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+        .let-tb-btn { width: auto; margin: 0; padding: 7px 9px; font-size: 11.5px; font-weight: 700; background: #FFFFFF; border: none; border-radius: 7px; color: #1C1C27; cursor: pointer; box-shadow: 0 1px 2px rgba(28,28,39,0.08); }
+        .let-tb-sep { width: 1px; height: 20px; background: #E1E1E6; }
+        .let-colour-trigger { display: inline-flex; align-items: center; gap: 7px; }
+        .let-colour-chip { width: 18px; height: 18px; border-radius: 5px; background: #1C1C27; border: 1px solid rgba(0,0,0,0.15); display: inline-block; flex-shrink: 0; }
+        .let-size-seg { display: inline-flex; gap: 2px; background: #FFFFFF; border-radius: 7px; padding: 2px; }
+        .let-size-btn { width: auto; margin: 0; padding: 6px 10px; font-size: 11px; font-weight: 800; border: none; border-radius: 5px; background: transparent; color: #5F5D70; cursor: pointer; }
+        .let-size-btn.active { background: #EDEDF1; color: #1C1C27; }
+        .let-colour-panel { margin-top: 8px; background: #FFFFFF; border-radius: 9px; padding: 10px; }
+        .let-colour-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .let-colour-sw { display: block; height: 30px; border-radius: 7px; border: 1px solid rgba(0,0,0,0.12); cursor: pointer; padding: 0; margin: 0; width: 100%; box-sizing: border-box; }
+        .let-colour-sw.active { box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #1C1C27; }
+        .let-colour-actions { display: flex; gap: 8px; margin-top: 9px; }
+        .let-colour-actions .let-tb-btn { flex: 1; box-shadow: none; border: 1px solid #E1E1E6; }
+
+        .let-primary-btn { width: 100%; margin: 0; padding: 15px; background: #1C7A3E; color: #FFFFFF; border: none; border-radius: 10px; font-size: 13.5px; font-weight: 900; cursor: pointer; }
+        .let-print-label { font-size: 9.5px; font-weight: 800; color: #5F5D70; text-transform: uppercase; letter-spacing: 0.5px; margin: 12px 0 6px; }
+        .let-print-seg { display: flex; gap: 2px; background: #EDEDF1; border-radius: 10px; padding: 3px; }
+        .let-print-btn { flex: 1; margin: 0; padding: 11px 2px; font-size: 11.5px; font-weight: 800; border: none; border-radius: 8px; background: #FFFFFF; color: #1C1C27; cursor: pointer; box-shadow: 0 1px 2px rgba(28,28,39,0.1); }
+        .let-minor-row { display: flex; gap: 8px; margin-top: 10px; }
+        .let-minor-btn { flex: 1; margin: 0; padding: 11px 4px; font-size: 11px; font-weight: 800; background: #EDEDF1; color: #1C1C27; border: none; border-radius: 10px; cursor: pointer; }
+
+        .let-scan-stage { margin-top: 10px; background: #EDEDF1; border-radius: 10px; padding: 12px; }
+        .let-scan-top { display: flex; gap: 12px; align-items: flex-start; }
+        .let-scan-thumb { width: 78px; height: 100px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E1E1E6; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 26px; }
+        .let-scan-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .let-scan-meta { flex: 1; min-width: 0; }
+        .let-scan-name { font-size: 12.5px; font-weight: 800; color: #1C1C27; overflow-wrap: anywhere; line-height: 1.3; }
+        .let-scan-size { font-size: 10.5px; font-weight: 600; color: #5F5D70; margin-top: 4px; }
+        .let-scan-serial { display: inline-block; margin-top: 8px; background: #E8F5FF; color: #0B5A94; border-radius: 6px; padding: 5px 8px; font-size: 10.5px; font-weight: 800; }
+        .let-scan-actions { display: flex; gap: 8px; margin-top: 12px; }
+        .let-scan-confirm { flex: 1; margin: 0; padding: 12px; background: #1C7A3E; color: #FFFFFF; border: none; border-radius: 9px; font-size: 12px; font-weight: 800; cursor: pointer; }
+        .let-scan-cancel { flex: 0 0 44%; margin: 0; padding: 12px; background: #FFFFFF; color: #5F5D70; border: 1px solid #E1E1E6; border-radius: 9px; font-size: 12px; font-weight: 800; cursor: pointer; }
+
+        .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px 8px; }
+        .analytics-grid-btn {
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px;
+            background: none; box-shadow: none;
+            /* Labels sit straight on the section's dark ink panel now, so
+               they are white rather than ink-on-grey. */
+            color: #FFFFFF; border: none; border-radius: var(--hp-radius-sm, 12px); cursor: pointer;
+            padding: 2px; font-size: 12px; font-weight: 800; min-height: 0;
+            width: 100%; margin: 0; box-sizing: border-box; text-align: center; line-height: 1.2;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .analytics-grid-btn:hover { background: none; filter: none; }
         /* vBeta5 F1: was font-size:18px on a raw emoji glyph. Now a small
            tinted circle (one shared color for every icon, per request)
            with an inline-SVG line icon inside, set via data-vicon + JS —
@@ -737,18 +854,30 @@
            instead of a 10% tint) with the icon itself in white, plus a
            soft navy glow around the circle so it lifts off the tile
            instead of sitting flush. Reads as a real button, not a locked
-           icon. */
+           icon.
+           vBeta50: that inversion is now undone, deliberately — it was the
+           right call while the circle sat on a light-grey tile, but Option D
+           removed the tile, so a solid navy circle would be dark-on-dark
+           against the panel. Back to a pale circle with the navy glyph
+           inside: on the dark panel the circle is the thing that carries the
+           light, which is what makes the icon read at a glance without any
+           box around it. #2c3e50 is still the only accent colour here, just
+           on the glyph instead of the fill. The navy glow is gone too — it
+           existed to lift the circle off a white tile, and against dark ink
+           it only muddied the edge. */
         .analytics-grid-btn .ag-icon {
             /* vBeta37: 32px -> 36px, icon svg 17px -> 19px, per request
-               ("icons can be slightly larger"). */
-            width: 36px; height: 36px; border-radius: 50%;
+               ("icons can be slightly larger"). vBeta50: 36 -> 42 / 19 -> 22,
+               spending the space the removed tile borders freed up. */
+            width: 42px; height: 42px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            background: #2c3e50; flex-shrink: 0;
-            box-shadow: 0 2px 5px rgba(44, 62, 80, 0.35), 0 0 0 5px rgba(44, 62, 80, 0.08);
-            transition: background 0.2s ease, box-shadow 0.2s ease;
+            background: #DCE3E9; flex-shrink: 0;
+            box-shadow: none;
+            transition: background 0.2s ease, transform 0.12s ease;
         }
-        .analytics-grid-btn:hover .ag-icon { background: #24313F; box-shadow: 0 2px 6px rgba(44, 62, 80, 0.45), 0 0 0 6px rgba(44, 62, 80, 0.12); }
-        .analytics-grid-btn .ag-icon svg { width: 19px; height: 19px; color: #FFFFFF; }
+        .analytics-grid-btn:hover .ag-icon { background: #EDF1F4; }
+        .analytics-grid-btn:active .ag-icon { transform: scale(0.94); }
+        .analytics-grid-btn .ag-icon svg { width: 22px; height: 22px; color: #2c3e50; }
 
         /* ============================================================
            v73a/v74c TRIAL — Blocks Calculator
@@ -783,9 +912,16 @@
            than a guessed number. */
         .bcalc-icon-col { display:flex; flex-direction:column; gap:4px; }
         .bcalc-x { align-self:center; color:var(--hp-ink-muted); font-weight:bold; padding-top:14px; }
-        .bcalc-size-row { display:flex; gap:5px; margin-top:8px; }
-        .bcalc-size-btn { flex:1; margin:0; padding:7px 2px; font-size:12px; font-weight:bold; border-radius:4px; background:var(--hp-surface-alt); border:2px solid var(--hp-border); color:var(--hp-ink-muted); cursor:pointer; }
-        .bcalc-size-btn.active { background:var(--hp-ink); border-color:var(--hp-ink); color:#FFFFFF; }
+        /* vBeta48: restyled as a segmented PILL track (one shared component
+           with .bcalc-io-row / .bcalc-pill-track below) — the container
+           itself carries the grey track background, each button is
+           transparent until active, active = white chip + soft shadow.
+           Same visual language now used for size / outer-inner / wastage /
+           round-up, so all four "pick one" controls on this screen read as
+           the same control instead of four different styles. */
+        .bcalc-size-row { display:flex; gap:2px; margin-top:10px; background:var(--hp-surface-alt); border-radius:10px; padding:3px; }
+        .bcalc-size-btn { flex:1; margin:0; padding:7px 2px; font-size:11.5px; font-weight:800; border-radius:8px; background:transparent; border:none; color:var(--hp-ink-muted); cursor:pointer; }
+        .bcalc-size-btn.active { background:var(--hp-surface); color:var(--hp-mint-ink); box-shadow:0 1px 2px rgba(28,28,39,0.12); }
         .bcalc-row-result { font-size:11px; color:var(--hp-mint-ink); font-weight:bold; margin-top:6px; text-align:right; }
         .bcalc-label-input { width:100%; box-sizing:border-box; background:transparent; border:none; border-bottom:1px dashed var(--hp-border); color:var(--hp-ink); font-size:12px; font-weight:bold; padding:2px 0 6px 0; margin-bottom:6px; }
         .bcalc-label-input::placeholder { color:var(--hp-ink-muted); font-weight:normal; }
@@ -803,7 +939,11 @@
            dimension box, swapped to a neutral surface tone. Class name kept
            (still referenced as .bcalc-section-green elsewhere) to avoid
            touching JS/other CSS that targets it. */
-        .bcalc-section-green { background:var(--hp-surface-alt); border:1px solid var(--hp-border); border-radius:5px; padding:7px; margin-bottom:6px; }
+        /* vBeta48: flattened to transparent — the outer .bcalc-row card is
+           already white on the dark panel, so this inner box no longer
+           needs its own grey fill/border; keeping the class (and its name)
+           avoids touching the JS that applies it. */
+        .bcalc-section-green { background:transparent; border:none; border-radius:0; padding:0; margin-bottom:6px; }
         .bcalc-section-red { background:var(--hp-danger-tint); border:1px solid transparent; border-radius:5px; padding:7px; }
 
         /* Length field supports "20 16" (space-separated, auto-summed) —
@@ -816,26 +956,25 @@
            length" field. Outer = no correction (as-measured). Inner = the
            block-thickness correction is applied automatically once a size
            is picked, so there is nothing to type or compute by hand. */
-        .bcalc-io-row { display:flex; gap:5px; margin-top:6px; }
-        .bcalc-io-btn { flex:1; margin:0; padding:6px 2px; font-size:11px; font-weight:bold; border-radius:4px; background:var(--hp-surface); border:2px solid var(--hp-border); color:var(--hp-ink-muted); cursor:pointer; text-transform:uppercase; letter-spacing:0.3px; }
-        /* VISTA 6 (vBeta27): was a solid --hp-mint fill (the same raw,
-           saturated green "Convert to Tax Invoice" avoids) — swapped to the
-           tint+ink pair that button uses instead, so Inner/Outer's selected
-           state finally reads as the same modern green as everywhere else
-           in the app, not an older, more saturated one. The border keeps
-           the ink color (rather than matching the tint) so "selected" is
-           still unambiguous against the neutral grey unselected state. */
-        .bcalc-io-btn.active { background:var(--hp-mint-tint); border-color:var(--hp-mint-ink); color:var(--hp-mint-ink); }
+        .bcalc-io-row { display:flex; gap:2px; margin-top:6px; background:var(--hp-surface-alt); border-radius:10px; padding:3px; }
+        .bcalc-io-btn { flex:1; margin:0; padding:7px 2px; font-size:11.5px; font-weight:800; border-radius:8px; background:transparent; border:none; color:var(--hp-ink-muted); cursor:pointer; text-transform:uppercase; letter-spacing:0.3px; }
+        /* vBeta48: matches the size-pill treatment above (white chip + soft
+           shadow, mint ink text) instead of its own tint+border pairing. */
+        .bcalc-io-btn.active { background:var(--hp-surface); color:var(--hp-mint-ink); box-shadow:0 1px 2px rgba(28,28,39,0.12); }
         .bcalc-io-hint { font-size:9px; color:var(--hp-ink-muted); margin-top:3px; }
 
         /* v75: Deductions box is collapsed by default per row — a red
            toggle button reveals a single math-expression input (same
            grammar as Length). No separate "count" field anymore — the
            expression itself already handles repeats, e.g. "12x3 10". */
+        /* vBeta48: border is now ALWAYS dotted red, in every state (open,
+           has-value, empty) — previously it switched to a SOLID red border
+           once open or once a deduction was set. Per request: dotted red
+           stays the permanent visual marker for "this subtracts area",
+           regardless of whether it's expanded or filled in. */
         .bcalc-ded-toggle { display:block; width:100%; margin:6px 0 0 0; padding:8px; font-size:11px; font-weight:bold; border-radius:5px; cursor:pointer; text-align:center;
-            background:var(--hp-danger-tint); border:1px dashed var(--hp-danger); color:var(--hp-danger-ink); }
-        .bcalc-ded-toggle-open { border-style:solid; background:var(--hp-danger-tint); }
-        .bcalc-ded-toggle-hasvalue { border-style:solid; background:var(--hp-danger-tint); }
+            background:var(--hp-danger-tint); border:1.5px dotted var(--hp-danger); color:var(--hp-danger-ink); }
+        .bcalc-ded-toggle-open, .bcalc-ded-toggle-hasvalue { background:var(--hp-danger-tint); }
         .bcalc-deduct-input { border-color:var(--hp-danger) !important; }
 
         /* v75: prominent "Add Wall Row" — larger touch target, meant to be
@@ -850,7 +989,10 @@
            still marks it as the primary action in the section, just a
            neutral one instead of a green-tinted glow that no longer suits
            a pastel fill. */
-        .bcalc-addrow-btn { flex:1.6; margin:0; padding:13px; font-size:14px; font-weight:900; letter-spacing:0.5px; color:var(--hp-mint-ink); border:none; border-radius:7px; cursor:pointer;
+        /* vBeta48: flex 1.6 -> 1 (equal width with Clear All), per request
+           to match the 50/50 split already used by every button row below
+           it (Save/Load, Convert to Quotation/Sales Invoice). */
+        .bcalc-addrow-btn { flex:1; margin:0; padding:13px; font-size:14px; font-weight:900; letter-spacing:0.5px; color:var(--hp-mint-ink); border:none; border-radius:7px; cursor:pointer;
             background:var(--hp-mint-tint); box-shadow:0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35); text-transform:uppercase; }
         .bcalc-addrow-btn:active { transform:scale(0.97); }
 
@@ -863,33 +1005,30 @@
            already part of Vista's core token set, so no new color was
            introduced to achieve the same "different kind of control"
            distinction. */
+        /* vBeta48: replaced the separate ON/OFF toggle switch + purple/amber
+           segmented control with ONE segmented pill track per column — "Off"
+           is just the first segment now, using the same white-chip/mint-ink
+           pill component as size and outer/inner above, instead of a
+           different-colored control kind. Selecting "Off" calls the
+           existing setBlocksCalcWastageEnabled(false)/setBlocksCalcRoundEnabled(false);
+           selecting a value calls the existing setBlocksCalcWastage(pct)/
+           setBlocksCalcRoundTo(n), which already sets enabled=true — no new
+           state, just a simpler control surface over the same functions. */
         .bcalc-adjust-strip { display:flex; gap:8px; margin-top:10px; }
-        .bcalc-adjust-col { flex:1; border-radius:8px; padding:7px 9px; }
-        .bcalc-adjust-wastage { background:var(--hp-purple-tint); border:1px solid transparent; }
-        .bcalc-adjust-round { background:var(--hp-amber-tint); border:1px solid transparent; }
-        .bcalc-toggle-row { display:flex; align-items:center; gap:6px; cursor:pointer; margin-bottom:6px; }
-        .bcalc-adjust-label { font-size:10px; font-weight:bold; color:var(--hp-ink); }
-        .bcalc-toggle-switch { position:relative; display:inline-block; width:26px; height:15px; flex-shrink:0; }
-        .bcalc-toggle-switch input { opacity:0; width:0; height:0; }
-        .bcalc-toggle-slider { position:absolute; inset:0; background:var(--hp-surface-alt-strong); border-radius:15px; transition:background 0.15s; }
-        .bcalc-toggle-slider::before { content:''; position:absolute; width:11px; height:11px; left:2px; top:2px; background:#FFFFFF; border-radius:50%; transition:transform 0.15s; }
-        .bcalc-adjust-wastage .bcalc-toggle-switch input:checked + .bcalc-toggle-slider { background:var(--hp-purple); }
-        .bcalc-adjust-round .bcalc-toggle-switch input:checked + .bcalc-toggle-slider { background:var(--hp-amber); }
-        .bcalc-toggle-switch input:checked + .bcalc-toggle-slider::before { transform:translateX(11px); }
-        /* Elegant connected segmented control — a single bordered strip
-           with square-ish internal dividers rather than separate floating
-           pills, which reads as more deliberate/refined. */
-        .bcalc-seg { display:flex; border:1px solid var(--hp-border); border-radius:6px; overflow:hidden; transition:opacity 0.15s; background:var(--hp-surface); }
-        .bcalc-seg.disabled { opacity:0.35; pointer-events:none; }
-        .bcalc-seg-btn { flex:1; margin:0; padding:6px 2px; font-size:11px; font-weight:bold; cursor:pointer; background:var(--hp-surface); color:var(--hp-ink-muted); border:none; border-right:1px solid var(--hp-border); }
-        .bcalc-seg-btn:last-child { border-right:none; }
-        /* vBeta14 FIX: was background:var(--hp-purple)/var(--hp-amber) — the vivid base
-           tones — with the dark ink text on top. Measured contrast was only 2.97:1
-           (purple) and 3.47:1 (amber), both under WCAG AA. Swapped to the tint
-           background (same pairing used everywhere else in the app) for ~6.2:1 and
-           ~6.5:1 respectively — readable, and consistent with the rest of Vista. */
-        .bcalc-adjust-wastage .bcalc-seg-btn.active { background:var(--hp-purple-tint); color:var(--hp-purple-ink); }
-        .bcalc-adjust-round .bcalc-seg-btn.active { background:var(--hp-amber-tint); color:var(--hp-amber-ink); }
+        .bcalc-adjust-col { flex:1; background:var(--hp-surface); border:1px solid var(--hp-border); border-radius:10px; padding:10px; }
+        .bcalc-adjust-label { font-size:10.5px; font-weight:800; color:var(--hp-ink); margin-bottom:7px; display:block; }
+        .bcalc-seg { display:flex; gap:2px; background:var(--hp-surface-alt); border-radius:8px; padding:3px; }
+        .bcalc-seg-btn { flex:1; margin:0; padding:6px 2px; font-size:11px; font-weight:800; cursor:pointer; background:transparent; color:var(--hp-ink-muted); border:none; border-radius:6px; }
+        .bcalc-seg-btn.active { background:var(--hp-surface); color:var(--hp-mint-ink); box-shadow:0 1px 2px rgba(28,28,39,0.12); }
+
+        /* vBeta48: numbered step labels ("1 Wall Dimensions" / "2
+           Adjustments" / "3 Totals") sit directly on the dark ink panel
+           (same as the section's own light text), grouping the calculator
+           into the same guided 3-step flow used everywhere per request. */
+        .bcalc-step-label { display:flex; align-items:center; gap:8px; margin:16px 0 10px; }
+        .bcalc-step-label:first-child { margin-top:0; }
+        .bcalc-step-num { width:20px; height:20px; border-radius:50%; background:var(--hp-mint-ink); color:#FFFFFF; font-size:11px; font-weight:900; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .bcalc-step-text { font-size:11px; font-weight:800; color:rgba(255,255,255,0.85); text-transform:uppercase; letter-spacing:0.4px; }
 
         /* v75: Save / Load panel */
         .bcalc-saved-row { display:flex; align-items:center; gap:6px; padding:6px 4px; border-bottom:1px solid var(--hp-border); }
@@ -1127,8 +1266,12 @@
            desktop hover is untouched. */
         @media (hover: none) {
             .btn:hover, .editor-box button:hover, .btn-bulk:hover:not(.disabled-bulk), .btn-db:hover:not(:disabled), .client-autofill-banner:hover { filter: none; }
-            .analytics-grid-btn:hover { background: var(--hp-surface-alt); }
-            .analytics-grid-btn:hover .ag-icon { background: #2c3e50; box-shadow: 0 2px 5px rgba(44, 62, 80, 0.35), 0 0 0 5px rgba(44, 62, 80, 0.08); }
+            /* vBeta50: hover now barely does anything (the tile it used to
+               tint is gone), but it still has to be neutralised on touch —
+               a tapped element keeps :hover with no pointer to move away,
+               so the last-tapped icon would otherwise stay lit. */
+            .analytics-grid-btn:hover { background: none; }
+            .analytics-grid-btn:hover .ag-icon { background: #DCE3E9; }
         }
         /* vBeta28 FIX (i4): these were two unrelated solid fills (#0B5A94
            dark blue, #6B3FA0 purple) with white text — the app's oldest,
@@ -1264,8 +1407,16 @@
            and all modals previously shared the same z-index — meaning
            which one visually won depended on DOM order, not open order.
            These get a higher z-index so they always render on top of
-           whatever else happens to be open underneath them. */
-        #advancePoolModal, #reviewAmbiguousDocsModal, #unregisteredAdvSearchModal { z-index: 2100; }
+           whatever else happens to be open underneath them.
+           vBeta46: #docItemSummaryModal (the long-press item summary from
+           the Cloud Document Manager) has this exact bug and was missed —
+           it sits BEFORE #docModal in the DOM, so at the shared z-index
+           #docModal (opened later, painted later) always won the stacking
+           order. The popup opened, filled in correctly, and was completely
+           invisible every time — reported as "the QUO/RCP badge long-press
+           doesn't do anything," but it affected every doc type equally,
+           since the cause is stacking order, not the per-type content. */
+        #advancePoolModal, #reviewAmbiguousDocsModal, #unregisteredAdvSearchModal, #docItemSummaryModal { z-index: 2100; }
         .modal-content { background: white; width: 95%; max-width: 1150px; border-radius: 8px; padding: 20px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #EDEDF1; padding-bottom: 10px; margin-bottom: 15px; }
         .modal-header h2 { margin: 0; color: #2c3e50; display: flex; align-items: center; gap: 15px;}
@@ -1388,8 +1539,13 @@
            still a clear win on the original — three separately-bordered
            pills stacked three-deep became one card two lines tall — and it
            holds the harder rule: nothing clips, nothing scrolls sideways. */
-        #docModal .filter-bar #docDateRangeRow { flex-wrap: wrap !important; gap: 6px !important; }
-        #docModal #docDateRangeRow > * { min-width: 0 !important; }
+        #docModal .filter-bar #docDateRangeRow { flex-wrap: wrap !important; gap: 10px !important; }
+        /* vBeta46: the row's direct children are now the two .drr-group
+           wrappers, not the individual controls — min-width:0 here lets a
+           GROUP shrink/wrap as a whole rather than letting the row squeeze
+           an individual date field down to unreadable width. */
+        #docModal #docDateRangeRow > * { min-width: 0 !important; flex: 0 0 auto !important; }
+        #docModal #docDateRangeRow .drr-group { flex-wrap: nowrap !important; }
         /* vBeta34 FIX: these were "flex: 1 1 140px" — the flex-grow:1 was
            meant to keep the two wrapped lines visually aligned/symmetric,
            but a native date input doesn't paint any content into the extra
@@ -1399,11 +1555,34 @@
            — exactly what the user's screenshot showed. Dropped grow to 0:
            the 140px floor (still needed so the placeholder never clips)
            stays, the inputs just no longer stretch beyond it. */
-        #docModal #docDateRangeRow input[type="date"] { flex: 0 1 140px; min-width: 140px !important; }
-        #docModal #docDateRangeRow input[type="month"] { flex: 0 1 140px; min-width: 140px !important; }
+        /* vBeta49: the sizing that used to live on the inputs now lives on
+           the .dfilter-field wrapper, because the input itself is invisible
+           and stretched over the wrapper — it is the wrapper that has to
+           hold the line's width. */
+        #docModal #docDateRangeRow .dfilter-field { flex: 0 1 140px; min-width: 140px !important; }
         #docModal #docDateRangeRow input {
             font-size: 12px !important; margin: 0 !important; box-shadow: none !important;
             background: transparent !important;
+        }
+        /* vBeta49 — visible-text overlay for the date/month filters. The
+           <span> is what you actually read (the app draws it, so no browser
+           dark-mode pass can blank it out); the real input is stretched
+           transparent across the same box so tapping anywhere still opens
+           the native picker. opacity:0 rather than visibility:hidden, since
+           a hidden input can't receive the tap that opens the picker. */
+        .dfilter-field { position: relative; display: inline-flex; align-items: center; }
+        .dfilter-text {
+            display: block; width: 100%; box-sizing: border-box;
+            padding: 5px 8px; background: #FFFFFF; border: 1px solid #E1E1E6;
+            border-radius: 8px; color: #1C1C27; font-size: 12px; font-weight: 700;
+            letter-spacing: 0.2px; white-space: nowrap; overflow: hidden;
+            text-overflow: ellipsis; pointer-events: none; text-align: center;
+        }
+        .dfilter-text.dfilter-empty { color: #8A8A99; font-weight: 600; }
+        .dfilter-field input {
+            position: absolute; inset: 0; width: 100% !important; height: 100%;
+            margin: 0 !important; padding: 0 !important; border: 0 !important;
+            opacity: 0; cursor: pointer; min-width: 0 !important;
         }
         /* The green "All documents backed up" chip is pure reassurance — it
            says nothing is wrong. It was taking a full block plus 10px of
@@ -1428,9 +1607,13 @@
                columns were crushed and their text overlapped instead of
                scrolling. Rows now size to content; min-width:100% keeps
                narrow tables filling the screen as before. */
+            /* vBeta49: the `thead, tbody { display:table; ... }` line that used
+               to sit here split the header and body into two independently
+               sized tables — see the long explanation on .analytics-table
+               below. Removed, so the stock/report tables that legitimately
+               stay tables (Stock by location has one column per location)
+               keep their columns aligned while still scrolling. */
             .doc-list-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            .doc-list-table thead, .doc-list-table tbody { display: table; width: max-content; min-width: 100%; table-layout: auto; }
-            .doc-list-table tr { display: table-row; }
             .doc-list-table th, .doc-list-table td { white-space: nowrap; }
 
             /* ============================================================
@@ -1715,10 +1898,17 @@
            already the intended muted gray. */
         .btg-table th { text-align: left; padding: 6px 8px; border-bottom: 2px solid var(--pm-border, #EDEDF1); border-left: none; border-right: none; font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--pm-ink-muted, #5F5D70); background: var(--pm-surface, #FFFFFF); }
         .btg-table th:last-child, .btg-table td:last-child { text-align: right; }
-        .btg-tier-cell { padding: 10px 8px; font-weight: 700; font-size: 13px; border-bottom: 1px solid var(--pm-border, #EDEDF1); color: var(--pm-ink, #2c3e50); }
-        .btg-rate-cell { padding: 6px 8px; border-bottom: 1px solid var(--pm-border, #EDEDF1); text-align: right; }
+        /* vBeta51 (15a-1): the tier grid is a list of rows now, not a table —
+           see renderBrandTierGrid() for why. The row fills whatever width it
+           is given, the tier name takes what it needs, and the rate box stays
+           a fixed comfortable size instead of stretching. */
+        .btg-list { width: 100%; }
+        .btg-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 2px; border-bottom: 2px solid var(--pm-border, #EDEDF1); font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--pm-ink-muted, #5F5D70); }
+        .btg-row { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--pm-border, #EDEDF1); }
+        .btg-tier-cell { flex: 1; min-width: 0; padding: 10px 2px; font-weight: 700; font-size: 13px; color: var(--pm-ink, #2c3e50); }
+        .btg-rate-cell { flex: 0 0 auto; padding: 6px 0; }
         .btg-rate-cell input {
-            width: 96px; text-align: center; padding: 9px 4px; font-size: 14px; font-weight: bold;
+            width: 120px; text-align: center; padding: 9px 4px; font-size: 14px; font-weight: bold; margin: 0;
             border-radius: var(--pm-radius-sm, 6px); border: 1px solid var(--pm-border, #E1E1E6);
             background: var(--pm-surface-alt, #EDEDF1); color: var(--pm-ink, #2c3e50);
         }
@@ -1816,10 +2006,89 @@
                so small tables are unaffected. `white-space: nowrap` on cells
                is what makes each column take the width its text actually
                needs, guaranteeing text can never overlap. */
+            /* vBeta49 ROOT-CAUSE FIX (the column-misalignment bug) — the line
+               below this comment used to also say:
+
+                   .analytics-table thead, .analytics-table tbody {
+                       display: table; width: max-content; min-width: 100%;
+                       table-layout: auto; }
+
+               ...which is what actually broke the header alignment. Once the
+               table itself is `display:block` it stops being a table box, so
+               telling thead and tbody to each be `display:table` makes them
+               TWO INDEPENDENT TABLES with two independent column models —
+               column 1 in the header sized itself from the word "Date" (38px)
+               while column 1 in the body sized itself from "03 APR 2026"
+               (73px). Measured at 390px wide: header total 351px vs body
+               total 557px. That is the "first column is a different width
+               than its title" report, and it is also why scrolling right
+               ran out of header.
+
+               Removing those two lines is the whole fix: with only
+               `display:block` on the table, the browser wraps the row groups
+               in ONE anonymous table box, so thead and tbody share a single
+               column model again and every column lines up. The table still
+               scrolls, which is what the wide matrix reports (Stock by
+               location) genuinely need. Everything else gets cards instead —
+               see .rpt-cards below. */
             .analytics-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            .analytics-table thead, .analytics-table tbody { display: table; width: max-content; min-width: 100%; table-layout: auto; }
-            .analytics-table tr { display: table-row; }
             .analytics-table th, .analytics-table td { white-space: nowrap; }
+
+            /* vBeta49 MOBILE CARD LAYOUT for report tables.
+               Generalised from the .outstanding-flat-table block further down,
+               which had been doing exactly this for one table since v79 — the
+               same treatment now reaches all ~20 report tables at once,
+               because enhanceReportTables() stamps the data-label attributes
+               automatically from each table's own <th> text and adds the
+               .rpt-cards class. A table it can't safely convert (no <thead>,
+               or a colspan banner header like Outstanding's grouped view)
+               simply doesn't get the class and keeps the aligned-scroll
+               behaviour above. */
+            .analytics-table.rpt-cards { display: block; overflow-x: visible; }
+            .analytics-table.rpt-cards thead { display: none; }
+            .analytics-table.rpt-cards tbody { display: block; width: auto; min-width: 0; }
+            .analytics-table.rpt-cards tr {
+                display: block; background: #FFFFFF; border: 1px solid #E1E1E6;
+                border-radius: 12px; margin-bottom: 10px; padding: 10px 12px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            }
+            .analytics-table.rpt-cards td {
+                display: flex; justify-content: space-between; align-items: center;
+                gap: 12px; white-space: normal; border: none;
+                border-bottom: 1px solid #EDEDF1; padding: 7px 0;
+                text-align: left !important; background: none !important;
+            }
+            .analytics-table.rpt-cards td:last-child { border-bottom: none; }
+            .analytics-table.rpt-cards td::before {
+                content: attr(data-label);
+                font-size: 10px; font-weight: 800; color: #5F5D70;
+                text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0;
+            }
+            /* A cell whose column header is blank (the action-button columns)
+               has nothing worth labelling — it spans the card instead. */
+            .analytics-table.rpt-cards td[data-label=""]::before,
+            .analytics-table.rpt-cards td.card-nolabel::before { content: none; }
+            .analytics-table.rpt-cards td[data-label=""],
+            .analytics-table.rpt-cards td.card-nolabel { flex-wrap: wrap; justify-content: flex-start; gap: 6px; }
+            .analytics-table.rpt-cards tr:hover td { background: none; }
+            /* Total/spacer rows are built with colspan, so the labeller skips
+               them (a positional label would be wrong) — they keep no
+               data-label at all. Those cells just show their value, and a
+               genuinely empty one is dropped rather than leaving a blank
+               line inside the card. */
+            .analytics-table.rpt-cards td:not([data-label]) { justify-content: flex-end; }
+            .analytics-table.rpt-cards td:not([data-label]):empty { display: none; }
+            /* vBeta51 (16c): first cell becomes the card's heading — no
+               label, full width, larger and heavier, with the divider under
+               it doing the work the label used to. */
+            .analytics-table.rpt-cards td.rpt-card-title::before { content: none; }
+            .analytics-table.rpt-cards td.rpt-card-title {
+                display: block; font-size: 14px; font-weight: 800; color: #1C1C27;
+                padding: 0 0 8px; margin-bottom: 4px; line-height: 1.3;
+                border-bottom: 1px solid #E1E1E6;
+            }
+            .analytics-table.rpt-cards tr.total-row { border-color: #0B5A94; border-width: 1.5px; background: #E8F5FF; }
+            .analytics-table.rpt-cards tr.total-row td { border-bottom-color: rgba(11,90,148,0.18); }
 
             /* v79 (item 5): Outstanding is 8 columns with 5 action buttons —
                the worst offender for sideways scrolling on a phone. Scoped to
@@ -2238,9 +2507,15 @@
             .action-trio-btn .trio-icon svg { width: 18px; height: 18px; }
 
             /* --- ANALYTICS GRID --- */
-            .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-            .analytics-grid-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
-            .analytics-grid-btn .ag-icon { width: 28px; height: 28px; } .analytics-grid-btn .ag-icon svg { width: 15px; height: 15px; }
+            /* vBeta50: these three lines used to shrink the grid hard on a
+               phone (28px circle, 10px label) because three BOXED tiles per
+               row left almost no room. Option D removed the boxes, so the
+               room is there — this now keeps the full-size treatment rather
+               than cancelling it, which is the whole point of the redesign
+               (and the phone is the only device this screen is used on). */
+            .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 16px 6px; }
+            .analytics-grid-btn { min-height: 0; font-size: 11.5px; padding: 2px; border-radius: 8px; }
+            .analytics-grid-btn .ag-icon { width: 42px; height: 42px; } .analytics-grid-btn .ag-icon svg { width: 22px; height: 22px; }
             .analytics-section { padding: 10px; }
 
             /* --- BOTTOM ACTION BAR --- */
@@ -2367,7 +2642,12 @@
             .outstanding-row-overdue td { font-size: 11px !important; padding: 6px 4px !important; }
 
             /* Stock manager tabs */
-            .engine-tab-bar { flex-wrap: wrap; gap: 4px; }
+            /* vBeta51 (15e): four tabs wrapping as flex left the fourth
+               ("Add New Product") alone on its own line, reading as an orphan
+               rather than as one of a set. A 2x2 grid wraps them as pairs and
+               gives all four the same width. It is a genuine tab — it switches
+               to the create-product form — so it stays in the bar. */
+            .engine-tab-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
             .engine-tab-btn { font-size: 11px; padding: 6px 10px; }
 
             /* ADV receipt print box */
@@ -2480,9 +2760,12 @@
         body.force-mobile-main .action-trio-btn .trio-icon { font-size: 18px; }
         body.force-mobile-main .action-trio-btn .trio-icon svg { width: 18px; height: 18px; }
 
-        body.force-mobile-main .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        body.force-mobile-main .analytics-grid-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
-        body.force-mobile-main .analytics-grid-btn .ag-icon { width: 28px; height: 28px; } .analytics-grid-btn .ag-icon svg { width: 15px; height: 15px; }
+        /* vBeta50: force-mobile copy of the Option D sizing — this is the
+           block the INSTALLED PWA runs, so leaving the old 28px/10px values
+           here would have meant the redesign only showed up in the browser. */
+        body.force-mobile-main .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 16px 6px; }
+        body.force-mobile-main .analytics-grid-btn { min-height: 0; font-size: 11.5px; padding: 2px; border-radius: 8px; }
+        body.force-mobile-main .analytics-grid-btn .ag-icon { width: 42px; height: 42px; } .analytics-grid-btn .ag-icon svg { width: 22px; height: 22px; }
         body.force-mobile-main .analytics-section { padding: 10px; }
 
         body.force-mobile-main .action-bar {
@@ -2576,9 +2859,10 @@
         body.force-mobile-main.preview-fit .bill-layout .unified-footer { flex-direction: row; gap: 15px; }
         body.force-mobile-main.preview-fit .bill-layout .signature-box-condensed { border-left: 1px solid #EDEDF1; padding-left: 12px; align-items: flex-end !important; text-align: right !important; }
         body.force-mobile-main.preview-fit .bill-layout .terms-box-condensed { border-left: 1px solid #EDEDF1; padding-left: 12px; }
+        /* vBeta49: split-table line removed here too — this force-mobile copy
+           is what the INSTALLED PWA actually runs, so leaving it behind would
+           have meant the bug was only fixed in the browser. */
         body.force-mobile-main .doc-list-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        body.force-mobile-main .doc-list-table thead, body.force-mobile-main .doc-list-table tbody { display: table; width: max-content; min-width: 100%; table-layout: auto; }
-        body.force-mobile-main .doc-list-table tr { display: table-row; }
         body.force-mobile-main .doc-list-table th, body.force-mobile-main .doc-list-table td { white-space: nowrap; }
         body.force-mobile-main .modal-content { width: 100%; max-width: 100%; padding: 12px; border-radius: 0; max-height: 100vh; }
         body.force-mobile-main .modal-header h2 { font-size: 16px; gap: 8px; }
@@ -2586,9 +2870,41 @@
         body.force-mobile-main .period-select-row { flex-direction: column; align-items: stretch !important; gap: 6px !important; }
         body.force-mobile-main .period-select-row input[type="date"], body.force-mobile-main .period-select-row select { width: 100% !important; }
         body.force-mobile-main .analytics-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        body.force-mobile-main .analytics-table thead, body.force-mobile-main .analytics-table tbody { display: table; width: max-content; min-width: 100%; table-layout: auto; }
-        body.force-mobile-main .analytics-table tr { display: table-row; }
         body.force-mobile-main .analytics-table th, body.force-mobile-main .analytics-table td { white-space: nowrap; }
+        /* vBeta49: card layout, mirroring the @media (max-width:700px) block. */
+        body.force-mobile-main .analytics-table.rpt-cards { display: block; overflow-x: visible; }
+        body.force-mobile-main .analytics-table.rpt-cards thead { display: none; }
+        body.force-mobile-main .analytics-table.rpt-cards tbody { display: block; width: auto; min-width: 0; }
+        body.force-mobile-main .analytics-table.rpt-cards tr {
+            display: block; background: #FFFFFF; border: 1px solid #E1E1E6;
+            border-radius: 12px; margin-bottom: 10px; padding: 10px 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        body.force-mobile-main .analytics-table.rpt-cards td {
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 12px; white-space: normal; border: none;
+            border-bottom: 1px solid #EDEDF1; padding: 7px 0 !important;
+            text-align: left !important; background: none !important;
+        }
+        body.force-mobile-main .analytics-table.rpt-cards td:last-child { border-bottom: none; }
+        body.force-mobile-main .analytics-table.rpt-cards td::before {
+            content: attr(data-label);
+            font-size: 10px; font-weight: 800; color: #5F5D70;
+            text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0;
+        }
+        body.force-mobile-main .analytics-table.rpt-cards td[data-label=""]::before,
+        body.force-mobile-main .analytics-table.rpt-cards td.card-nolabel::before { content: none; }
+        body.force-mobile-main .analytics-table.rpt-cards td[data-label=""],
+        body.force-mobile-main .analytics-table.rpt-cards td.card-nolabel { flex-wrap: wrap; justify-content: flex-start; gap: 6px; }
+        body.force-mobile-main .analytics-table.rpt-cards td:not([data-label]) { justify-content: flex-end; }
+        body.force-mobile-main .analytics-table.rpt-cards td:not([data-label]):empty { display: none; }
+        body.force-mobile-main .analytics-table.rpt-cards td.rpt-card-title::before { content: none; }
+        body.force-mobile-main .analytics-table.rpt-cards td.rpt-card-title {
+            display: block; font-size: 14px; font-weight: 800; color: #1C1C27;
+            padding: 0 0 8px !important; margin-bottom: 4px; line-height: 1.3;
+            border-bottom: 1px solid #E1E1E6;
+        }
+        body.force-mobile-main .analytics-table.rpt-cards tr.total-row { border-color: #0B5A94; border-width: 1.5px; background: #E8F5FF; }
         body.force-mobile-main .modal-content [style*="grid-template-columns"]:not(.keep-grid) { grid-template-columns: 1fr 1fr !important;
                 gap: 8px !important; }
         body.force-mobile-main .cash-book-summary, body.force-mobile-main #advPoolSummary { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
@@ -2667,9 +2983,12 @@
         body.force-mobile-main .action-trio-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
         body.force-mobile-main .action-trio-btn .trio-icon { font-size: 18px; }
         body.force-mobile-main .action-trio-btn .trio-icon svg { width: 18px; height: 18px; }
-        body.force-mobile-main .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        body.force-mobile-main .analytics-grid-btn { min-height: 58px; font-size: 10px; padding: 10px 4px; border-radius: 8px; }
-        body.force-mobile-main .analytics-grid-btn .ag-icon { width: 28px; height: 28px; } .analytics-grid-btn .ag-icon svg { width: 15px; height: 15px; }
+        /* vBeta50: force-mobile copy of the Option D sizing — this is the
+           block the INSTALLED PWA runs, so leaving the old 28px/10px values
+           here would have meant the redesign only showed up in the browser. */
+        body.force-mobile-main .analytics-grid { grid-template-columns: repeat(3, 1fr); gap: 16px 6px; }
+        body.force-mobile-main .analytics-grid-btn { min-height: 0; font-size: 11.5px; padding: 2px; border-radius: 8px; }
+        body.force-mobile-main .analytics-grid-btn .ag-icon { width: 42px; height: 42px; } .analytics-grid-btn .ag-icon svg { width: 22px; height: 22px; }
         body.force-mobile-main .analytics-section { padding: 10px; }
         body.force-mobile-main .action-bar { bottom: 0; left: 0; width: 100%;
                 border-radius: 0;
@@ -2757,7 +3076,7 @@
                 width: 100% !important;
                 font-size: 13px !important; }
         body.force-mobile-main .outstanding-row-ok td, body.force-mobile-main .outstanding-row-due td, body.force-mobile-main .outstanding-row-overdue td { font-size: 11px !important; padding: 6px 4px !important; }
-        body.force-mobile-main .engine-tab-bar { flex-wrap: wrap; gap: 4px; }
+        body.force-mobile-main .engine-tab-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         body.force-mobile-main .engine-tab-btn { font-size: 11px; padding: 6px 10px; }
         body.force-mobile-main #advPrintAmt { font-size: 32px !important; }
         body.force-mobile-main .modal-content [style*="grid-template-columns"]:not(.keep-grid) { grid-template-columns: 1fr !important; }
@@ -2769,12 +3088,14 @@
            horizontal scrolling at all in the app" is a blanket rule, so tab
            bars now wrap to a second row everywhere instead, Stock Manager's
            7-tab row included. */
-        body.force-mobile-main .tab-bar, body.force-mobile-main .engine-tab-bar { flex-wrap: wrap; gap: 4px; }
+        body.force-mobile-main .tab-bar { flex-wrap: wrap; gap: 4px; }
+        body.force-mobile-main .engine-tab-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         body.force-mobile-main .tab-btn, body.force-mobile-main .engine-tab-btn { flex: 0 0 auto; font-size: 11px; padding: 6px 10px; }
         body.force-mobile-main .analytics-table td button { padding: 4px 6px !important; font-size: 10px !important; margin: 1px !important; }
         body.force-mobile-main .action-bar { padding: 6px 8px; gap: 6px; }
         body.force-mobile-main .btn-print, body.force-mobile-main .btn-pdf, body.force-mobile-main .btn-save { font-size: 11px !important; padding: 10px 4px !important; }
-        body.force-mobile-main .analytics-grid-btn, body.force-mobile-main .action-trio-btn { font-size: 9px; min-height: 52px; }
+        body.force-mobile-main .analytics-grid-btn { font-size: 10.5px; min-height: 0; }
+        body.force-mobile-main .action-trio-btn { font-size: 9px; min-height: 52px; }
         /* Ported from the 1100px block — same container/editor-box/preview-box
            split as above, listed here too since the 1100px source block is
            the FIRST one to apply as viewport narrows and this replaces all
@@ -2784,7 +3105,8 @@
         @media (max-width: 360px) {
             .action-bar { padding: 6px 8px; gap: 6px; }
             .btn-print, .btn-pdf, .btn-save { font-size: 11px !important; padding: 10px 4px !important; }
-            .analytics-grid-btn, .action-trio-btn { font-size: 9px; min-height: 52px; }
+            .analytics-grid-btn { font-size: 10.5px; min-height: 0; }
+            .action-trio-btn { font-size: 9px; min-height: 52px; }
         }
 
 
@@ -3144,7 +3466,15 @@
         }
         #tonnageModal .tng-toggle-container input#tngTargetModeToggle:checked { background: var(--tng-accent); }
         #tonnageModal .tng-toggle-container input#tngTargetModeToggle:checked::before { left: 19.5px; }
-        #tonnageModal .tng-grid-header { display: grid; grid-template-columns: 1.9fr 1.05fr 1.35fr; gap: 8px; font-size: 11.5px; font-weight: 600; text-transform: none; letter-spacing: normal; color: var(--tng-muted); padding-bottom: 8px; border-bottom: 1px solid var(--tng-border); margin-bottom: 12px; text-align: center; }
+        /* vBeta51 (17c): the header and the rows below it use the SAME three
+           track widths, but the rows carry `padding: 10px 12px` and this
+           header carried none — so the two grids resolved against different
+           content widths and every column sat ~9px apart from its heading.
+           Measured before: header "Auto" cell x=267 w=109, row cell x=263
+           w=101. Matching the rows' horizontal padding here lines all three
+           columns up; the switch itself was already centred in its cell, so
+           nothing else needed to move. */
+        #tonnageModal .tng-grid-header { display: grid; grid-template-columns: 1.9fr 1.05fr 1.35fr; gap: 8px; font-size: 11.5px; font-weight: 600; text-transform: none; letter-spacing: normal; color: var(--tng-muted); padding: 0 12px 8px; border-bottom: 1px solid var(--tng-border); margin-bottom: 12px; text-align: center; }
         #tonnageModal .tng-grid-header div:first-child { text-align: left; }
         #tonnageModal .tng-item-row { display: grid; grid-template-columns: 1.9fr 1.05fr 1.35fr; gap: 8px; align-items: center; margin-bottom: 10px; background: var(--vista-surface-alt); border-radius: var(--tng-radius-sm); padding: 10px 12px; }
         #tonnageModal .tng-item-row label { font-size: 14px; font-weight: 700; color: var(--tng-ink); }
@@ -3224,12 +3554,21 @@
            flat pill) while keeping Vista 1's exact colors (ink/tint) —
            the one deliberate change out of the "Pick your Vista 2" pass. */
         #tonnageModal .tng-btn-reset {
-            background: var(--vista-surface-alt); color: var(--tng-muted); border: none; padding: 13px; border-radius: 12px; font-weight: 700;
+            background: var(--vista-danger-tint); color: var(--vista-danger-ink); border: none; padding: 13px; border-radius: 12px; font-weight: 700;
             width: 100%; margin-top: 16px; font-size: 14px; cursor: pointer; text-transform: none;
             box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35);
             transition: background 0.2s ease, color 0.2s ease, box-shadow 0.15s ease;
         }
-        #tonnageModal .tng-btn-reset:hover { background: var(--vista-danger-tint); color: var(--vista-danger); box-shadow: 0 1px 2px rgba(229,72,77,0.08), 0 6px 16px -8px rgba(229,72,77,0.35); }
+        /* vBeta49: this button used to be neutral grey and only turned red on
+           :hover — which on a touchscreen means it looks grey until you tap
+           it, and then STAYS red afterwards (a tapped element keeps :hover
+           until you tap elsewhere, since there's no pointer to move away).
+           So the one moment it was red was the moment the warning had already
+           stopped being useful. It's a destructive action, so it now reads
+           red from the start, matching Clear All in the Blocks Calculator;
+           hover just deepens it slightly on desktop. */
+        #tonnageModal .tng-btn-reset:hover { background: var(--vista-danger); color: #FFFFFF; box-shadow: 0 1px 2px rgba(229,72,77,0.08), 0 6px 16px -8px rgba(229,72,77,0.35); }
+        @media (hover: none) { #tonnageModal .tng-btn-reset:hover { background: var(--vista-danger-tint); color: var(--vista-danger-ink); } }
 
         /* Settings sub-modal — nested above #tonnageModal (z-index set inline) */
         #tonnageSettingsModal {
@@ -4112,7 +4451,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta45</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta51</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -4236,7 +4575,16 @@
                      & Items" inside the Pricing tab — both are just
                      shortcuts into existing features, not new ones. -->
                 <button id="btnAnalyticsDummy" class="analytics-grid-btn" onclick="showToast('More tools coming soon', 'info')"><span class="ag-icon" data-vicon="dummy"></span><span>Dummy</span></button>
-                <button id="btnAnalyticsDocuments" class="analytics-grid-btn" onclick="openSavedDocs()"><span class="ag-icon" data-vicon="documents"></span><span>Documents</span></button>
+                <!-- vBeta49: this tile was "Documents", a second way into the
+                     same Cloud Document Manager the "📂 View List" button at
+                     the top of the home screen already opens — so renaming it
+                     to Vault costs nothing: View List still covers the old
+                     job. Vault opens the shared Google Drive folder where the
+                     scanned/out-of-app paperwork lives, which had no entry
+                     point in the app at all before. Opens in a new tab so the app
+                     (and any half-typed document in it) is never navigated
+                     away from. -->
+                <button id="btnAnalyticsVault" class="analytics-grid-btn" onclick="openVault()"><span class="ag-icon" data-vicon="documents"></span><span>Vault</span></button>
                 <button id="btnAnalyticsPricing" class="analytics-grid-btn" onclick="openPricingEngine()"><span class="ag-icon" data-vicon="pricing"></span><span>Pricing</span></button>
                 <button id="btnAnalyticsAllProjects" class="analytics-grid-btn" onclick="openAllProjectsOverview()"><span class="ag-icon" data-vicon="allprojects"></span><span>All Projects</span></button>
                 <!-- v68: Search Everything disabled per request — not working
@@ -4264,6 +4612,7 @@
                  button that already lived there, since backup/restore
                  belongs with the rest of Data & Sync rather than floating
                  under the Reports & Tools grid. -->
+            <button type="button" class="section-collapse-btn" onclick="toggleAnalyticsSection()">▲ Close</button>
         </div>
 
         <!-- v73a TRIAL FEATURE — BLOCKS CALCULATOR
@@ -4285,14 +4634,23 @@
              (the .section-tab-row above) — this is now just the body card,
              styled by .analytics-section like #analyticsSectionBody. -->
         <div class="analytics-section section-tab-body" id="blocksCalcBody">
+                <!-- vBeta48: reorganized into the same numbered-step flow as
+                     the design canvas's "I+M" option — Step 1 Wall Dimensions
+                     covers the row list + Add/Clear, Step 2 Adjustments is
+                     the wastage/round-up strip, Step 3 Totals is the summary
+                     card. Each row itself no longer repeats a step badge —
+                     the badge marks the SECTION, not every individual row. -->
+                <div class="bcalc-step-label"><span class="bcalc-step-num">1</span><span class="bcalc-step-text">Wall Dimensions</span></div>
                 <div id="blocksCalcRows"></div>
 
                 <!-- v75: "Add Wall Row" made deliberately bold and impossible
                      to miss — bright gradient, larger touch target, subtle
-                     glow — per feedback that it was too easy to overlook. -->
+                     glow — per feedback that it was too easy to overlook.
+                     vBeta48: Clear All is now flex:1 (50/50 with Add Wall
+                     Row) to match the equal-width pairs below it. -->
                 <div style="display:flex; gap:8px; margin-top:10px;">
                     <button type="button" onclick="addBlocksCalcRow()" class="bcalc-addrow-btn">➕ ADD WALL ROW</button>
-                    <button type="button" onclick="clearBlocksCalcAll()" style="flex:0.6; margin:0; background:var(--hp-surface); border:1px solid var(--hp-danger); color:var(--hp-danger-ink); padding:9px; font-size:11px; border-radius:5px;">Clear All</button>
+                    <button type="button" onclick="clearBlocksCalcAll()" style="flex:1; margin:0; background:var(--hp-surface); border:1px solid var(--hp-danger); color:var(--hp-danger-ink); padding:9px; font-size:11px; border-radius:5px;">Clear All</button>
                 </div>
 
                 <div id="blocksCalcUndoBar" style="display:none; margin-top:8px; background:var(--hp-surface-alt-strong); padding:8px 10px; border-radius:5px; font-size:12px; color:var(--hp-ink); align-items:center; justify-content:space-between;">
@@ -4300,14 +4658,15 @@
                     <a href="javascript:void(0)" onclick="undoBlocksCalcRemove()" style="color:var(--hp-blue-ink); font-weight:bold; text-decoration:underline;">Undo</a>
                 </div>
 
-                <!-- v75: Wastage / Round-Up — each is now an explicit ON/OFF
-                     toggle switch (both OFF by default) with an elegant
-                     connected segmented control underneath, replacing the
-                     separate floating pill buttons. -->
+                <!-- vBeta48: Wastage / Round-Up — "Off" is now just the first
+                     segment of one pill track per column (see
+                     renderAdjustStrip()), replacing the separate ON/OFF
+                     toggle switch + purple/amber segmented control. -->
+                <div class="bcalc-step-label"><span class="bcalc-step-num">2</span><span class="bcalc-step-text">Adjustments</span></div>
                 <div class="bcalc-adjust-strip" id="bcalcAdjustStrip"></div>
 
-                <div id="blocksCalcSummary" style="margin-top:14px; background:var(--hp-surface-alt); border-radius:6px; padding:10px;">
-                    <div style="font-size:10px; font-weight:bold; color:var(--hp-ink-muted); text-transform:uppercase; margin-bottom:6px;">Totals by Size</div>
+                <div class="bcalc-step-label"><span class="bcalc-step-num">3</span><span class="bcalc-step-text">Totals</span></div>
+                <div id="blocksCalcSummary" style="background:var(--hp-surface); border-radius:10px; padding:14px;">
                     <div id="blocksCalcSummaryBody" style="font-size:12px; color:var(--hp-ink);">No rows added yet.</div>
                 </div>
 
@@ -4332,6 +4691,7 @@
                     <button type="button" id="btnBlocksToSal" onclick="convertBlocksCalcToDoc('SAL')" style="flex:1; margin:0; background:var(--hp-mint-tint); color:var(--hp-mint-ink); font-size:12px; padding:10px;" disabled>🧾 Convert to Sales Invoice</button>
                 </div>
                 <div id="blocksCalcQueueBanner" style="display:none; margin-top:10px; background:var(--hp-amber-tint); color:var(--hp-amber-ink); padding:8px 10px; border-radius:5px; font-size:12px; font-weight:bold; text-align:center;"></div>
+            <button type="button" class="section-collapse-btn" onclick="toggleBlocksCalcCollapse()">▲ Close</button>
         </div><!-- /blocksCalcBody -->
 
         <!-- vBeta37: Doc Type selector, its Convert/Amend row, and the Pen
@@ -5500,8 +5860,19 @@
      price (or the amount for a receipt/voucher). See startDocTypeLongPress()/
      showDocItemSummary() for the wiring, bound to each doc-type chip in
      renderDocList(). Sits above #docModal so it can pop up over the list
-     without closing it. -->
-<div id="docItemSummaryModal" class="modal-overlay" onclick="if(event.target===this) closeDocItemSummary()" style="display:none; z-index:2000;">
+     without closing it.
+     vBeta46 FIX: "Sits above #docModal" was the stated intent from day one,
+     but this inline style set z-index:2000 — the exact same value as the
+     .modal-overlay base class, i.e. no advantage at all, and an inline
+     style always outranks any external rule regardless of z-index value. So
+     the #docItemSummaryModal z-index:2100 CSS rule (added alongside the
+     other stacked-modal fixes) could never win here. The popup was opening
+     with the right content every time, just permanently hidden behind
+     #docModal, which paints later in the DOM at the same effective
+     z-index. Dropped the inline z-index so the CSS rule actually applies —
+     same fix pattern as advancePoolModal/reviewAmbiguousDocsModal/
+     unregisteredAdvSearchModal, none of which carry an inline override. -->
+<div id="docItemSummaryModal" class="modal-overlay" onclick="if(event.target===this) closeDocItemSummary()" style="display:none;">
     <div class="modal-content doc-summary-card">
         <div class="modal-header" style="margin-bottom:10px; padding-bottom:8px;">
             <h2 id="docItemSummaryTitle" style="font-size:15px;">Document</h2>
@@ -5603,12 +5974,51 @@
                  the room. Every id, handler and input type is unchanged —
                  this is purely the wrapper markup collapsing from three
                  boxes into one. -->
-            <div id="docDateRangeRow" style="display:flex; align-items:center; gap:6px; background:#FFFFFF; border:1px solid #E1E1E6; border-radius:var(--rad-md); padding:5px 8px;">
-                <input type="date" id="docFilterFrom" onchange="document.getElementById('docFilterMonth').value=''; renderDocList();" style="border:none; padding:2px; width:auto;">
-                <span style="color:#5F5D70; font-size:11px; flex:0 0 auto;">to</span>
-                <input type="date" id="docFilterTo" onchange="document.getElementById('docFilterMonth').value=''; renderDocList();" style="border:none; padding:2px; width:auto;">
-                <input type="month" id="docFilterMonth" onchange="applyQuickMonthFilter()" style="border:none; padding:2px; width:auto; border-left:1px solid #E1E1E6; padding-left:8px;">
-                <button onclick="clearDateFilter()" style="width:auto; margin-top:0; flex:0 0 auto; background:#EDEDF1; color:#1C1C27; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px; font-weight:bold;">Clear</button>
+            <!-- vBeta46 FIX: plain flex-wrap on four siblings wraps wherever
+                 space runs out, not wherever it reads cleanly — "to" could be
+                 orphaned at the end of a line, and the month field's own
+                 border-left (meant to sit right after the date-range group)
+                 could start a line with nothing to its left, floating as a
+                 stray tick mark with dead space beside it. Two explicit
+                 groups fix both: [From to To] and [Month Clear] each wrap as
+                 one unit — "to" can never separate from its dates, and the
+                 divider moved to the SECOND GROUP'S OWN left edge, so it only
+                 ever appears attached to real content (the month field),
+                 never dangling alone. -->
+            <!-- vBeta49 FIX (the "date range is invisible" report): vBeta46
+                 added color-scheme:light to stop Android re-skinning these
+                 native pickers dark, and it still came back invisible on the
+                 real device — because Chrome's "Auto Dark Mode for Web
+                 Contents" re-colours the text INSIDE a native date widget
+                 regardless of what the page asks for. There is no CSS that
+                 reliably wins that argument, so the fix is to stop asking:
+                 each field now draws its own text in a <span> the app
+                 controls, with the real input sitting transparent on top of
+                 it. Tapping still opens the exact same native picker and the
+                 same .value is still what renderDocList() filters on —
+                 nothing about how dates are picked or stored changed, only
+                 who paints the characters. This is the same overlay pattern
+                 the document's own date field has used since vBeta34
+                 (#dateInDisplay). -->
+            <div id="docDateRangeRow" style="display:flex; align-items:center; gap:10px; background:#FFFFFF; border:1px solid #E1E1E6; border-radius:var(--rad-md); padding:5px 8px;">
+                <div class="drr-group" style="display:flex; align-items:center; gap:6px;">
+                    <span class="dfilter-field">
+                        <span class="dfilter-text" id="docFilterFromText">From</span>
+                        <input type="date" id="docFilterFrom" aria-label="From date" onchange="document.getElementById('docFilterMonth').value=''; renderDocFilterDates(); renderDocList();">
+                    </span>
+                    <span style="color:#5F5D70; font-size:11px; flex:0 0 auto;">to</span>
+                    <span class="dfilter-field">
+                        <span class="dfilter-text" id="docFilterToText">To</span>
+                        <input type="date" id="docFilterTo" aria-label="To date" onchange="document.getElementById('docFilterMonth').value=''; renderDocFilterDates(); renderDocList();">
+                    </span>
+                </div>
+                <div class="drr-group" style="display:flex; align-items:center; gap:6px; border-left:1px solid #E1E1E6; padding-left:8px;">
+                    <span class="dfilter-field">
+                        <span class="dfilter-text" id="docFilterMonthText">Month</span>
+                        <input type="month" id="docFilterMonth" aria-label="Quick month filter" onchange="applyQuickMonthFilter()">
+                    </span>
+                    <button onclick="clearDateFilter()" style="width:auto; margin-top:0; flex:0 0 auto; background:#EDEDF1; color:#1C1C27; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px; font-weight:bold;">Clear</button>
+                </div>
             </div>
 
             <input type="text" id="searchFilter" placeholder="Search Phone Number, Client, Doc No, or Items..." onkeyup="renderDocList()">
@@ -5830,11 +6240,30 @@
                  stays exactly as set until deliberately edited — this
                  toggle is the only way to opt back into automatic
                  recalculation, and it's off by default for a reason. -->
-            <div style="background:#FDECEC; border:1px solid #FDECEC; border-radius:6px; padding:14px; margin-top:20px;">
-                <label style="color:#A32A2E; margin-top:0; cursor:pointer; text-transform:none; display:flex; align-items:center; gap:8px;">
-                    <input type="checkbox" id="cfgAllowAutoUpdate" style="width:16px; height:16px; margin:0;">
-                    <span><b>Allow auto-update price in cart</b> — OFF by default. When off (recommended), a price never changes after being added, no matter what else happens in the cart. Only turn this on if you understand the risk of a price silently changing on an already-added item.</span>
+            <!-- vBeta51 (15b): this was a full red paragraph in a red box —
+                 about 180px shouting at you about a setting that is already
+                 off and recommended to stay off. Red that is always on stops
+                 meaning anything, so it had nothing left to say at the moment
+                 the risky state is actually chosen.
+                 Now it is an ordinary setting row that states what it is and
+                 what state it is in, with the full explanation one tap away
+                 (#cfgAutoUpdateWhy). toggleAutoUpdateWarning() repaints it
+                 red only when the checkbox is actually ticked — which is the
+                 one moment red is worth spending. Same id, same checkbox, so
+                 everything reading cfgAllowAutoUpdate is untouched. -->
+            <div id="cfgAutoUpdateRow" style="background:#EDEDF1; border-radius:10px; padding:12px 13px; margin-top:20px;">
+                <label style="color:#1C1C27; margin-top:0; cursor:pointer; text-transform:none; display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" id="cfgAllowAutoUpdate" style="width:18px; height:18px; margin:0; flex-shrink:0;" onchange="toggleAutoUpdateWarning()">
+                    <span style="flex:1;">
+                        <span id="cfgAutoUpdateTitle" style="display:block; font-size:12.5px; font-weight:800; color:#1C1C27;">Auto-update price in cart</span>
+                        <span id="cfgAutoUpdateState" style="display:block; font-size:10.5px; font-weight:600; color:#5F5D70; margin-top:2px;">Off — prices stay as added</span>
+                    </span>
                 </label>
+                <button type="button" onclick="document.getElementById('cfgAutoUpdateWhy').hidden = !document.getElementById('cfgAutoUpdateWhy').hidden;"
+                        style="width:auto; margin:8px 0 0 28px; padding:0; background:none; border:none; color:#0B5A94; font-size:10.5px; font-weight:800; cursor:pointer; text-transform:none;">Why is this off? &#9432;</button>
+                <div id="cfgAutoUpdateWhy" hidden style="margin:8px 0 0 28px; font-size:11px; line-height:1.5; color:#5F5D70;">
+                    When this is off, a price never changes after being added — no matter what else happens in the cart. Turning it on lets an already-added item be silently repriced when something else in the cart changes.
+                </div>
             </div>
 
             <hr style="border: 0; border-top: 1px solid #EDEDF1; margin: 20px 0;">
@@ -5860,38 +6289,21 @@
                 </div>
             </div>
 
-            <button onclick="savePricingConfig()" style="background: #92400E; margin-top: 20px;">UPDATE MASTER ENGINE</button>
+            <!-- vBeta51 (15c): was amber (#92400E) reading as a caution
+                 colour, and named after the code rather than the job. It saves
+                 prices; it is the primary action on this tab, so it gets the
+                 same mint primary Save Letter and Add-to-document use. -->
+            <button onclick="savePricingConfig()" style="background: var(--vista-mint-text, #1C7A3E); color: #FFFFFF; margin-top: 20px;">💾 Save pricing</button>
 
-            <!-- Audit lock — protects already-filed GST periods. Separate
-                 save action from the pricing engine button above, since
-                 setting a lock date is its own deliberate, password-
-                 protected action. -->
-            <div style="background:#E8F5FF; border:1px solid #E8F5FF; border-radius:6px; padding:14px; margin-top:20px;">
-                <div style="color:#0B5A94; font-weight:bold; margin-bottom:6px;">🔒 Audit Lock</div>
-                <div style="color:#0B5A94; font-size:12px; margin-bottom:10px;">Documents of the selected types, dated before the lock date, require the master password to save, delete, or void — protects periods you've already filed with GST.</div>
-                <div style="margin-bottom:10px;">
-                    <label style="color:#0B5A94; margin-top:0; font-size:11px;">Lock these document types:</label>
-                    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:6px;">
-                        <label style="color:#0B5A94; font-size:12px; text-transform:none; display:flex; align-items:center; gap:4px; margin:0;"><input type="checkbox" id="lockType_INV" checked style="margin:0;"> Tax Invoice</label>
-                        <label style="color:#0B5A94; font-size:12px; text-transform:none; display:flex; align-items:center; gap:4px; margin:0;"><input type="checkbox" id="lockType_RCM" checked style="margin:0;"> RCM Voucher</label>
-                        <label style="color:#0B5A94; font-size:12px; text-transform:none; display:flex; align-items:center; gap:4px; margin:0;"><input type="checkbox" id="lockType_SAL" style="margin:0;"> Sales Invoice</label>
-                        <label style="color:#0B5A94; font-size:12px; text-transform:none; display:flex; align-items:center; gap:4px; margin:0;"><input type="checkbox" id="lockType_ADV" style="margin:0;"> Advance Receipt</label>
-                        <label style="color:#0B5A94; font-size:12px; text-transform:none; display:flex; align-items:center; gap:4px; margin:0;"><input type="checkbox" id="lockType_RCP" style="margin:0;"> Payment Receipt</label>
-                        <label style="color:#0B5A94; font-size:12px; text-transform:none; display:flex; align-items:center; gap:4px; margin:0;"><input type="checkbox" id="lockType_CRN" style="margin:0;"> Credit Note</label>
-                        <label style="color:#0B5A94; font-size:12px; text-transform:none; display:flex; align-items:center; gap:4px; margin:0;"><input type="checkbox" id="lockType_QUO" style="margin:0;"> Quotation</label>
-                        <label style="color:#0B5A94; font-size:12px; text-transform:none; display:flex; align-items:center; gap:4px; margin:0;"><input type="checkbox" id="lockType_EXP" style="margin:0;"> Expense Voucher</label>
-                    </div>
-                </div>
-                <div style="display:flex; gap:8px; align-items:flex-end;">
-                    <div style="flex:1;">
-                        <label style="color:#0B5A94; margin-top:0;">Lock everything before</label>
-                        <input type="date" id="cfgAuditLockDate" style="background:#FFFFFF; color:#1C1C27; border:1px solid #E8F5FF;">
-                    </div>
-                    <button onclick="updateAuditLockDate()" style="width:auto; margin:0; background:#0B5A94; padding:9px 16px; font-size:13px;">Set Lock</button>
-                    <button onclick="clearAuditLockDate()" style="width:auto; margin:0; background:#5F5D70; padding:9px 16px; font-size:13px;">Clear</button>
-                </div>
-                <div id="auditLockStatus" style="font-size:12px; color:#0B5A94; margin-top:8px;"></div>
-            </div>
+            <!-- vBeta51 (15f): the Audit Lock box that used to sit here has
+                 been removed. It was a second face on the SAME setting as the
+                 Audit modal's own "🔒 Audit Lock" tab — both wrote through
+                 saveAuditLockDate() and both demanded the master password —
+                 so the app was asking twice for one thing, in two places that
+                 could disagree with each other. Quotation has been added to
+                 the Audit tab in the same change, because this box offered it
+                 and that tab did not; without that, removing this would have
+                 silently taken away the ability to lock quotations at all. -->
         </div>
 
         <!-- TAB (new): Brands — manage the brand list used by the Size+Brand
@@ -6386,10 +6798,17 @@
                 <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#1C1C27;"><input type="checkbox" id="alm_INV" checked style="margin:0;"> Tax Invoice</label>
                 <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#1C1C27;"><input type="checkbox" id="alm_RCM" checked style="margin:0;"> RCM Voucher</label>
                 <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#1C1C27;"><input type="checkbox" id="alm_SAL" style="margin:0;"> Sales Invoice</label>
-                <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#1C1C27;"><input type="checkbox" id="alm_ADV" style="margin:0;"> Advance</label>
-                <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#1C1C27;"><input type="checkbox" id="alm_RCP" style="margin:0;"> Receipt</label>
+                <!-- vBeta51 (15f): "Advance"/"Receipt"/"Expense" lengthened to
+                     match the labels the removed Pricing box used. With both an
+                     Advance Receipt and a Payment Receipt in this list, a bare
+                     "Receipt" was the ambiguous one. -->
+                <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#1C1C27;"><input type="checkbox" id="alm_ADV" style="margin:0;"> Advance Receipt</label>
+                <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#1C1C27;"><input type="checkbox" id="alm_RCP" style="margin:0;"> Payment Receipt</label>
                 <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#1C1C27;"><input type="checkbox" id="alm_CRN" style="margin:0;"> Credit Note</label>
-                <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#1C1C27;"><input type="checkbox" id="alm_EXP" style="margin:0;"> Expense</label>
+                <!-- vBeta51 (15f): Quotation — was offered by the Pricing box
+                     that has been removed, and was missing here. -->
+                <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#1C1C27;"><input type="checkbox" id="alm_QUO" style="margin:0;"> Quotation</label>
+                <label style="font-size:12px;text-transform:none;margin:0;display:flex;align-items:center;gap:4px;color:#1C1C27;"><input type="checkbox" id="alm_EXP" style="margin:0;"> Expense Voucher</label>
             </div>
             <label style="color:#1C1C27;">Lock everything before</label>
             <input type="date" id="almDate" style="background:#EDEDF1; color:#1C1C27; border:1px solid #E1E1E6;">
@@ -7045,7 +7464,12 @@
                 <option value="recent">Most recently started</option>
             </select>
         </div>
-        <div id="allProjectsOverviewTotals" style="display:flex; gap:10px; margin:10px 0 16px;"></div>
+        <!-- vBeta51 (16a-1): two-by-two instead of a four-across flex row, so
+             Indian currency cannot wrap mid-number. `keep-grid` is the escape
+             hatch the phone rules already provide — without it the ≤480px rule
+             on [style*="grid-template-columns"] forces this to a single
+             column, which would stack the four tiles vertically. -->
+        <div id="allProjectsOverviewTotals" class="keep-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0 16px;"></div>
         <div id="allProjectsOverviewBody"></div>
     </div>
 </div>
@@ -8168,146 +8592,233 @@
                  The four targets are existing elements, given ids and a
                  scroll-margin and nothing else. All the navigation
                  benefit, none of the layout risk. -->
-            <div class="tool-jumpnav-wrap">
-                <div class="tool-jumpnav" id="letJumpNav">
-                    <div class="tool-jumpnav-item active" data-target="letterpadControlsColumn" onclick="jumpToToolSection('letJumpNav','letterpadControlsColumn')">Details</div>
-                    <div class="tool-jumpnav-item" data-target="letSecFormat" onclick="jumpToToolSection('letJumpNav','letSecFormat')">Format</div>
-                    <div class="tool-jumpnav-item" data-target="letSecActions" onclick="jumpToToolSection('letJumpNav','letSecActions')">Actions</div>
-                    <div class="tool-jumpnav-item" data-target="letterheadPreviewWrapper" onclick="jumpToToolSection('letJumpNav','letterheadPreviewWrapper')">Preview</div>
+            <!-- vBeta51 (18f-1): these four were never tabs. They were scroll
+                 links — nothing was ever hidden, tapping one just scrolled the
+                 single long column — and "Details" pointed at the wrapper that
+                 CONTAINED Format and Actions rather than at a sibling of them,
+                 which is why the formatting panel appeared under both.
+                 Worse, on a phone the column stacks above the sheet, so the
+                 place you type was below everything else: you reached it by
+                 tapping "Preview", and the formatting toolbar was then far off
+                 screen above you. Bolding one word meant scrolling up, tapping,
+                 and scrolling back down to see whether it worked.
+                 Now there are three real tabs that genuinely show and hide, and
+                 the toolbar lives WITH the text inside Write. -->
+            <div class="engine-tab-bar let-tab-bar">
+                <button type="button" class="engine-tab-btn active" id="letTabBtnDetails" onclick="switchLetterpadTab('details')">Details</button>
+                <button type="button" class="engine-tab-btn" id="letTabBtnWrite" onclick="switchLetterpadTab('write')">Write</button>
+                <button type="button" class="engine-tab-btn" id="letTabBtnActions" onclick="switchLetterpadTab('actions')">Actions</button>
+            </div>
+
+            <!-- TAB 1 — Details -->
+            <div class="let-tab-content active" id="letSecDetails">
+                <label style="color:#1C1C27; margin-top:0;">Letter No.</label>
+                <input type="text" id="letDocNo" readonly style="background:#EDEDF1; color:#1C1C27; border:1px solid #E1E1E6; font-weight:bold;" aria-label="Letter number">
+                <!-- vBeta51 (18c): address and date share a line — they are both
+                     short, and stacking them cost a whole row each.
+                     The date is no longer a bare native input either: on this
+                     phone a native date field renders its own text, and Chrome's
+                     auto dark mode recolours that text regardless of what the
+                     page asks for — which is exactly how the View List filter
+                     came out invisible. Same fix as vBeta49: the app draws the
+                     text in a span it controls and the real input sits
+                     transparent on top, so tapping still opens the same picker
+                     and the same .value is still what gets saved. -->
+                <div style="display:flex; gap:10px; align-items:flex-start;">
+                    <div style="flex:1.25; min-width:0;">
+                        <label style="color:#1C1C27;">Company Address</label>
+                        <select id="letAddressOptionSelect" onchange="letApplyAddressOption()" style="background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6;" aria-label="Company address option"></select>
+                    </div>
+                    <div style="flex:1; min-width:0;">
+                        <label style="color:#1C1C27;">Date</label>
+                        <span class="dfilter-field" style="width:100%; margin-top:5px;">
+                            <span class="dfilter-text" id="letDateText">Select date</span>
+                            <input type="date" id="letDate" onchange="renderLetterheadPreview(); renderLetDateDisplay();" aria-label="Letter date">
+                        </span>
+                    </div>
+                </div>
+                <label style="color:#1C1C27;">Addressed To (optional)</label>
+                <input type="text" id="letAddressee" placeholder="e.g. To Whom It May Concern" style="background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6;" oninput="renderLetterheadPreview()">
+            </div>
+
+            <!-- TAB 2 — Write (toolbar + the sheet itself; see switchLetterpadTab) -->
+            <div class="let-tab-content" id="letSecWrite">
+                <!-- vBeta51 (18e-1): you are not typing into an editor that then
+                     becomes a letter — you type straight into the A4 sheet, and
+                     on a phone that sheet is scaled to about 41% to fit, so 13px
+                     text drew at roughly 5px. updateLetterheadScale() also
+                     clamped at Math.min(..., 1), so it could never go up.
+                     Readable drops the shrink while writing; Fit page puts the
+                     sheet back for checking the layout. Same two-mode idea the
+                     invoice preview already uses. -->
+                <div class="let-view-bar">
+                    <span class="let-view-label">View</span>
+                    <div class="let-view-seg">
+                        <button type="button" class="let-view-btn" id="letViewFit" onclick="setLetterpadView('fit')">Fit page</button>
+                        <button type="button" class="let-view-btn active" id="letViewRead" onclick="setLetterpadView('read')">Readable</button>
+                    </div>
+                </div>
+
+                <!-- vBeta51 (18f-1): the toolbar now sits directly above the
+                     text instead of in a distant section. -->
+                <div id="letSecFormat" class="let-toolbar">
+                    <div class="let-tb-row">
+                        <button type="button" onclick="letApplyStylePreset('heading')" class="let-tb-btn" style="font-weight:bold;">Heading</button>
+                        <button type="button" onclick="letApplyStylePreset('body')" class="let-tb-btn">Body</button>
+                        <span class="let-tb-sep"></span>
+                        <button type="button" onclick="letCmd('bold')" class="let-tb-btn" style="font-weight:900;">B</button>
+                        <button type="button" onclick="letCmd('italic')" class="let-tb-btn" style="font-style:italic;">I</button>
+                        <button type="button" onclick="letCmd('underline')" class="let-tb-btn" style="text-decoration:underline;">U</button>
+                        <button type="button" onclick="letCmd('insertUnorderedList')" class="let-tb-btn">&bull; List</button>
+                        <button type="button" onclick="letCmd('insertOrderedList')" class="let-tb-btn">1. List</button>
+                        <button type="button" onclick="letClearFormat()" class="let-tb-btn" style="color:#A32A2E;">Clear</button>
+                    </div>
+                    <!-- vBeta51 (18b): colour and size share a line now. The
+                         colour control was a raw native <input type="color">,
+                         so the neon palette you were seeing was Android's own,
+                         not ours — no amount of app CSS changes that. Replaced
+                         with our own swatches, which is what removes the neon.
+                         All eight defaults are inks this app already prints
+                         with, so they reproduce cleanly; each one is editable,
+                         and Custom still opens the native picker. -->
+                    <div class="let-tb-row" style="margin-top:6px;">
+                        <button type="button" class="let-tb-btn let-colour-trigger" onclick="toggleLetColourPanel()" aria-label="Text colour">
+                            <span class="let-colour-chip" id="letColourChip"></span><span id="letColourName">Black</span>
+                        </button>
+                        <span class="let-tb-sep"></span>
+                        <span class="let-size-seg">
+                            <button type="button" class="let-size-btn" data-size="2" onclick="setLetterpadFontSize(2)">S</button>
+                            <button type="button" class="let-size-btn active" data-size="3" onclick="setLetterpadFontSize(3)">M</button>
+                            <button type="button" class="let-size-btn" data-size="5" onclick="setLetterpadFontSize(5)">L</button>
+                            <button type="button" class="let-size-btn" data-size="7" onclick="setLetterpadFontSize(7)">XL</button>
+                        </span>
+                    </div>
+                    <div id="letColourPanel" hidden class="let-colour-panel">
+                        <div class="let-colour-grid" id="letColourGrid"></div>
+                        <div class="let-colour-actions">
+                            <button type="button" class="let-tb-btn" onclick="document.getElementById('letColorPicker').click()">+ Custom colour</button>
+                            <button type="button" class="let-tb-btn" id="letColourEditBtn" onclick="toggleLetColourEdit()">Edit presets</button>
+                        </div>
+                        <div id="letColourEditHint" hidden style="font-size:10px; color:#5F5D70; margin-top:6px;">Tap a swatch to replace it with a colour of your choosing.</div>
+                    </div>
+                    <input type="color" id="letColorPicker" value="#1C1C27" onchange="applyLetColour(this.value)" style="position:absolute; opacity:0; width:1px; height:1px; padding:0; border:0; pointer-events:none;" aria-label="Custom text colour">
+                </div>
+                    <!-- Right: letterhead preview -->
+                    <div id="letterheadPreviewWrapper" style="flex:1; background:#EDEDF1; padding:16px; border-radius:8px; overflow:hidden; display:flex; justify-content:center; align-items:flex-start; scroll-margin-top:76px;">
+                        <!-- Scale container: sized to the page's SCALED dimensions
+                             (set by JS via updateLetterheadScale()) so there's no
+                             leftover scrollable space — only the actual visible
+                             page occupies room. The inner #letterheadPage keeps
+                             its true A4 mm dimensions always (critical for print,
+                             which never applies this on-screen-only transform). -->
+                        <!-- 1b FIX: this sits inside #letterheadPreviewWrapper's
+                             display:flex row as the ONLY flex item. Its true
+                             width is a full 794px (set below by JS, matching the
+                             real A4 page) with transform:scale() shrinking it
+                             visually — but a flex item's default flex-shrink:1
+                             let the browser shrink that 794px flex-basis down to
+                             fit the row BEFORE the transform ever ran, while its
+                             child #letterheadPage (not itself a flex item) kept
+                             its own full 794px width regardless. The child then
+                             overflowed this now-narrower box, and since the
+                             wrapper clips overflow, only the right portion of
+                             that oversized page stayed visible — reading as
+                             "docked right with grey space on the left" even
+                             though this element itself was centered correctly.
+                             flex-shrink:0 stops the browser from shrinking the
+                             intended 794px box pre-transform, so the transform
+                             is the ONLY thing determining size and the child
+                             page can never outgrow it again. -->
+                        <div id="letterheadScaleContainer" style="transform-origin: top center; flex-shrink: 0;">
+                            <div id="letterheadPage" style="background:#FFFFFF; width:210mm; min-height:297mm; box-shadow:0 0 10px rgba(0,0,0,0.15); padding:20mm; box-sizing:border-box; display:flex; flex-direction:column; font-family:'Lato', 'Segoe UI', sans-serif;">
+
+                            <!-- Letterhead header — centered logo only, no company name text
+                                 (the logo already establishes the brand identity). Phone
+                                 number pulled out on its own line with larger, bolder
+                                 styling for better readability at a glance. -->
+                            <div style="text-align:center; padding-bottom:14px; border-bottom:3px solid #2c3e50;">
+                                <img id="letLogo" src="logo.png" onerror="handleLogoError(this)" alt="KEN LOGO" style="max-height:64px; margin-bottom:10px;">
+                                <div style="font-size:11px; color:#1C1C27; line-height:1.5;" id="letAddressBlock">
+                                    A Unit of KEN PROJECTS &nbsp;|&nbsp; GSTIN: <b>33ABEFK9154C1ZI</b><br>
+                                    4,5 Vallabai Street, Rudrapalayam, Sankaramanallur, Tamil Nadu - 642204
+                                </div>
+                                <div style="font-size:15px; font-weight:bold; color:#2c3e50; margin-top:6px; letter-spacing:0.3px;">
+                                    📞 95850 88822 &nbsp;/&nbsp; 95850 88844
+                                </div>
+                            </div>
+
+                            <!-- Date + addressee -->
+                            <div style="margin-top:20px; font-size:13px; color:#1C1C27;">
+                                <div style="text-align:right;" id="letDispDate"></div>
+                                <div style="margin-top:14px;" id="letDispAddressee"></div>
+                            </div>
+
+                            <!-- Body — contenteditable rich text area -->
+                            <div id="letBody" contenteditable="true" onmouseup="letSaveSelection()" onkeyup="letSaveSelection()" style="flex:1; margin-top:16px; font-size:13px; color:#1C1C27; line-height:1.7; outline:none; min-height:400px;" placeholder="Start typing your letter here..."></div>
+
+                            <!-- Footer — thin rule + small contact info, no bank details/terms since this isn't a financial document -->
+                            <!-- vBeta31: intentionally still #6E6C80 — this is the printed letterhead footer, part of pixel-frozen print output. The darker #5F5D70 is on-screen UI only. -->
+                            <div style="margin-top:auto; padding-top:10px; border-top:1px solid #EDEDF1; text-align:center; font-size:9px; color:#6E6C80;">
+                                KEN TRADERS — A Unit of KEN PROJECTS &nbsp;|&nbsp; 4,5 Vallabai Street, Rudrapalayam, Sankaramanallur, Tamil Nadu - 642204 &nbsp;|&nbsp; Ph: 95850 88822 / 95850 88844
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- TAB 3 — Actions -->
+            <div class="let-tab-content" id="letSecActions">
+                <!-- vBeta51 (18a-2): six full-width pills stacked about 385px
+                     tall, all with identical weight so nothing read as the main
+                     one. Save is now unmistakably primary, the two prints read
+                     as one decision with two answers rather than two unrelated
+                     buttons, and the remaining three sit in a quiet row. -->
+                <button type="button" onclick="saveLetterhead()" class="let-primary-btn">💾 Save Letter</button>
+
+                <div class="let-print-label">Print</div>
+                <div class="let-print-seg">
+                    <button type="button" class="let-print-btn" onclick="printLetterheadBlank()">Blank letterhead</button>
+                    <button type="button" class="let-print-btn" onclick="printLetterheadContent()">With content</button>
+                </div>
+
+                <div class="let-minor-row">
+                    <button type="button" onclick="exportLetterheadToPDF()" class="let-minor-btn" style="background:#FDECEC; color:#A32A2E;">📄 Export PDF</button>
+                    <button type="button" onclick="openSavedLetters()" class="let-minor-btn">📂 Saved</button>
+                    <button type="button" onclick="newLetterhead()" class="let-minor-btn">✨ New</button>
+                </div>
+
+                <!-- vBeta51 (18d): choosing a file used to claim the next LET
+                     number immediately and upload straight away — no thumbnail,
+                     no confirm, no way back. Pick the wrong photo and that
+                     number was spent. Now the file is staged first: you see it,
+                     its size, and the number it is ABOUT to take, and nothing
+                     is claimed until you confirm. Two further bugs fixed in the
+                     same pass — two quick uploads used to compute the same next
+                     number and collide, and the number always used today's
+                     financial year even when the letter's Date said otherwise. -->
+                <div style="margin-top:14px; padding-top:14px; border-top:1px solid #EDEDF1;">
+                    <label style="color:#5F5D70; font-size:10px; margin:0 0 6px 0; text-transform:uppercase; letter-spacing:0.5px;">Or upload a scan/photo</label>
+                    <input type="file" id="letScanFileInput" accept="image/*,application/pdf" onchange="stageLetterScan()" style="font-size:11px; width:100%;" aria-label="Upload a scan or photo">
+                    <div id="letScanStage" hidden class="let-scan-stage">
+                        <div class="let-scan-top">
+                            <div class="let-scan-thumb" id="letScanThumb"></div>
+                            <div class="let-scan-meta">
+                                <div class="let-scan-name" id="letScanName"></div>
+                                <div class="let-scan-size" id="letScanSize"></div>
+                                <div class="let-scan-serial" id="letScanSerial"></div>
+                            </div>
+                        </div>
+                        <div class="let-scan-actions">
+                            <button type="button" class="let-scan-confirm" onclick="confirmLetterScanUpload()" id="letScanConfirmBtn">✓ Confirm &amp; upload</button>
+                            <button type="button" class="let-scan-cancel" onclick="cancelLetterScan()">Choose another</button>
+                        </div>
+                    </div>
+                    <div id="letScanStatus" style="font-size:11px; color:#5F5D70; margin-top:6px;"></div>
                 </div>
             </div>
-            <div style="display:flex; gap:16px; align-items:flex-start;">
-
-                <!-- Left: controls -->
-                <div id="letterpadControlsColumn" style="flex:0 0 220px; scroll-margin-top:76px;">
-                    <label style="color:#1C1C27; margin-top:0;">Letter No.</label>
-                    <input type="text" id="letDocNo" readonly style="background:#EDEDF1; color:#1C1C27; border:1px solid #E1E1E6; font-weight:bold;" aria-label="Letter number">
-                    <!-- 1g: same address-options list as the main document editor
-                         (#addressOptionSelect / applyAddressOption), scoped to
-                         Letterpad so a different registered address can be
-                         printed at the top of the letterhead. -->
-                    <label style="color:#1C1C27;">Company Address</label>
-                    <select id="letAddressOptionSelect" onchange="letApplyAddressOption()" style="background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6;" aria-label="Company address option"></select>
-                    <label style="color:#1C1C27;">Date</label>
-                    <input type="date" id="letDate" style="background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6;" onchange="renderLetterheadPreview()" aria-label="Letter date">
-                    <label style="color:#1C1C27;">Addressed To (optional)</label>
-                    <input type="text" id="letAddressee" placeholder="e.g. To Whom It May Concern" style="background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6;" oninput="renderLetterheadPreview()">
-
-                    <!-- Rich text toolbar -->
-                    <div id="letSecFormat" style="margin-top:16px; background:#EDEDF1; border:1px solid #E1E1E6; border-radius:6px; padding:8px; scroll-margin-top:76px;">
-                        <div style="font-size:10px; font-weight:bold; color:#5F5D70; text-transform:uppercase; margin-bottom:6px;">Formatting</div>
-                        <!-- 1d: one-tap paragraph styles, same idea as a word processor's
-                             "Heading"/"Normal" style presets — bundles size+font+bold
-                             into a single tap instead of setting each manually. -->
-                        <div class="keep-grid" style="display:grid; grid-template-columns:repeat(2,1fr); gap:4px; margin-bottom:6px;">
-                            <button onclick="letApplyStylePreset('heading')" style="width:auto; margin:0; padding:7px; background:#FFFFFF; border:1px solid #E1E1E6; color:#2c3e50; font-size:12px; font-weight:bold;">🔠 Heading</button>
-                            <button onclick="letApplyStylePreset('body')" style="width:auto; margin:0; padding:7px; background:#FFFFFF; border:1px solid #E1E1E6; color:#2c3e50; font-size:12px;">Body</button>
-                        </div>
-                        <div class="keep-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:4px;">
-                            <button onclick="letCmd('bold')" style="width:auto; margin:0; padding:7px; background:#FFFFFF; border:1px solid #E1E1E6; color:#1C1C27; font-weight:bold;">B</button>
-                            <button onclick="letCmd('italic')" style="width:auto; margin:0; padding:7px; background:#FFFFFF; border:1px solid #E1E1E6; color:#1C1C27; font-style:italic;">I</button>
-                            <button onclick="letCmd('underline')" style="width:auto; margin:0; padding:7px; background:#FFFFFF; border:1px solid #E1E1E6; color:#1C1C27; text-decoration:underline;">U</button>
-                            <button onclick="letCmd('insertUnorderedList')" style="width:auto; margin:0; padding:7px; background:#FFFFFF; border:1px solid #E1E1E6; color:#1C1C27; font-size:11px;">• List</button>
-                            <button onclick="letCmd('insertOrderedList')" style="width:auto; margin:0; padding:7px; background:#FFFFFF; border:1px solid #E1E1E6; color:#1C1C27; font-size:11px;">1. List</button>
-                            <button onclick="letClearFormat()" style="width:auto; margin:0; padding:7px; background:#FFFFFF; border:1px solid #E1E1E6; color:#A32A2E; font-size:11px;">Clear</button>
-                        </div>
-                        <div style="margin-top:6px; display:flex; align-items:center; gap:6px;">
-                            <label style="color:#1C1C27; font-size:11px; margin:0; text-transform:none;">Text Color</label>
-                            <input type="color" id="letColorPicker" value="#1C1C27" onchange="letCmd('foreColor', this.value)" style="width:32px; height:26px; padding:0; border:1px solid #E1E1E6; margin:0;" aria-label="Text colour">
-                        </div>
-                        <div style="margin-top:6px;">
-                            <select aria-label="Font size" onchange="letCmd('fontSize', this.value)" style="background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; font-size:12px; padding:5px; margin:0;">
-                                <option value="">Font Size...</option>
-                                <option value="2">Small</option>
-                                <option value="3">Normal</option>
-                                <option value="5">Large</option>
-                                <option value="7">X-Large</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div id="letSecActions" style="display:flex; flex-direction:column; gap:8px; margin-top:16px; scroll-margin-top:76px;">
-                        <button onclick="saveLetterhead()" style="background:#1C7A3E; padding:11px; font-size:13px;">💾 Save Letter</button>
-                        <button onclick="printLetterheadBlank()" style="background:#5F5D70; padding:11px; font-size:13px;">🖨️ Print Blank Letterhead</button>
-                        <button onclick="printLetterheadContent()" style="background:#2c3e50; padding:11px; font-size:13px;">🖨️ Print With Content</button>
-                        <button onclick="exportLetterheadToPDF()" style="background:#A32A2E; padding:11px; font-size:13px;">📄 Export PDF A4</button>
-                        <button onclick="openSavedLetters()" style="background:#6B3FA0; padding:9px; font-size:12px;">📂 View Saved Letters</button>
-                        <button onclick="newLetterhead()" style="background:none; border:1px solid #E1E1E6; color:#5F5D70; padding:8px; font-size:11px;">✨ New Blank Letter</button>
-
-                        <!-- Upload a photo/scan of a handwritten letter — gets its
-                             own LET number in the same sequence as typed letters,
-                             so a physical handover still has a complete record. -->
-                        <div style="margin-top:8px; padding-top:12px; border-top:1px solid #EDEDF1;">
-                            <label style="color:#5F5D70; font-size:10px; margin:0 0 6px 0; text-transform:uppercase; letter-spacing:0.5px;">Or upload a scan/photo</label>
-                            <input type="file" id="letScanFileInput" accept="image/*,application/pdf" onchange="handleLetterScanUpload()" style="font-size:11px; width:100%;" aria-label="Upload a scan or photo">
-                            <div id="letScanStatus" style="font-size:11px; color:#5F5D70; margin-top:6px;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right: letterhead preview -->
-                <div id="letterheadPreviewWrapper" style="flex:1; background:#EDEDF1; padding:16px; border-radius:8px; overflow:hidden; display:flex; justify-content:center; align-items:flex-start; scroll-margin-top:76px;">
-                    <!-- Scale container: sized to the page's SCALED dimensions
-                         (set by JS via updateLetterheadScale()) so there's no
-                         leftover scrollable space — only the actual visible
-                         page occupies room. The inner #letterheadPage keeps
-                         its true A4 mm dimensions always (critical for print,
-                         which never applies this on-screen-only transform). -->
-                    <!-- 1b FIX: this sits inside #letterheadPreviewWrapper's
-                         display:flex row as the ONLY flex item. Its true
-                         width is a full 794px (set below by JS, matching the
-                         real A4 page) with transform:scale() shrinking it
-                         visually — but a flex item's default flex-shrink:1
-                         let the browser shrink that 794px flex-basis down to
-                         fit the row BEFORE the transform ever ran, while its
-                         child #letterheadPage (not itself a flex item) kept
-                         its own full 794px width regardless. The child then
-                         overflowed this now-narrower box, and since the
-                         wrapper clips overflow, only the right portion of
-                         that oversized page stayed visible — reading as
-                         "docked right with grey space on the left" even
-                         though this element itself was centered correctly.
-                         flex-shrink:0 stops the browser from shrinking the
-                         intended 794px box pre-transform, so the transform
-                         is the ONLY thing determining size and the child
-                         page can never outgrow it again. -->
-                    <div id="letterheadScaleContainer" style="transform-origin: top center; flex-shrink: 0;">
-                        <div id="letterheadPage" style="background:#FFFFFF; width:210mm; min-height:297mm; box-shadow:0 0 10px rgba(0,0,0,0.15); padding:20mm; box-sizing:border-box; display:flex; flex-direction:column; font-family:'Lato', 'Segoe UI', sans-serif;">
-
-                        <!-- Letterhead header — centered logo only, no company name text
-                             (the logo already establishes the brand identity). Phone
-                             number pulled out on its own line with larger, bolder
-                             styling for better readability at a glance. -->
-                        <div style="text-align:center; padding-bottom:14px; border-bottom:3px solid #2c3e50;">
-                            <img id="letLogo" src="logo.png" onerror="handleLogoError(this)" alt="KEN LOGO" style="max-height:64px; margin-bottom:10px;">
-                            <div style="font-size:11px; color:#1C1C27; line-height:1.5;" id="letAddressBlock">
-                                A Unit of KEN PROJECTS &nbsp;|&nbsp; GSTIN: <b>33ABEFK9154C1ZI</b><br>
-                                4,5 Vallabai Street, Rudrapalayam, Sankaramanallur, Tamil Nadu - 642204
-                            </div>
-                            <div style="font-size:15px; font-weight:bold; color:#2c3e50; margin-top:6px; letter-spacing:0.3px;">
-                                📞 95850 88822 &nbsp;/&nbsp; 95850 88844
-                            </div>
-                        </div>
-
-                        <!-- Date + addressee -->
-                        <div style="margin-top:20px; font-size:13px; color:#1C1C27;">
-                            <div style="text-align:right;" id="letDispDate"></div>
-                            <div style="margin-top:14px;" id="letDispAddressee"></div>
-                        </div>
-
-                        <!-- Body — contenteditable rich text area -->
-                        <div id="letBody" contenteditable="true" onmouseup="letSaveSelection()" onkeyup="letSaveSelection()" style="flex:1; margin-top:16px; font-size:13px; color:#1C1C27; line-height:1.7; outline:none; min-height:400px;" placeholder="Start typing your letter here..."></div>
-
-                        <!-- Footer — thin rule + small contact info, no bank details/terms since this isn't a financial document -->
-                        <!-- vBeta31: intentionally still #6E6C80 — this is the printed letterhead footer, part of pixel-frozen print output. The darker #5F5D70 is on-screen UI only. -->
-                        <div style="margin-top:auto; padding-top:10px; border-top:1px solid #EDEDF1; text-align:center; font-size:9px; color:#6E6C80;">
-                            KEN TRADERS — A Unit of KEN PROJECTS &nbsp;|&nbsp; 4,5 Vallabai Street, Rudrapalayam, Sankaramanallur, Tamil Nadu - 642204 &nbsp;|&nbsp; Ph: 95850 88822 / 95850 88844
-                        </div>
-                    </div>
-                    </div>
-                </div>
             </div>
-        </div>
+
+
     </div>
 </div>
 
@@ -8334,7 +8845,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta45";
+    const APP_VERSION = "vBeta51";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -9433,20 +9944,22 @@
         return true;
     }
 
+    /* vBeta51 (15f): this drove the Pricing modal's copy of the Audit Lock
+       box, which is gone — the Audit modal's Lock tab is the only place that
+       setting lives now. Kept as a guarded no-op rather than deleted, because
+       five call sites still invoke it and each of them also calls
+       updateAuditLockModalStatus(), which paints the surviving UI. The
+       `#auditLockStatus` guard is what makes it harmless; the two lines that
+       reached for `cfgAuditLockDate` and `lockType_*` were removed because
+       they would now throw on a null element. */
     function renderAuditLockStatus() {
         let el = document.getElementById('auditLockStatus');
         if (!el) return;
         if (auditLockDate) {
             el.innerHTML = `🔒 Currently locked: <b>${auditLockTypes.join(', ')}</b> before <b>${formatDateDisplay(auditLockDate)}</b>`;
-            document.getElementById('cfgAuditLockDate').value = auditLockDate;
         } else {
             el.innerText = 'No lock set — all documents are freely editable.';
         }
-        // Reflect current locked types into the checkboxes
-        ['INV','SAL','QUO','ADV','RCP','CRN','RCM','EXP'].forEach(t => {
-            let cb = document.getElementById('lockType_' + t);
-            if (cb) cb.checked = auditLockTypes.includes(t);
-        });
     }
 
     // v82: this used to open/close a standalone Audit Lock modal
@@ -9473,7 +9986,11 @@
     function setAuditLockFromModal() {
         let newDate = document.getElementById('almDate').value;
         if (!newDate) { alert('Pick a date first.'); return; }
-        let types = ['INV','RCM','SAL','ADV','RCP','CRN','EXP'].filter(t => {
+        /* vBeta51 (15f): QUO added. The removed Pricing box offered eight
+           document types and this tab only ever filtered seven, so without
+           this the deletion would have quietly removed the ability to lock
+           quotations at all rather than just removing a duplicate. */
+        let types = ['INV','RCM','SAL','ADV','RCP','CRN','QUO','EXP'].filter(t => {
             let cb = document.getElementById('alm_' + t); return cb && cb.checked;
         });
         if (types.length === 0) { alert('Tick at least one document type.'); return; }
@@ -9482,9 +9999,13 @@
         // #8: record the timestamp of this lock change
         try { localStorage.setItem('kenAuditLockSetAt', new Date().toISOString()); } catch(e) {}
         saveAuditLockDate(newDate, types);
-        // Sync back to the inline settings panel too
-        document.getElementById('cfgAuditLockDate').value = newDate;
-        types.forEach(t => { let cb = document.getElementById('lockType_' + t); if (cb) cb.checked = true; });
+        /* vBeta51 (15f): the two lines that used to sit here mirrored this
+           choice back into the Pricing modal's copy of these controls. They
+           are gone with that copy — and they carried a real bug worth
+           recording: the loop only ever set `checked = true` and never
+           unchecked, so a type you had just DESELECTED here stayed ticked
+           over there, showing as locked when the saved setting no longer
+           included it. One place to set it means nothing to disagree with. */
         renderAuditLockStatus();
         updateAuditLockModalStatus();
         showToast(`🔒 Audit lock set — ${types.join(', ')} before ${formatDateDisplay(newDate)} protected.`, 'success');
@@ -9501,31 +10022,13 @@
         showToast('Audit lock removed.', 'info');
     }
 
-    function updateAuditLockDate() {
-        let newDate = document.getElementById('cfgAuditLockDate').value;
-        if (!newDate) { alert('Pick a date first.'); return; }
-        // #3: gather the chosen locked types from the checkboxes
-        let chosenTypes = ['INV','SAL','QUO','ADV','RCP','CRN','RCM','EXP'].filter(t => {
-            let cb = document.getElementById('lockType_' + t);
-            return cb && cb.checked;
-        });
-        if (chosenTypes.length === 0) { alert('Tick at least one document type to lock.'); return; }
-        let pwd = prompt(`Set audit lock to ${formatDateDisplay(newDate)} for these types: ${chosenTypes.join(', ')}?\n\nDocuments of these types before this date will require the master password to edit, delete, or void.\n\nEnter master password to confirm:`);
-        if (pwd !== MASTER_PASSWORD) { if (pwd !== null) alert('Incorrect password.'); return; }
-        saveAuditLockDate(newDate, chosenTypes);
-        renderAuditLockStatus();
-        showToast(`🔒 Audit lock set — ${chosenTypes.join(', ')} before ${formatDateDisplay(newDate)} protected.`, 'success');
-    }
-
-    function clearAuditLockDate() {
-        if (!auditLockDate) return;
-        let pwd = prompt('Enter master password to remove the audit lock entirely:');
-        if (pwd !== MASTER_PASSWORD) { if (pwd !== null) alert('Incorrect password.'); return; }
-        if (!confirm('Remove the audit lock? All documents will become freely editable again.')) return;
-        saveAuditLockDate('', auditLockTypes);
-        renderAuditLockStatus();
-        showToast('Audit lock removed.', 'info');
-    }
+    /* vBeta51 (15f): updateAuditLockDate() and clearAuditLockDate() were
+       deleted here. They read `cfgAuditLockDate` and the `lockType_*`
+       checkboxes, which only ever existed in the Pricing modal's copy of the
+       Audit Lock box — with that markup gone their only callers went with it,
+       and both would have thrown on a null element if anything had reached
+       them. The surviving pair is setAuditLockFromModal() /
+       clearAuditLockFromModal() in the Audit modal's Lock tab. */
 
 
     // --- SIGNATURE DATABASE ---
@@ -9604,6 +10107,20 @@
         { key: 'RAJA',  label: '✍️ Signature — Raja',  hint: 'Used when "Sign: Raja" is selected' },
         { key: 'MEHAR', label: '✍️ Signature — Mehar', hint: 'Used when "Sign: Mehar" is selected' }
     ];
+
+    /* vBeta49 — Vault tile (Reports & Tools). Opens the shared Google Drive
+       folder holding the paperwork that lives outside the app (scans,
+       photos, supplier docs). Kept as a named constant rather than inline in
+       the onclick so the folder can be repointed in one obvious place.
+       noopener/noreferrer because this leaves the app's own origin. */
+    const VAULT_DRIVE_URL = 'https://drive.google.com/drive/folders/1upptylqDjd4Yhl4VzX3faB-BRUuyw497';
+    function openVault() {
+        let w = window.open(VAULT_DRIVE_URL, '_blank', 'noopener,noreferrer');
+        // Some installed-PWA webviews refuse window.open and return null —
+        // fall back to navigating this window rather than doing nothing at
+        // all, which would read as a dead button.
+        if (!w) location.href = VAULT_DRIVE_URL;
+    }
 
     function openBrandAssets() {
         renderBrandAssets();
@@ -10550,26 +11067,30 @@
     function renderAdjustStrip() {
         let wrap = document.getElementById('bcalcAdjustStrip');
         if (!wrap) return;
+        // vBeta48: "Off" is just the first segment of the same pill track
+        // now, instead of a separate toggle switch — reuses the existing
+        // setBlocksCalcWastageEnabled/setBlocksCalcRoundEnabled(false) and
+        // setBlocksCalcWastage/setBlocksCalcRoundTo(value) functions as-is.
         let wastagePills = [3,5,10].map(p =>
-            `<button type="button" class="bcalc-seg-btn${blocksCalcWastagePct===p?' active':''}" onclick="setBlocksCalcWastage(${p})">${p}%</button>`
+            `<button type="button" class="bcalc-seg-btn${(blocksCalcWastageEnabled&&blocksCalcWastagePct===p)?' active':''}" onclick="setBlocksCalcWastage(${p})">${p}%</button>`
         ).join('');
         let roundPills = [10,25,50].map(n =>
-            `<button type="button" class="bcalc-seg-btn${blocksCalcRoundTo===n?' active':''}" onclick="setBlocksCalcRoundTo(${n})">${n}</button>`
+            `<button type="button" class="bcalc-seg-btn${(blocksCalcRoundEnabled&&blocksCalcRoundTo===n)?' active':''}" onclick="setBlocksCalcRoundTo(${n})">${n}</button>`
         ).join('');
         wrap.innerHTML = `
-            <div class="bcalc-adjust-col bcalc-adjust-wastage">
-                <label class="bcalc-toggle-row">
-                    <span class="bcalc-toggle-switch"><input type="checkbox" ${blocksCalcWastageEnabled?'checked':''} onchange="setBlocksCalcWastageEnabled(this.checked)"><span class="bcalc-toggle-slider"></span></span>
-                    <span class="bcalc-adjust-label">Add Wastage</span>
-                </label>
-                <div class="bcalc-seg${blocksCalcWastageEnabled?'':' disabled'}">${wastagePills}</div>
+            <div class="bcalc-adjust-col">
+                <span class="bcalc-adjust-label">Add Wastage</span>
+                <div class="bcalc-seg">
+                    <button type="button" class="bcalc-seg-btn${blocksCalcWastageEnabled?'':' active'}" onclick="setBlocksCalcWastageEnabled(false)">Off</button>
+                    ${wastagePills}
+                </div>
             </div>
-            <div class="bcalc-adjust-col bcalc-adjust-round">
-                <label class="bcalc-toggle-row">
-                    <span class="bcalc-toggle-switch"><input type="checkbox" ${blocksCalcRoundEnabled?'checked':''} onchange="setBlocksCalcRoundEnabled(this.checked)"><span class="bcalc-toggle-slider"></span></span>
-                    <span class="bcalc-adjust-label">Round Up</span>
-                </label>
-                <div class="bcalc-seg${blocksCalcRoundEnabled?'':' disabled'}">${roundPills}</div>
+            <div class="bcalc-adjust-col">
+                <span class="bcalc-adjust-label">Round Up</span>
+                <div class="bcalc-seg">
+                    <button type="button" class="bcalc-seg-btn${blocksCalcRoundEnabled?'':' active'}" onclick="setBlocksCalcRoundEnabled(false)">Off</button>
+                    ${roundPills}
+                </div>
             </div>`;
     }
 
@@ -13237,6 +13758,248 @@
     // it directly (use setDateInToday()/setDateInValue() below for that,
     // rather than touching #dateIn's value/valueAsDate in-line, so this
     // never gets forgotten at a new call site).
+    /* ============================================================
+       vBeta51 — LETTERPAD (page 18)
+       ============================================================ */
+
+    /* 18f-1: real tabs. The four pills this replaces never hid anything —
+       they scrolled one long column, and "Details" pointed at the wrapper
+       containing the other two. */
+    function switchLetterpadTab(tab) {
+        ['details','write','actions'].forEach(t => {
+            let btn = document.getElementById('letTabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+            let sec = document.getElementById('letSec' + t.charAt(0).toUpperCase() + t.slice(1));
+            if (btn) btn.classList.toggle('active', t === tab);
+            if (sec) sec.classList.toggle('active', t === tab);
+        });
+        // The sheet is only laid out once its tab is actually visible, so
+        // re-measure when Write becomes the shown one.
+        if (tab === 'write') setTimeout(updateLetterheadScale, 30);
+    }
+
+    /* 18e-1: Fit page vs Readable. `letterpadView` is read by
+       updateLetterheadScale(), which used to clamp hard at 1 so there was no
+       way to see the text at its real size on a phone. */
+    let letterpadView = 'read';
+    function setLetterpadView(mode) {
+        letterpadView = mode;
+        let fit = document.getElementById('letViewFit');
+        let read = document.getElementById('letViewRead');
+        if (fit) fit.classList.toggle('active', mode === 'fit');
+        if (read) read.classList.toggle('active', mode === 'read');
+        updateLetterheadScale();
+    }
+
+    /* 18b: our own print-safe swatches. The neon palette was Android's native
+       colour picker, not anything the app chose — replacing the control is
+       what removes it. Defaults are inks this app already prints with. */
+    const LET_DEFAULT_INKS = [
+        { hex: '#1C1C27', name: 'Black' },  { hex: '#2c3e50', name: 'Navy' },
+        { hex: '#5F5D70', name: 'Grey' },   { hex: '#0B5A94', name: 'Blue' },
+        { hex: '#1C7A3E', name: 'Green' },  { hex: '#A32A2E', name: 'Red' },
+        { hex: '#6B3FA0', name: 'Purple' }, { hex: '#92400E', name: 'Brown' }
+    ];
+    let letColourEditMode = false;
+    let letEditingSwatch = -1;
+    function getLetInks() {
+        try {
+            let saved = JSON.parse(localStorage.getItem('kenLetterInks') || 'null');
+            if (Array.isArray(saved) && saved.length === 8) return saved;
+        } catch(e) {}
+        return LET_DEFAULT_INKS.slice();
+    }
+    function saveLetInks(inks) { try { localStorage.setItem('kenLetterInks', JSON.stringify(inks)); } catch(e) {} }
+    function renderLetColourGrid() {
+        let grid = document.getElementById('letColourGrid');
+        if (!grid) return;
+        let inks = getLetInks();
+        let current = (document.getElementById('letColorPicker') || {}).value || '#1C1C27';
+        /* Deliberately <span>, not <button>: a global rule remaps any button
+           inside .modal-content whose inline style CONTAINS one of the app's
+           legacy solid hexes (#1C7A3E, #A32A2E, #92400E, #0B5A94, #6B3FA0,
+           #2c3e50) to a pale tint. Six of these eight swatches are exactly
+           those values, so as buttons they rendered as washed-out pastels
+           instead of the inks they represent. */
+        grid.innerHTML = inks.map((ink, i) =>
+            `<span role="button" tabindex="0" class="let-colour-sw${ink.hex.toLowerCase() === current.toLowerCase() ? ' active' : ''}" style="background:${ink.hex};" title="${esc(ink.name)}" onclick="pickLetColour(${i})" aria-label="${esc(ink.name)}"></span>`
+        ).join('');
+    }
+    function pickLetColour(i) {
+        let inks = getLetInks();
+        if (letColourEditMode) {
+            // Replace this preset with whatever the native picker returns.
+            letEditingSwatch = i;
+            let picker = document.getElementById('letColorPicker');
+            picker.value = inks[i].hex;
+            picker.click();
+            return;
+        }
+        applyLetColour(inks[i].hex, inks[i].name);
+    }
+    function applyLetColour(hex, name) {
+        if (letEditingSwatch >= 0) {
+            let inks = getLetInks();
+            inks[letEditingSwatch] = { hex: hex, name: hex.toUpperCase() };
+            saveLetInks(inks);
+            letEditingSwatch = -1;
+            renderLetColourGrid();
+            return;
+        }
+        letCmd('foreColor', hex);
+        let chip = document.getElementById('letColourChip');
+        let label = document.getElementById('letColourName');
+        if (chip) chip.style.background = hex;
+        if (label) label.textContent = name || hex.toUpperCase();
+        let picker = document.getElementById('letColorPicker');
+        if (picker) picker.value = hex;
+        renderLetColourGrid();
+    }
+    function toggleLetColourPanel() {
+        let panel = document.getElementById('letColourPanel');
+        if (!panel) return;
+        panel.hidden = !panel.hidden;
+        if (!panel.hidden) renderLetColourGrid();
+    }
+    function toggleLetColourEdit() {
+        letColourEditMode = !letColourEditMode;
+        let btn = document.getElementById('letColourEditBtn');
+        let hint = document.getElementById('letColourEditHint');
+        if (btn) btn.textContent = letColourEditMode ? 'Done' : 'Edit presets';
+        if (hint) hint.hidden = !letColourEditMode;
+    }
+
+    /* 18b: size as four steps rather than a dropdown whose first option was a
+       placeholder that still fired execCommand. */
+    function setLetterpadFontSize(size) {
+        letCmd('fontSize', String(size));
+        document.querySelectorAll('.let-size-btn').forEach(b =>
+            b.classList.toggle('active', b.getAttribute('data-size') === String(size)));
+    }
+
+    /* 18c: the letter date draws its own text, for the same reason the View
+       List filter had to in vBeta49 — a native date field's own text can be
+       recoloured by the browser's auto dark mode whatever the page asks. */
+    function renderLetDateDisplay() {
+        let MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        let el = document.getElementById('letDate');
+        let disp = document.getElementById('letDateText');
+        if (!el || !disp) return;
+        if (!el.value) { disp.textContent = 'Select date'; disp.classList.add('dfilter-empty'); return; }
+        disp.classList.remove('dfilter-empty');
+        let parts = el.value.split('-');
+        let y = Number(parts[0]), m = Number(parts[1]), d = Number(parts[2]);
+        disp.textContent = (!y || !m || m < 1 || m > 12) ? el.value
+            : String(d).padStart(2,'0') + ' ' + MONTHS[m-1] + ' ' + y;
+    }
+
+    /* 18d: staging. The old handler claimed the next LET number the instant a
+       file was chosen — before any preview, before the upload even started —
+       so picking the wrong photo spent a number. Nothing is claimed here; the
+       number shown is only a preview of what confirming would take. */
+    let _letStagedFile = null;
+    function letNextScanDocNo() {
+        /* Uses the letter's own Date rather than today. The old code always
+           used todayISO(), so scanning a letter from a previous financial
+           year filed it under the current one. */
+        let dateEl = document.getElementById('letDate');
+        let useDate = (dateEl && dateEl.value) ? dateEl.value : todayISO();
+        let prefix = `KT/LET${getFinancialYearLabel(useDate)}/`;
+        let max = 0;
+        savedLetters.forEach(l => {
+            if (!l.docNo.includes('VOID') && l.docNo.startsWith(prefix)) {
+                let suffix = l.docNo.slice(prefix.length);
+                if (/^\d+$/.test(suffix)) { let n = parseInt(suffix, 10); if (n > max) max = n; }
+            }
+        });
+        return { docNo: prefix + String(max + 1).padStart(4, '0'), date: useDate };
+    }
+    function stageLetterScan() {
+        let fileInput = document.getElementById('letScanFileInput');
+        let statusEl = document.getElementById('letScanStatus');
+        let stage = document.getElementById('letScanStage');
+        if (!fileInput.files || !fileInput.files.length) return;
+        let file = fileInput.files[0];
+        let isImage = file.type.startsWith('image/');
+        let isPdf = file.type === 'application/pdf';
+        if (!isImage && !isPdf) {
+            statusEl.innerText = '⚠️ Only images or PDF files are supported.';
+            statusEl.style.color = '#A32A2E';
+            fileInput.value = '';
+            return;
+        }
+        _letStagedFile = file;
+        statusEl.innerText = '';
+        let { docNo } = letNextScanDocNo();
+        document.getElementById('letScanName').textContent = file.name;
+        document.getElementById('letScanSize').textContent =
+            (isImage ? 'Photo' : 'PDF') + ' · ' + (file.size / 1048576).toFixed(1) + ' MB';
+        document.getElementById('letScanSerial').textContent = 'Will be saved as ' + docNo;
+        let thumb = document.getElementById('letScanThumb');
+        thumb.innerHTML = '';
+        if (isImage) {
+            let img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.onload = () => URL.revokeObjectURL(img.src);
+            thumb.appendChild(img);
+        } else {
+            thumb.textContent = '📄';
+        }
+        stage.hidden = false;
+    }
+    function cancelLetterScan() {
+        _letStagedFile = null;
+        document.getElementById('letScanFileInput').value = '';
+        document.getElementById('letScanStage').hidden = true;
+        document.getElementById('letScanStatus').innerText = '';
+    }
+    function confirmLetterScanUpload() {
+        let statusEl = document.getElementById('letScanStatus');
+        let btn = document.getElementById('letScanConfirmBtn');
+        let file = _letStagedFile;
+        if (!file) return;
+        if (WEB_APP_URL === "PASTE_YOUR_WEB_APP_URL_HERE") {
+            statusEl.innerText = '⚠️ Web App URL not configured — cannot upload.';
+            statusEl.style.color = '#A32A2E';
+            return;
+        }
+        /* The number is claimed HERE, at confirm — and re-read at this moment
+           rather than reusing the one shown at staging time, so two uploads
+           started close together cannot both take the same one. */
+        let { docNo, date } = letNextScanDocNo();
+        let isImage = file.type.startsWith('image/');
+        btn.disabled = true;
+        statusEl.innerText = '⏳ Uploading...';
+        statusEl.style.color = '#5F5D70';
+        let processFile = isImage ? compressImageFile(file) : fileToBase64(file);
+        processFile.then(base64 => {
+            let letterId = Date.now();
+            return fetch(WEB_APP_URL, {
+                method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: 'uploadLetterScan', data: {
+                    id: letterId, docNo, date, fileName: file.name,
+                    mimeType: isImage ? 'image/jpeg' : 'application/pdf', base64File: base64 } })
+            }).then(r => r.json()).then(res => {
+                btn.disabled = false;
+                if (res && res.success) {
+                    savedLetters.push({ id: letterId, docNo, date, addressee: '', bodyHtml: '',
+                        kind: 'SCAN', fileName: file.name, driveUrl: res.driveUrl,
+                        driveFileId: res.driveFileId, createdAt: new Date().toISOString() });
+                    cancelLetterScan();
+                    statusEl.innerText = `✅ Saved as ${docNo}`;
+                    statusEl.style.color = '#1C7A3E';
+                    showToast(`✅ Scan uploaded and saved as ${docNo}`, 'success');
+                } else {
+                    statusEl.innerText = '❌ Upload failed: ' + ((res && res.error) || 'Unknown error');
+                    statusEl.style.color = '#A32A2E';
+                }
+            });
+        }).catch(err => {
+            btn.disabled = false;
+            statusEl.innerText = '❌ Upload failed — check connection: ' + err.message;
+            statusEl.style.color = '#A32A2E';
+        });
+    }
+
     function renderDateInDisplay() {
         // vBeta34 FIX: this array used to be a module-level `const` — but
         // setDateInToday() is called from top-level script code (right
@@ -14819,6 +15582,30 @@
     // the table is always exactly 2 columns regardless of brand count.
     // Rebuilt from scratch on modal open, brand add/remove, and every
     // chip click (selectBrandForGrid()).
+    /* vBeta51 (15b): repaints the auto-update row for its current state.
+       Neutral while off (which is the safe, recommended state, and the state
+       it is in nearly always), red only once it is actually switched on. */
+    function toggleAutoUpdateWarning() {
+        let cb = document.getElementById('cfgAllowAutoUpdate');
+        let row = document.getElementById('cfgAutoUpdateRow');
+        let title = document.getElementById('cfgAutoUpdateTitle');
+        let state = document.getElementById('cfgAutoUpdateState');
+        if (!cb || !row || !title || !state) return;
+        if (cb.checked) {
+            row.style.background = '#FDECEC';
+            title.style.color = '#A32A2E';
+            state.style.color = '#A32A2E';
+            state.style.fontWeight = '700';
+            state.textContent = 'On — a price can change after it is added';
+        } else {
+            row.style.background = '#EDEDF1';
+            title.style.color = '#1C1C27';
+            state.style.color = '#5F5D70';
+            state.style.fontWeight = '600';
+            state.textContent = 'Off — prices stay as added';
+        }
+    }
+
     function renderBrandTierGrid() {
         let wrap = document.getElementById('brandTierGridWrap');
         let brands = pricingConfig.brands || [];
@@ -14838,11 +15625,25 @@
             let rates = pricingConfig.tiers[tier] || {};
             let safeTier = tier.replace(/[^a-zA-Z0-9]/g, '_');
             let val = isDefault ? (rates['__default'] ?? 0) : (rates[currentGridBrand] ?? 0);
-            return `<tr><td class="btg-tier-cell">${esc(tier)}</td><td class="btg-rate-cell"><input type="number" step="0.25" id="brandRate_${safeTier}___${idSuffix}"${dataBrandAttr} value="${val}"></td></tr>`;
+            return `<div class="btg-row"><span class="btg-tier-cell">${esc(tier)}</span><span class="btg-rate-cell"><input type="number" step="0.25" id="brandRate_${safeTier}___${idSuffix}"${dataBrandAttr} value="${val}"></span></div>`;
         }).join('');
 
+        /* vBeta51 (15a-1): this was a <table>, and on a phone that cost a
+           quarter of the width. A blanket rule makes every table inside a
+           modal `display:block` so wide ones can scroll; a block box wraps
+           its rows in an anonymous table that shrink-to-fits, so a narrow
+           two-column table stops filling its container. Measured at 390px the
+           box was 362px while the rows filled 266px — 96px of nothing. At
+           1100px it filled 609 of 610, so it was phone-only.
+           Rather than fight that rule, this stops being a table: four tier
+           names against four rate boxes is a labelled form, not tabular data.
+           As rows it fills the width at any size and needs none of the table
+           CSS. Every id, value and change handler is unchanged. */
         wrap.innerHTML = `<div class="brand-chip-row" id="brandChipRow">${chipsHtml}</div>`
-            + `<table id="brandTierGrid" class="btg-table"><thead><tr><th>Tier</th><th>Rate (per inch)</th></tr></thead><tbody>${rowsHtml}</tbody></table>`;
+            + `<div id="brandTierGrid" class="btg-list">`
+            + `<div class="btg-head"><span>Tier</span><span>Rate (per inch)</span></div>`
+            + rowsHtml
+            + `</div>`;
 
         // Event delegation on the freshly-inserted chip row — innerHTML
         // above already discarded any previous chip row (and its
@@ -14972,6 +15773,7 @@
         document.getElementById('cfgRetailPremium').value = pricingConfig.retailPremium;
         document.getElementById('cfgWholesaleTons').value = pricingConfig.wholesaleTonnage;
         document.getElementById('cfgAllowAutoUpdate').checked = !!pricingConfig.allowAutoUpdatePriceInCart;
+        toggleAutoUpdateWarning(); // vBeta51 (15b): paint the row for the saved state on open
         document.getElementById('cfgWeight4').value = pricingConfig.weights[4];
         document.getElementById('cfgWeight6').value = pricingConfig.weights[6];
         document.getElementById('cfgWeight8').value = pricingConfig.weights[8];
@@ -15162,6 +15964,7 @@
                 'Only enable this if you fully understand and accept that risk.'
             )) {
                 document.getElementById('cfgAllowAutoUpdate').checked = false;
+                toggleAutoUpdateWarning(); // vBeta51 (15b): keep the row in step when the setting is forced back off
                 newAutoUpdateSetting = false;
             }
         }
@@ -18444,6 +19247,7 @@
         flushOfflineDocQueue();
 
         // Open instantly from cache — don't block the modal on a cloud round-trip
+        renderDocFilterDates(); // vBeta49: paint the date-filter labels before the modal is seen
         renderDocList();
         document.getElementById('docModal').style.display = 'flex';
 
@@ -18518,6 +19322,89 @@
     function isMobileDocView() {
         return window.innerWidth <= 700 || document.body.classList.contains('force-mobile-main');
     }
+
+    /* ============================================================
+       vBeta49 — AUTOMATIC MOBILE CARDS FOR REPORT TABLES
+       ------------------------------------------------------------
+       There are ~20 .analytics-table reports (Ledger, Cash Book, Audit,
+       All Projects, Summary, GSTR, Trips, Advance Pool, ...), each built
+       by its own render function. Converting them to phone-friendly cards
+       the old way would have meant hand-writing data-label="..." onto
+       every <td> in all 20 renderers — a lot of duplicated strings that
+       would silently drift out of sync the first time a column was
+       renamed.
+
+       Instead this reads each table's OWN <th> text and stamps the
+       matching data-label onto the cells underneath, then flags the table
+       with .rpt-cards so the CSS can turn it into cards on a phone. The
+       labels can therefore never disagree with the headers — they ARE the
+       headers — and a new report picks this up for free with no extra code.
+
+       Deliberately skipped (left as an aligned, scrollable table):
+         - tables with no <thead> (restore/dispatch previews)
+         - tables whose header row uses colspan — e.g. Outstanding's
+           grouped view, where the "header" is a client banner rather than
+           column names, so positional labels would be nonsense
+         - rows whose cell count doesn't match the header (spacer/total
+           rows built with colspan)
+       ============================================================ */
+    function enhanceReportTables() {
+        let tables = document.querySelectorAll('table.analytics-table:not([data-rpt-scanned])');
+        for (let t = 0; t < tables.length; t++) {
+            let tbl = tables[t];
+            tbl.setAttribute('data-rpt-scanned', '1');
+            let headRow = tbl.tHead && tbl.tHead.rows.length ? tbl.tHead.rows[0] : null;
+            if (!headRow) continue;
+            let headCells = headRow.cells;
+            let banner = false;
+            let labels = [];
+            for (let i = 0; i < headCells.length; i++) {
+                if (headCells[i].colSpan > 1) { banner = true; break; }
+                labels.push((headCells[i].textContent || '').trim());
+            }
+            if (banner || labels.length === 0) continue;
+            for (let b = 0; b < tbl.tBodies.length; b++) {
+                let rows = tbl.tBodies[b].rows;
+                for (let r = 0; r < rows.length; r++) {
+                    let cells = rows[r].cells;
+                    if (cells.length !== labels.length) continue;
+                    for (let c = 0; c < cells.length; c++) {
+                        if (cells[c].colSpan > 1) continue;
+                        if (!cells[c].hasAttribute('data-label')) cells[c].setAttribute('data-label', labels[c]);
+                    }
+                    /* vBeta51 (16c): the FIRST cell is the card's identity,
+                       not one of its fields. Labelling it produced rows like
+                       "PROJECT  |  P1 — First Floor Rooms", where the label
+                       restates the value and the thing that tells you which
+                       card you are looking at is buried in the middle of a
+                       list. Flagging it lets the CSS render it as the card's
+                       heading instead. The data-label stays on the element so
+                       the desktop table is untouched. */
+                    if (cells.length) cells[0].classList.add('rpt-card-title');
+                }
+            }
+            tbl.classList.add('rpt-cards');
+        }
+    }
+
+    /* Every report renderer writes its table with innerHTML, so rather than
+       adding a call to 20 functions (and needing to remember it for the
+       21st), watch for the tables appearing. Only childList is observed and
+       the pass only sets attributes, so this can't re-trigger itself; the
+       work is coalesced to at most once per animation frame. */
+    (function watchForReportTables() {
+        let queued = false;
+        function flush() { queued = false; try { enhanceReportTables(); } catch (e) { console.warn('table enhance skipped:', e); } }
+        function schedule() { if (!queued) { queued = true; requestAnimationFrame(flush); } }
+        function start() {
+            try {
+                new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
+            } catch (e) { console.warn('table observer unavailable:', e); }
+            flush();
+        }
+        if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+    })();
+
     let currentDocPage = 1;
 
     // A3: remembers the last anchor checkbox clicked, for shift-click range select
@@ -18531,10 +19418,39 @@
         renderDocList();
     }
 
+    /* vBeta49: paints the visible text for the three date-range filter
+       fields (see the markup note on #docDateRangeRow). Called after every
+       place their .value changes, so the label can never drift from the
+       value the list is actually filtered by. */
+    function renderDocFilterDates() {
+        let MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        function paint(inputId, textId, placeholder, isMonth) {
+            let el = document.getElementById(inputId);
+            let disp = document.getElementById(textId);
+            if (!el || !disp) return;
+            if (!el.value) {
+                disp.textContent = placeholder;
+                disp.classList.add('dfilter-empty');
+                return;
+            }
+            disp.classList.remove('dfilter-empty');
+            let parts = el.value.split('-');
+            let y = Number(parts[0]), m = Number(parts[1]);
+            if (!y || !m || m < 1 || m > 12) { disp.textContent = el.value; return; }
+            disp.textContent = isMonth
+                ? MONTHS[m - 1] + ' ' + y
+                : String(Number(parts[2])).padStart(2, '0') + ' ' + MONTHS[m - 1] + ' ' + y;
+        }
+        paint('docFilterFrom', 'docFilterFromText', 'From', false);
+        paint('docFilterTo', 'docFilterToText', 'To', false);
+        paint('docFilterMonth', 'docFilterMonthText', 'Month', true);
+    }
+
     function clearDateFilter() {
         document.getElementById('docFilterFrom').value = '';
         document.getElementById('docFilterTo').value = '';
         document.getElementById('docFilterMonth').value = '';
+        renderDocFilterDates();
         currentDocPage = 1;
         renderDocList();
     }
@@ -18549,6 +19465,7 @@
         let toIso = d => toLocalISO(d);
         document.getElementById('docFilterFrom').value = toIso(firstDay);
         document.getElementById('docFilterTo').value = toIso(lastDay);
+        renderDocFilterDates();
         currentDocPage = 1;
         renderDocList();
     }
@@ -25544,6 +26461,18 @@
         renderAllProjectsOverview();
     }
 
+    /* vBeta51 (16b-1): expand/collapse one project summary card. Kept
+       deliberately dumb — it toggles the `hidden` attribute rather than
+       re-rendering, so nothing recalculates and the other cards do not move
+       under your thumb. */
+    function toggleProjectCard(id) {
+        let det = document.getElementById('projDetail_' + id);
+        let more = document.getElementById('projMore_' + id);
+        if (!det) return;
+        det.hidden = !det.hidden;
+        if (more) more.textContent = det.hidden ? 'Details ▾' : 'Details ▴';
+    }
+
     function renderAllProjectsOverview() {
         let projects = getProjectsFlat().filter(p => p.name && String(p.id||'').match(/^P\d+$/));
         let rows = projects.map(p => ({ project: p, f: getProjectFinancials(p) }));
@@ -25584,26 +26513,83 @@
             return;
         }
 
-        document.getElementById('allProjectsOverviewTotals').innerHTML = `
-            <div style="background:#EBFCEC; border-radius:6px; padding:10px; text-align:center; flex:1;">
-                <div style="font-size:9px; color:#1C7A3E; font-weight:bold; text-transform:uppercase;">Total Received</div>
-                <div style="font-size:16px; font-weight:bold; color:#1C7A3E;">₹${totalReceived.toLocaleString('en-IN')}</div>
-            </div>
-            <div style="background:#FDECEC; border-radius:6px; padding:10px; text-align:center; flex:1;">
-                <div style="font-size:9px; color:#A32A2E; font-weight:bold; text-transform:uppercase;">Total Spent</div>
-                <div style="font-size:16px; font-weight:bold; color:#A32A2E;">₹${totalSpent.toLocaleString('en-IN')}</div>
-            </div>
-            <div style="background:#FEF3E0; border-radius:6px; padding:10px; text-align:center; flex:1;">
-                <div style="font-size:9px; color:#92400E; font-weight:bold; text-transform:uppercase;">Total Balance Due</div>
-                <div style="font-size:16px; font-weight:bold; color:#92400E;">₹${totalDue.toLocaleString('en-IN')}</div>
-            </div>
-            <div style="background:#E8F5FF; border-radius:6px; padding:10px; text-align:center; flex:1;">
-                <div style="font-size:9px; color:#0B5A94; font-weight:bold; text-transform:uppercase;">📈 Total Profit</div>
-                <div style="font-size:16px; font-weight:bold; color:${totalProfit>=0?'#0B5A94':'#A32A2E'};">₹${totalProfit.toLocaleString('en-IN')}</div>
+        /* vBeta51 (16a-1): these four were a single flex row, so on a 390px
+           phone each tile got ~83px and Indian currency wrapped mid-number —
+           ₹90,000 rendered as "₹90,00" then "0" on the next line, which is a
+           different figure and the one the eye reads first. Two-by-two gives
+           each tile ~170px, so nothing can break; the label is left-aligned
+           on one line, the number is bigger rather than smaller, and
+           tabular-nums keeps the four figures on a common baseline. The
+           wrapper's own display is set here too, since it was inline. */
+        let totalsEl = document.getElementById('allProjectsOverviewTotals');
+        let totalTile = (bg, ink, label, value) => `
+            <div style="background:${bg}; border-radius:10px; padding:11px 12px; min-width:0;">
+                <div style="font-size:9.5px; color:${ink}; font-weight:bold; text-transform:uppercase; letter-spacing:0.3px;">${label}</div>
+                <div style="font-size:19px; font-weight:bold; color:${ink}; margin-top:3px; white-space:nowrap; font-variant-numeric:tabular-nums;">₹${value.toLocaleString('en-IN')}</div>
+            </div>`;
+        totalsEl.innerHTML =
+            totalTile('#EBFCEC', '#1C7A3E', 'Total Received', totalReceived) +
+            totalTile('#FDECEC', '#A32A2E', 'Total Spent', totalSpent) +
+            totalTile('#FEF3E0', '#92400E', 'Total Balance Due', totalDue) +
+            `<div style="background:#E8F5FF; border-radius:10px; padding:11px 12px; min-width:0;">
+                <div style="font-size:9.5px; color:#0B5A94; font-weight:bold; text-transform:uppercase; letter-spacing:0.3px;">📈 Total Profit</div>
+                <div style="font-size:19px; font-weight:bold; color:${totalProfit>=0?'#0B5A94':'#A32A2E'}; margin-top:3px; white-space:nowrap; font-variant-numeric:tabular-nums;">₹${totalProfit.toLocaleString('en-IN')}</div>
             </div>`;
 
         let body = document.getElementById('allProjectsOverviewBody');
         if (rows.length === 0) { body.innerHTML = '<p style="color:#5F5D70; padding:20px; text-align:center;">No projects yet.</p>'; return; }
+
+        /* vBeta51 (16b-1): on a phone this stops being a table. The generic
+           table-to-card conversion from vBeta49 fixed the sideways scroll,
+           but All Projects has more columns than any other report, so eight
+           columns became eight stacked rows — about 450px per project, and
+           roughly 2,700px to scroll six of them.
+           Here each project is a summary instead: the name is the heading,
+           status sits beside it, and the two figures you actually scan a
+           project list for — what you made and what you are still owed — are
+           always visible. Billed, Received, Spent and Budget open on tap.
+           ~120px closed, so six projects fit in about one screen.
+           Desktop keeps the table below, unchanged — same isMobileDocView()
+           branch the Cloud Document Manager already uses. */
+        if (isMobileDocView()) {
+            body.innerHTML = rows.map(({project:p, f}) => {
+                let st = p.status || 'Active';
+                let stStyle = st === 'Completed' ? 'background:var(--vista-mint-tint,#EBFCEC);color:var(--vista-mint-text,#1C7A3E);'
+                            : st === 'On Hold'   ? 'background:var(--vista-amber-tint,#FEF3E0);color:#92400E;'
+                            :                      'background:var(--vista-blue-tint,#E8F5FF);color:#0B5A94;';
+                let meta = [];
+                if (p.clientName) meta.push(`👤 ${esc(p.clientName)}`);
+                if (p.startDate) meta.push(`started ${formatDateDisplay(p.startDate)}`);
+                let budgetLine = f.target > 0
+                    ? (f.pctOfBudget >= 100 ? `<span style="background:#A32A2E;color:#FFFFFF;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:bold;">⚠️ ${f.pctOfBudget}% OVER</span>`
+                       : f.pctOfBudget >= 85 ? `<span style="background:#92400E;color:#FFFFFF;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:bold;">⚠️ ${f.pctOfBudget}%</span>`
+                       : `<span style="font-size:12px; font-weight:700;">${f.pctOfBudget}%</span>`)
+                    /* vBeta51 (16e): was #E1E1E6 — so faint it read as a
+                       disabled control rather than as information. */
+                    : `<span style="color:#5F5D70; font-size:12px;">no target set</span>`;
+                return `<div class="proj-card">
+                    <div class="proj-card-head" onclick="toggleProjectCard('${p.id}')">
+                        <span class="proj-card-id">${p.id}</span>
+                        <span class="proj-card-name">${esc(p.name)}</span>
+                        <span class="proj-card-status" style="${stStyle}">${st}</span>
+                    </div>
+                    ${meta.length ? `<div class="proj-card-meta">${meta.join(' · ')}</div>` : ''}
+                    <div class="proj-card-figs" onclick="toggleProjectCard('${p.id}')">
+                        <div><span class="proj-fig-label">Profit</span><span class="proj-fig-value" style="color:${f.profit>=0?'#1C7A3E':'#A32A2E'};">₹${f.profit.toLocaleString('en-IN')}</span></div>
+                        <div><span class="proj-fig-label">Balance due</span><span class="proj-fig-value" style="color:${f.balanceDue>0?'#92400E':'#1C1C27'};">₹${f.balanceDue.toLocaleString('en-IN')}</span></div>
+                        <span class="proj-card-more" id="projMore_${p.id}">Details ▾</span>
+                    </div>
+                    <div class="proj-card-detail" id="projDetail_${p.id}" hidden>
+                        <div class="proj-detail-row"><span>Billed</span><span>₹${f.billed.toLocaleString('en-IN')}</span></div>
+                        <div class="proj-detail-row"><span>Received</span><span style="color:#1C7A3E;">₹${f.received.toLocaleString('en-IN')}</span></div>
+                        <div class="proj-detail-row"><span>Spent</span><span style="color:#A32A2E;">₹${f.spent.toLocaleString('en-IN')}</span></div>
+                        <div class="proj-detail-row"><span>Budget</span><span>${budgetLine}</span></div>
+                        <button type="button" class="proj-card-open" onclick="closeAllProjectsOverview(); openProjectDetail('${p.id}');">Open project →</button>
+                    </div>
+                </div>`;
+            }).join('');
+            return;
+        }
 
         body.innerHTML = `<table class="analytics-table"><thead><tr>
             <th>Project</th><th>Status</th><th style="text-align:right">Billed</th><th style="text-align:right">Received</th>
@@ -25624,7 +26610,11 @@
                 ? (f.pctOfBudget >= 100 ? `<span style="background:#A32A2E;color:#FFFFFF;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:bold;">⚠️ ${f.pctOfBudget}% OVER</span>`
                    : f.pctOfBudget >= 85 ? `<span style="background:#92400E;color:#FFFFFF;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:bold;">⚠️ ${f.pctOfBudget}%</span>`
                    : `<span style="color:#5F5D70;font-size:11px;">${f.pctOfBudget}%</span>`)
-                : `<span style="color:#E1E1E6;font-size:11px;">no target set</span>`;
+                /* vBeta51 (16e): was #E1E1E6 against white — technically
+                   present, practically invisible, and what you could see read
+                   as a disabled control rather than as a fact about the
+                   project. Same muted ink every other secondary value uses. */
+                : `<span style="color:#5F5D70;font-size:11px;">no target set</span>`;
             return `<tr style="cursor:pointer;" onclick="closeAllProjectsOverview(); openProjectDetail('${p.id}');">
                 <td><b>${p.id}</b> — ${p.name}${p.clientName ? `<div style="font-size:11px;color:#5F5D70;">👤 ${p.clientName}</div>` : ''}${p.startDate ? `<div style="font-size:10px;color:#5F5D70;">started ${formatDateDisplay(p.startDate)}</div>` : ''}</td>
                 <td>${statusCell}</td>
@@ -26652,8 +27642,14 @@
         // only happens if the person clicks away and back).
         letPopulateAddressOptionSelect();
         if (!document.getElementById('letDocNo').value) newLetterhead();
+        /* vBeta51: the four scroll-pills this used to wire up are gone —
+           they were never tabs (see switchLetterpadTab). Open on Details,
+           paint the date's own text (18c) and set the view toggle (18e-1). */
+        switchLetterpadTab('details');
+        renderLetDateDisplay();
+        setLetterpadView(letterpadView);
+        renderLetColourGrid();
         setTimeout(updateLetterheadScale, 50); // after layout settles
-        initToolSectionScrollspy('letJumpNav'); // vBeta20 — see openCashBook
 
         // BUG FIX: previously only pulled if savedLetters was empty
         // locally — the exact "pull only if empty" pattern already
@@ -26765,7 +27761,15 @@
         let availableWidth = wrapper.clientWidth - 24;   // minus a little breathing room
         let availableHeight = wrapper.clientHeight - 24;
 
-        let scale = Math.min(availableWidth / trueWidth, availableHeight / trueHeight, 1);
+        /* vBeta51 (18e-1): the `1` in this Math.min was a hard ceiling — the
+           preview could shrink but never grow, so on a phone the sheet sat at
+           ~0.41 and the 13px body text drew at about 5px with no way up.
+           In Readable mode we scale to the WIDTH alone and drop the ceiling,
+           so the text reaches a real reading size while you type; Fit page
+           keeps the old behaviour for checking the layout before printing. */
+        let scale = (typeof letterpadView !== 'undefined' && letterpadView === 'read')
+            ? Math.max(availableWidth / trueWidth, 1)
+            : Math.min(availableWidth / trueWidth, availableHeight / trueHeight, 1);
         // Never scale UP past 100% — a smaller-than-A4 window should shrink
         // the preview, but a huge monitor shouldn't blow the letter up
         // larger than its real printed size, which would be misleading.
@@ -26776,6 +27780,9 @@
         // Reserve exactly the SCALED footprint in the flex layout, so the
         // wrapper doesn't leave dead space around a shrunk page.
         scaleContainer.style.marginBottom = (trueHeight * scale - trueHeight) + 'px';
+        // Readable can scale ABOVE 1, so the wrapper must be allowed to scroll
+        // rather than clip what no longer fits.
+        wrapper.style.overflow = (typeof letterpadView !== 'undefined' && letterpadView === 'read') ? 'auto' : 'hidden';
     }
     window.addEventListener('resize', () => {
         if (document.getElementById('contractsModal').style.display === 'flex') updateLetterheadScale();
@@ -26804,6 +27811,7 @@
         letBody.innerHTML = '';
         document.getElementById('letDocNo').value = getNextLetterDocNo();
         renderLetterheadPreview();
+            renderLetDateDisplay(); // vBeta51 (18c): keep the drawn date text in step
     }
 
     // ----------------------------------------------------------------
@@ -26815,93 +27823,14 @@
     // letters list is a complete record regardless of how each one was
     // produced.
     // ----------------------------------------------------------------
-    function handleLetterScanUpload() {
-        let fileInput = document.getElementById('letScanFileInput');
-        let statusEl = document.getElementById('letScanStatus');
-        if (!fileInput.files || fileInput.files.length === 0) return;
-        let file = fileInput.files[0];
-
-        if (WEB_APP_URL === "PASTE_YOUR_WEB_APP_URL_HERE") {
-            statusEl.innerText = '⚠️ Web App URL not configured — cannot upload.';
-            statusEl.style.color = '#A32A2E';
-            return;
-        }
-
-        let isImage = file.type.startsWith('image/');
-        let isPdf = file.type === 'application/pdf';
-        if (!isImage && !isPdf) {
-            statusEl.innerText = '⚠️ Only images or PDF files are supported.';
-            statusEl.style.color = '#A32A2E';
-            fileInput.value = '';
-            return;
-        }
-
-        // Reserve a LET number for this upload from the same shared
-        // sequence as typed letters, using today's date to determine the
-        // financial year prefix (a scan doesn't have its own "date typed"
-        // concept the way the editor does — today is the natural default).
-        let today = todayISO();
-        let fyLabel = getFinancialYearLabel(today);
-        let prefix = `KT/LET${fyLabel}/`;
-        let max = 0;
-        savedLetters.forEach(l => {
-            if (!l.docNo.includes('VOID') && l.docNo.startsWith(prefix)) {
-                let suffix = l.docNo.slice(prefix.length);
-                if (/^\d+$/.test(suffix)) { let n = parseInt(suffix, 10); if (n > max) max = n; }
-            }
-        });
-        let docNo = prefix + String(max + 1).padStart(4, '0');
-
-        statusEl.innerText = '⏳ Uploading...';
-        statusEl.style.color = '#5F5D70';
-
-        let processFile = isImage
-            ? compressImageFile(file) // reuse the same compression used for Site Timeline Photos — resized + JPEG ~75%, keeps Drive usage sane
-            : fileToBase64(file);     // PDFs uploaded as-is, no compression
-
-        processFile.then(base64 => {
-            let letterId = Date.now();
-            fetch(WEB_APP_URL, {
-                method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({
-                    action: 'uploadLetterScan',
-                    data: {
-                        id: letterId, docNo, date: today,
-                        fileName: file.name,
-                        mimeType: isImage ? 'image/jpeg' : 'application/pdf', // images are re-encoded to JPEG by compressImageFile
-                        base64File: base64
-                    }
-                })
-            })
-            .then(r => r.json())
-            .then(res => {
-                fileInput.value = '';
-                if (res && res.success) {
-                    savedLetters.push({
-                        id: letterId, docNo, date: today, addressee: '', bodyHtml: '',
-                        kind: 'SCAN', fileName: file.name, driveUrl: res.driveUrl,
-                        driveFileId: res.driveFileId, createdAt: new Date().toISOString()
-                    });
-                    statusEl.innerText = `✅ Saved as ${docNo}`;
-                    statusEl.style.color = '#1C7A3E';
-                    showToast(`✅ Scan uploaded and saved as ${docNo}`, 'success');
-                } else {
-                    statusEl.innerText = '❌ Upload failed: ' + (res.error || 'Unknown error');
-                    statusEl.style.color = '#A32A2E';
-                }
-            })
-            .catch(err => {
-                fileInput.value = '';
-                statusEl.innerText = '❌ Upload failed — check connection: ' + err.message;
-                statusEl.style.color = '#A32A2E';
-            });
-        }).catch(err => {
-            fileInput.value = '';
-            statusEl.innerText = '❌ Could not process file: ' + err.message;
-            statusEl.style.color = '#A32A2E';
-        });
-    }
-
+    /* vBeta51 (18d): handleLetterScanUpload() was deleted here. It claimed
+       the next LET number, uploaded and persisted the record the moment a
+       file was chosen — no thumbnail, no confirm, no way back — so the wrong
+       photo spent a number. Replaced by stageLetterScan() /
+       confirmLetterScanUpload() / cancelLetterScan() above, which also fixed
+       two bugs it carried: the number was computed before the async compress
+       resolved, so two quick uploads collided on the same one, and it always
+       used today's financial year rather than the letter's own Date. */
     function renderLetterheadPreview() {
         let dateVal = document.getElementById('letDate').value;
         document.getElementById('letDispDate').innerText = dateVal ? formatDateDisplay(dateVal) : '';
@@ -27047,6 +27976,7 @@
         renderLetterheadPreview();
         closeSavedLetters();
         showToast(`Loaded ${letter.docNo}`, 'info');
+            renderLetDateDisplay(); // vBeta51 (18c): keep the drawn date text in step
     }
 
     function deleteLetterhead(letterId) {
@@ -27119,6 +28049,11 @@
     // whatever's currently typed in the body.
     // ----------------------------------------------------------------
     function printLetterheadBlank() {
+        /* vBeta51 (18f-1): the letterhead now lives inside the Write
+           tab, and a hidden tab has no layout — html2pdf and the print
+           stylesheet would both capture nothing. Make it the shown tab
+           before doing anything with it. */
+        switchLetterpadTab('write');
         let bodyEl = document.getElementById('letBody');
         let dateEl = document.getElementById('letDispDate');
         let savedContent = bodyEl.innerHTML;
@@ -27141,6 +28076,11 @@
     }
 
     function printLetterheadContent() {
+        /* vBeta51 (18f-1): the letterhead now lives inside the Write
+           tab, and a hidden tab has no layout — html2pdf and the print
+           stylesheet would both capture nothing. Make it the shown tab
+           before doing anything with it. */
+        switchLetterpadTab('write');
         document.body.classList.add('letterhead-printing');
         window.print();
         setTimeout(() => document.body.classList.remove('letterhead-printing'), 500);
@@ -27154,6 +28094,11 @@
     // be displaying, not a true full-size A4 page.
     // ----------------------------------------------------------------
     function exportLetterheadToPDF() {
+        /* vBeta51 (18f-1): the letterhead now lives inside the Write
+           tab, and a hidden tab has no layout — html2pdf and the print
+           stylesheet would both capture nothing. Make it the shown tab
+           before doing anything with it. */
+        switchLetterpadTab('write');
         const scaleContainer = document.getElementById('letterheadScaleContainer');
         const element = document.getElementById('letterheadPage');
         const docNo = document.getElementById('letDocNo').value.replace(/[^a-zA-Z0-9]/g, '_') || 'Letter';
