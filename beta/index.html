@@ -738,6 +738,39 @@
         }
         .section-collapse-btn:hover { background: rgba(255,255,255,0.14); filter: none; }
         .section-collapse-btn:active { background: rgba(255,255,255,0.2); transform: scale(0.97); opacity: 1; box-shadow: none !important; }
+        /* vBeta52: Reports & Tools full-screen sheet on phone. With 15 tiles
+           across 5 rows, the inline panel used to run past the fixed
+           .action-bar (SAVE DOC/PDF A4/PRINT, z-index 1000) — the last row
+           was only reachable by scrolling the whole home page underneath
+           that bar. Raaja's call (of 4 options put to him): open the panel
+           as a full-screen sheet instead, covering the header/New Doc/
+           Project Manager rows and the action bar entirely, so the grid
+           gets the full viewport. Gated on isMobileDocView() in
+           toggleAnalyticsSection() (§3.4 pattern) — body.rt-fullscreen is
+           only ever added there, and only when opening on phone, so desktop
+           keeps the original inline-dropdown behavior untouched. overflow-y:
+           auto on the panel itself is a safety net for short phones where
+           5 rows still don't fit — not the expected case, but cheap
+           insurance. The existing "▲ Close" button at the foot of the grid
+           still works unchanged; the new .rt-fullscreen-head bar adds a
+           same-page close reachable without scrolling to it, same red
+           .close-btn convention as every other modal in the app. */
+        body.rt-fullscreen #analyticsSectionBody.open {
+            position: fixed; inset: 0; z-index: 1400; margin: 0; border-radius: 0;
+            overflow-y: auto; -webkit-overflow-scrolling: touch;
+            padding: 0 14px calc(14px + env(safe-area-inset-bottom));
+            border: none;
+        }
+        .rt-fullscreen-head { display: none; }
+        body.rt-fullscreen #analyticsSectionBody.open .rt-fullscreen-head {
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 2;
+            margin: 0 -14px 12px; padding: max(12px, env(safe-area-inset-top)) 14px 12px;
+            background: var(--vista-ink, #1C1C27);
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+        }
+        .rt-fullscreen-head span { font-size: 15px; font-weight: 800; color: #FFFFFF; }
+        .rt-fullscreen-head .close-btn { padding: 7px 12px; font-size: 13px; }
         /* vBeta50 — "Option D" from the design canvas, chosen over a grouped
            list, a compact grid with a recents shelf, and two-column caption
            cards. The arrangement is exactly what shipped before (same 3
@@ -4451,7 +4484,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta51</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta52</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -4553,6 +4586,12 @@
         </div>
         <!-- U4: Analytics — dedicated section, 2 rows x 3 columns, icon above label. -->
         <div class="analytics-section section-tab-body" id="analyticsSectionBody">
+            <!-- vBeta52: only visible when body.rt-fullscreen is set (phone,
+                 panel open) — see the CSS comment near .rt-fullscreen-head. -->
+            <div class="rt-fullscreen-head">
+                <span>📊 Reports &amp; Tools</span>
+                <button type="button" class="close-btn" onclick="toggleAnalyticsSection()">X</button>
+            </div>
             <div class="analytics-grid">
                 <button id="btnAnalyticsLedger" class="analytics-grid-btn" onclick="openLedger()"><span class="ag-icon" data-vicon="ledger"></span><span>Ledger</span></button>
                 <button id="btnAnalyticsOutstanding" class="analytics-grid-btn" onclick="openOutstanding()"><span class="ag-icon" data-vicon="outstanding"></span><span>Outstanding</span></button>
@@ -8845,7 +8884,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta51";
+    const APP_VERSION = "vBeta52";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -11111,6 +11150,9 @@
             document.getElementById('blocksCalcBody').classList.remove('open');
             document.getElementById('blocksCalcTab').classList.remove('active');
         }
+        // vBeta52: full-screen sheet on phone only — see the CSS comment
+        // near .rt-fullscreen-head. Desktop keeps the inline dropdown.
+        document.body.classList.toggle('rt-fullscreen', willOpen && isMobileDocView());
     }
     function toggleBlocksCalcCollapse() {
         let body = document.getElementById('blocksCalcBody');
@@ -11121,6 +11163,11 @@
         if (willOpen) {
             document.getElementById('analyticsSectionBody').classList.remove('open');
             document.getElementById('reportsToolsTab').classList.remove('active');
+            // vBeta52: Blocks Calculator force-closes Reports & Tools above —
+            // make sure that also drops the full-screen sheet state if it
+            // was on, otherwise rt-fullscreen would stay stuck on <body>
+            // with no open panel to show it.
+            document.body.classList.remove('rt-fullscreen');
         }
     }
 
