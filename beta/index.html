@@ -4464,7 +4464,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta53</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta54</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -8858,7 +8858,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta53";
+    const APP_VERSION = "vBeta54";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -11126,7 +11126,13 @@
         if (!isMobileDocView()) return;
         requestAnimationFrame(() => {
             let row = document.querySelector('.section-tab-row');
-            if (row) row.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (!row) return;
+            // vBeta53 FIX: scrollIntoView's block:'start' lands the row
+            // flush against the very top edge (0px), no breathing room.
+            // Raaja asked for a ~10px gap — computed manually since
+            // scrollIntoView has no offset option.
+            let target = row.getBoundingClientRect().top + window.scrollY - 10;
+            window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
         });
     }
     function toggleAnalyticsSection() {
