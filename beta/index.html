@@ -738,39 +738,19 @@
         }
         .section-collapse-btn:hover { background: rgba(255,255,255,0.14); filter: none; }
         .section-collapse-btn:active { background: rgba(255,255,255,0.2); transform: scale(0.97); opacity: 1; box-shadow: none !important; }
-        /* vBeta52: Reports & Tools full-screen sheet on phone. With 15 tiles
-           across 5 rows, the inline panel used to run past the fixed
-           .action-bar (SAVE DOC/PDF A4/PRINT, z-index 1000) — the last row
-           was only reachable by scrolling the whole home page underneath
-           that bar. Raaja's call (of 4 options put to him): open the panel
-           as a full-screen sheet instead, covering the header/New Doc/
-           Project Manager rows and the action bar entirely, so the grid
-           gets the full viewport. Gated on isMobileDocView() in
-           toggleAnalyticsSection() (§3.4 pattern) — body.rt-fullscreen is
-           only ever added there, and only when opening on phone, so desktop
-           keeps the original inline-dropdown behavior untouched. overflow-y:
-           auto on the panel itself is a safety net for short phones where
-           5 rows still don't fit — not the expected case, but cheap
-           insurance. The existing "▲ Close" button at the foot of the grid
-           still works unchanged; the new .rt-fullscreen-head bar adds a
-           same-page close reachable without scrolling to it, same red
-           .close-btn convention as every other modal in the app. */
-        body.rt-fullscreen #analyticsSectionBody.open {
-            position: fixed; inset: 0; z-index: 1400; margin: 0; border-radius: 0;
-            overflow-y: auto; -webkit-overflow-scrolling: touch;
-            padding: 0 14px calc(14px + env(safe-area-inset-bottom));
-            border: none;
-        }
-        .rt-fullscreen-head { display: none; }
-        body.rt-fullscreen #analyticsSectionBody.open .rt-fullscreen-head {
-            display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 2;
-            margin: 0 -14px 12px; padding: max(12px, env(safe-area-inset-top)) 14px 12px;
-            background: var(--vista-ink, #1C1C27);
-            border-bottom: 1px solid rgba(255,255,255,0.15);
-        }
-        .rt-fullscreen-head span { font-size: 15px; font-weight: 800; color: #FFFFFF; }
-        .rt-fullscreen-head .close-btn { padding: 7px 12px; font-size: 13px; }
+        /* vBeta53: Reports & Tools / Blocks Calculator auto-scroll-to-top on
+           open. vBeta52 tried a full-screen sheet for this (covering the
+           header/action-bar) — Raaja tested it on the real device and
+           rejected it outright ("I do not like this full screen mode"),
+           so that whole approach (body.rt-fullscreen, #analyticsSectionBody
+           fixed positioning, .rt-fullscreen-head bar) is reverted here.
+           Replacement: the panel stays exactly as it always was (inline,
+           pushes the page down, normal page scroll) but toggleAnalyticsSection()/
+           toggleBlocksCalcCollapse() now scrollIntoView() the tapped tab to
+           the top of the screen the instant it opens — see the JS. That
+           maximizes the space below the tab for the grid without changing
+           how the panel itself looks or behaves. No CSS is needed for this
+           approach beyond what already existed pre-vBeta52. */
         /* vBeta50 — "Option D" from the design canvas, chosen over a grouped
            list, a compact grid with a recents shelf, and two-column caption
            cards. The arrangement is exactly what shipped before (same 3
@@ -4484,7 +4464,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta52</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta53</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -4586,12 +4566,6 @@
         </div>
         <!-- U4: Analytics — dedicated section, 2 rows x 3 columns, icon above label. -->
         <div class="analytics-section section-tab-body" id="analyticsSectionBody">
-            <!-- vBeta52: only visible when body.rt-fullscreen is set (phone,
-                 panel open) — see the CSS comment near .rt-fullscreen-head. -->
-            <div class="rt-fullscreen-head">
-                <span>📊 Reports &amp; Tools</span>
-                <button type="button" class="close-btn" onclick="toggleAnalyticsSection()">X</button>
-            </div>
             <div class="analytics-grid">
                 <button id="btnAnalyticsLedger" class="analytics-grid-btn" onclick="openLedger()"><span class="ag-icon" data-vicon="ledger"></span><span>Ledger</span></button>
                 <button id="btnAnalyticsOutstanding" class="analytics-grid-btn" onclick="openOutstanding()"><span class="ag-icon" data-vicon="outstanding"></span><span>Outstanding</span></button>
@@ -8884,7 +8858,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta52";
+    const APP_VERSION = "vBeta53";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -11140,6 +11114,21 @@
     // load; unlike the old Reports & Tools behavior, this is intentionally
     // NOT persisted across reloads — a tab selection is transient, the same
     // way switching a tab in any other tabbed UI doesn't "stick" for next time.
+    // vBeta53: scroll the section-tab-row to the top of the screen the
+    // instant a panel opens, so whichever grid just expanded below it gets
+    // the most vertical room the viewport can give before the fixed
+    // .action-bar. Phone only (isMobileDocView()) — desktop's .editor-box is
+    // its own internally-scrolling sticky card (max-height 94vh), so the tab
+    // row is already near its top there without this. Replaces the vBeta52
+    // full-screen-sheet approach, which Raaja tested on the real device and
+    // rejected.
+    function scrollReportsToolsTabIntoView() {
+        if (!isMobileDocView()) return;
+        requestAnimationFrame(() => {
+            let row = document.querySelector('.section-tab-row');
+            if (row) row.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
     function toggleAnalyticsSection() {
         let body = document.getElementById('analyticsSectionBody');
         let tab = document.getElementById('reportsToolsTab');
@@ -11149,10 +11138,8 @@
         if (willOpen) {
             document.getElementById('blocksCalcBody').classList.remove('open');
             document.getElementById('blocksCalcTab').classList.remove('active');
+            scrollReportsToolsTabIntoView();
         }
-        // vBeta52: full-screen sheet on phone only — see the CSS comment
-        // near .rt-fullscreen-head. Desktop keeps the inline dropdown.
-        document.body.classList.toggle('rt-fullscreen', willOpen && isMobileDocView());
     }
     function toggleBlocksCalcCollapse() {
         let body = document.getElementById('blocksCalcBody');
@@ -11163,11 +11150,7 @@
         if (willOpen) {
             document.getElementById('analyticsSectionBody').classList.remove('open');
             document.getElementById('reportsToolsTab').classList.remove('active');
-            // vBeta52: Blocks Calculator force-closes Reports & Tools above —
-            // make sure that also drops the full-screen sheet state if it
-            // was on, otherwise rt-fullscreen would stay stuck on <body>
-            // with no open panel to show it.
-            document.body.classList.remove('rt-fullscreen');
+            scrollReportsToolsTabIntoView();
         }
     }
 
