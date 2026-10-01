@@ -1315,6 +1315,12 @@
         .btn-print { flex: 1; background: var(--vista-surface-alt, #1C7A3E); color: var(--vista-ink, white); font-size: 16px; box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35); padding: 15px; border-radius: 16px; margin: 0;}
         .btn-pdf { flex: 1; background: var(--vista-surface-alt, #A32A2E); color: var(--vista-ink, white); font-size: 16px; box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35); padding: 15px; border-radius: 16px; margin: 0;}
         .btn-save { flex: 1; background: var(--vista-ink, #0B5A94); color: white; font-size: 16px; box-shadow: 0 4px 14px -6px rgba(28,28,39,0.5); padding: 15px; border-radius: 16px; margin: 0;}
+        /* vBeta56: 4th action-bar button — sends the document as a WhatsApp
+           text summary (shareOnWhatsApp(), now number-targeted — see that
+           function). Reuses the app's own mint/positive-action token rather
+           than WhatsApp's brand teal, matching how PDF/Print already use the
+           app's own red/amber instead of any external app's colors. */
+        .btn-whatsapp { flex: 1; background: var(--vista-mint-text, #1C7A3E); color: white; font-size: 16px; box-shadow: 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35); padding: 15px; border-radius: 16px; margin: 0;}
 
         /* --- INVOICE AESTHETICS --- */
         .header { display: flex; justify-content: space-between; align-items: stretch; min-height: 160px; height: auto; padding-bottom: 15px; z-index: 1;}
@@ -1389,7 +1395,13 @@
         .terms-box-condensed { flex: 1.5; font-size: 11px; color: #1C1C27; line-height: 1.3; border-left: 1px solid #EDEDF1; padding-left: 12px; }
         .terms-box-condensed ul { padding-left: 12px; margin: 4px 0 0 0; }
         .terms-box-condensed li { margin-bottom: 2px; }
-        .signature-box-condensed { flex: 1.2; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; text-align: right; border-left: 1px solid #EDEDF1; padding-left: 12px; min-height: 75px; }
+        /* vBeta54: was align-items:flex-end / text-align:right — Raaja
+           flagged "the sign is not centered" on the exported invoice PDF.
+           The mobile version of this box (see the force-mobile-main /
+           @media(max-width:480px) copies below) was ALREADY centered — this
+           desktop/PDF-export copy was the one out of step. Centered to
+           match, same as the A6 fix already did for #sigImage alone. */
+        .signature-box-condensed { flex: 1.2; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; border-left: 1px solid #EDEDF1; padding-left: 12px; min-height: 75px; }
         .signature-title { margin: 0; font-weight: bold; font-size: 12px; color: #2c3e50; }
         .signature-sub { margin: 0; font-size: 11px; color: #1C1C27; }
 
@@ -2541,7 +2553,7 @@
                 box-shadow: 0 -2px 16px rgba(28,28,39,0.12);
                 box-sizing: border-box;
             }
-            .btn-print, .btn-pdf, .btn-save {
+            .btn-print, .btn-pdf, .btn-save, .btn-whatsapp {
                 font-size: 13px !important;
                 padding: 12px 6px !important;
                 border-radius: 12px !important;
@@ -2789,7 +2801,7 @@
            @media(480px) equivalent (12px !important, see .btn-print/.btn-pdf/.btn-save
            near line 1469) — buttons visibly got squarer corners only when the toggle
            was forced on. Corrected to 12px to match real narrow-viewport rendering. */
-        body.force-mobile-main .btn-print, body.force-mobile-main .btn-pdf, body.force-mobile-main .btn-save {
+        body.force-mobile-main .btn-print, body.force-mobile-main .btn-pdf, body.force-mobile-main .btn-save, body.force-mobile-main .btn-whatsapp {
             font-size: 13px !important; padding: 12px 6px !important; border-radius: 12px !important;
         }
 
@@ -2870,7 +2882,8 @@
         body.force-mobile-main.preview-fit .bill-layout table { font-size: 13px; }
         body.force-mobile-main.preview-fit .bill-layout th, body.force-mobile-main.preview-fit .bill-layout td { padding: 10px !important; }
         body.force-mobile-main.preview-fit .bill-layout .unified-footer { flex-direction: row; gap: 15px; }
-        body.force-mobile-main.preview-fit .bill-layout .signature-box-condensed { border-left: 1px solid #EDEDF1; padding-left: 12px; align-items: flex-end !important; text-align: right !important; }
+        /* vBeta54: matches the .signature-box-condensed centering fix above. */
+        body.force-mobile-main.preview-fit .bill-layout .signature-box-condensed { border-left: 1px solid #EDEDF1; padding-left: 12px; align-items: center !important; text-align: center !important; }
         body.force-mobile-main.preview-fit .bill-layout .terms-box-condensed { border-left: 1px solid #EDEDF1; padding-left: 12px; }
         /* vBeta49: split-table line removed here too — this force-mobile copy
            is what the INSTALLED PWA actually runs, so leaving it behind would
@@ -3010,7 +3023,7 @@
                 background: var(--vista-surface, rgba(26,37,47,0.97));
                 box-shadow: 0 -2px 16px rgba(28,28,39,0.12);
                 box-sizing: border-box; }
-        body.force-mobile-main .btn-print, body.force-mobile-main .btn-pdf, body.force-mobile-main .btn-save { font-size: 13px !important;
+        body.force-mobile-main .btn-print, body.force-mobile-main .btn-pdf, body.force-mobile-main .btn-save, body.force-mobile-main .btn-whatsapp { font-size: 13px !important;
                 padding: 12px 6px !important;
                 border-radius: 12px !important; }
         body.force-mobile-main .action-btn { padding: 8px 10px !important; font-size: 12px !important; }
@@ -3106,7 +3119,7 @@
         body.force-mobile-main .tab-btn, body.force-mobile-main .engine-tab-btn { flex: 0 0 auto; font-size: 11px; padding: 6px 10px; }
         body.force-mobile-main .analytics-table td button { padding: 4px 6px !important; font-size: 10px !important; margin: 1px !important; }
         body.force-mobile-main .action-bar { padding: 6px 8px; gap: 6px; }
-        body.force-mobile-main .btn-print, body.force-mobile-main .btn-pdf, body.force-mobile-main .btn-save { font-size: 11px !important; padding: 10px 4px !important; }
+        body.force-mobile-main .btn-print, body.force-mobile-main .btn-pdf, body.force-mobile-main .btn-save, body.force-mobile-main .btn-whatsapp { font-size: 11px !important; padding: 10px 4px !important; }
         body.force-mobile-main .analytics-grid-btn { font-size: 10.5px; min-height: 0; }
         body.force-mobile-main .action-trio-btn { font-size: 9px; min-height: 52px; }
         /* Ported from the 1100px block — same container/editor-box/preview-box
@@ -3117,7 +3130,7 @@
         /* Extra narrow (< 360px — Galaxy A series etc.) */
         @media (max-width: 360px) {
             .action-bar { padding: 6px 8px; gap: 6px; }
-            .btn-print, .btn-pdf, .btn-save { font-size: 11px !important; padding: 10px 4px !important; }
+            .btn-print, .btn-pdf, .btn-save, .btn-whatsapp { font-size: 11px !important; padding: 10px 4px !important; }
             .analytics-grid-btn { font-size: 10.5px; min-height: 0; }
             .action-trio-btn { font-size: 9px; min-height: 52px; }
         }
@@ -3886,7 +3899,8 @@
                fit mode it's governed purely by the doc type's own JS logic,
                same as print. */
             body.preview-fit .bill-layout .unified-footer { flex-direction: row; gap: 15px; }
-            body.preview-fit .bill-layout .signature-box-condensed { border-left: 1px solid #EDEDF1; padding-left: 12px; align-items: flex-end !important; text-align: right !important; }
+            /* vBeta54: matches the .signature-box-condensed centering fix above. */
+            body.preview-fit .bill-layout .signature-box-condensed { border-left: 1px solid #EDEDF1; padding-left: 12px; align-items: center !important; text-align: center !important; }
             body.preview-fit .bill-layout .terms-box-condensed { border-left: 1px solid #EDEDF1; padding-left: 12px; }
         }
 
@@ -4067,7 +4081,11 @@
         #billPage.pdf-export-mode th { padding: 12px 10px !important; }
         #billPage.pdf-export-mode td { padding: 10px !important; }
         #billPage.pdf-export-mode .unified-footer { flex-direction: row !important; gap: 15px !important; }
-        #billPage.pdf-export-mode .signature-box-condensed { border-left: 1px solid #EDEDF1 !important; padding-left: 12px !important; align-items: flex-end !important; text-align: right !important; }
+        /* vBeta54: this is the rule that actually governed the exported PDF
+           Raaja flagged ("the sign is not centered") — .pdf-export-mode is
+           added by exportToPDF() right before capture (see that function).
+           Centered to match .signature-box-condensed's base fix above. */
+        #billPage.pdf-export-mode .signature-box-condensed { border-left: 1px solid #EDEDF1 !important; padding-left: 12px !important; align-items: center !important; text-align: center !important; }
         #billPage.pdf-export-mode .terms-box-condensed { border-left: 1px solid #EDEDF1 !important; padding-left: 12px !important; align-items: normal !important; text-align: left !important; }
         #billPage.pdf-export-mode #advPrintAmt { font-size: 42px !important; }
 
@@ -4464,7 +4482,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta54</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta57</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -4553,7 +4571,6 @@
         <div class="analytics-section pm-row" style="cursor:pointer;" onclick="openProjectManager()">
             <div class="analytics-section-title"><span>🏗️ Project Manager</span></div>
         </div>
-        <button id="btnWhatsApp" onclick="shareOnWhatsApp()" style="display:none; flex:1; margin:0; background:#1C7A3E; font-size:12.5px; padding:9px 4px; box-shadow:none;">📲 WhatsApp</button>
         <!-- vBeta17: Reports & Tools / Blocks Calculator are now a true tab
              pair — see .section-tab/.section-tab-body CSS and
              selectHeaderTab-style logic in toggleAnalyticsSection()/
@@ -4580,14 +4597,16 @@
                 <button id="btnAnalyticsSites" class="analytics-grid-btn" onclick="openSitesManager()"><span class="ag-icon" data-vicon="sites"></span><span>Sites</span></button>
                 <button id="btnAnalyticsBrandAssets" class="analytics-grid-btn" onclick="openBrandAssets()"><span class="ag-icon" data-vicon="brand"></span><span>Brand Assets</span></button>
                 <!-- vBeta36: 3 new tiles added above the last row per
-                     request — Dummy is a deliberate placeholder for a
-                     future tool (shows a "coming soon" toast, nothing
-                     else), Documents reuses the same Cloud Document
+                     request — Documents reuses the same Cloud Document
                      Manager as the "📂 View List" button above, and
                      Pricing reuses the same Pricing Engine as "⚙️ Pricing
                      & Items" inside the Pricing tab — both are just
-                     shortcuts into existing features, not new ones. -->
-                <button id="btnAnalyticsDummy" class="analytics-grid-btn" onclick="showToast('More tools coming soon', 'info')"><span class="ag-icon" data-vicon="dummy"></span><span>Dummy</span></button>
+                     shortcuts into existing features, not new ones.
+                     vBeta56: the "Dummy" placeholder tile (formerly a
+                     "coming soon" toast, nothing else) is now Leads —
+                     phone/name/requirements/quoted price/needed-by date,
+                     per Raaja's request. See openLeadsManager() below. -->
+                <button id="btnAnalyticsLeads" class="analytics-grid-btn" onclick="openLeadsManager()"><span class="ag-icon" data-vicon="leads"></span><span>Leads</span></button>
                 <!-- vBeta49: this tile was "Documents", a second way into the
                      same Cloud Document Manager the "📂 View List" button at
                      the top of the home screen already opens — so renaming it
@@ -5862,6 +5881,7 @@
         <button class="btn-save" onclick="saveDocument()" title="Ctrl+S">💾 SAVE DOC</button>
         <button class="btn-pdf" onclick="exportToPDF()">📄 PDF A4</button>
         <button class="btn-print" onclick="window.print()" title="Ctrl+P">🖨️ PRINT</button>
+        <button class="btn-whatsapp" onclick="shareOnWhatsApp()">📲 WhatsApp</button>
     </div>
 
 </div>
@@ -7512,6 +7532,39 @@
     </div>
 </div>
 
+<!-- vBeta56: Leads — added per Raaja's request to replace the "Dummy"
+     placeholder tile. Local-only for now (localStorage 'kenLeads'), same
+     pattern as Sites/Clients but with no cloud-sync call, since the
+     Apps Script backend has no saveLead/deleteLead handler yet and this
+     sandbox can't add one — see ways-of-working.md for the handoff note. -->
+<div id="leadsModal" class="modal-overlay" onclick="if(event.target===this &amp;&amp; okToDiscard(['leadNewPhone','leadNewName','leadNewReq','leadNewPrice','leadNewNeededBy'],'lead')) closeLeadsManager()">
+    <div class="modal-content" style="max-width:560px;">
+        <div class="modal-header">
+            <h2>📞 Leads</h2>
+            <button class="close-btn" onclick="closeLeadsManager()">X</button>
+        </div>
+        <div style="font-size:12px; color:#5F5D70; margin-bottom:14px;">Enquiries and quotes given, tracked until they become an order or don't. Stored on this device only for now.</div>
+        <div id="leadsListTarget"></div>
+        <div style="background:#EDEDF1; border-radius:6px; padding:10px; margin-top:14px;">
+            <div style="font-size:11px; font-weight:bold; color:#5F5D70; text-transform:uppercase; margin-bottom:6px;">+ Add Lead</div>
+            <input type="text" inputmode="tel" id="leadNewPhone" placeholder="Phone number *" style="background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; padding:8px 10px; border-radius:4px; margin:0 0 6px; font-size:13px; width:100%; box-sizing:border-box;">
+            <input type="text" id="leadNewName" placeholder="Name (optional)" style="background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; padding:8px 10px; border-radius:4px; margin:0 0 6px; font-size:13px; width:100%; box-sizing:border-box;">
+            <textarea id="leadNewReq" placeholder="Requirements (e.g. 4 inch blocks, ~500 nos)" rows="2" style="background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; padding:8px 10px; border-radius:4px; margin:0 0 6px; font-size:13px; width:100%; box-sizing:border-box; resize:vertical; font-family:inherit;"></textarea>
+            <div style="display:flex; gap:6px; margin-bottom:6px;">
+                <div style="flex:1;">
+                    <div style="font-size:10px; color:#5F5D70; margin-bottom:2px;">Quoted price (₹)</div>
+                    <input type="number" inputmode="decimal" id="leadNewPrice" placeholder="Optional" style="width:100%; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; padding:8px 10px; border-radius:4px; margin:0; font-size:13px;">
+                </div>
+                <div style="flex:1;">
+                    <div style="font-size:10px; color:#5F5D70; margin-bottom:2px;">Needed by</div>
+                    <input type="date" id="leadNewNeededBy" style="width:100%; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; padding:8px 10px; border-radius:4px; margin:0; font-size:13px;">
+                </div>
+            </div>
+            <button onclick="addLead()" style="background:#1C7A3E; color:#FFFFFF; border:none; padding:9px 14px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold; width:100%; margin-top:2px;">+ Add Lead</button>
+        </div>
+    </div>
+</div>
+
 <div id="projectManagerModal" class="modal-overlay" onclick="if(event.target===this) closeProjectManager()">
     <div class="modal-content" style="max-width:980px;">
         <div class="modal-header">
@@ -8858,7 +8911,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta54";
+    const APP_VERSION = "vBeta57";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -10285,9 +10338,9 @@
     // Aadil and Raja read as "Partner" per your instruction; change freely if
     // that's not the correct designation for either of them.
     const signatoryTitles = {
-        AADIL: "Er. Aadil - Partner",
-        RAJA: "Er. Raja - Partner",
-        MEHAR: "Er. Mehar - Director"
+        AADIL: "Aadil - Partner",
+        RAJA: "Raja - Partner",
+        MEHAR: "Authorized Signatory"
     };
 
     // BUG FIX: the signature tile is a <div>, not a real <button>, because it
@@ -11193,7 +11246,13 @@
         // Placeholder icon for "Dummy" — a dashed circle, deliberately
         // distinct from every real tool's solid-line icon so it visually
         // reads as "not a real feature yet" even before tapping it.
-        dummy: '<circle cx="12" cy="12" r="9" stroke-dasharray="3.5 3.5"/>'
+        // Kept even though the Dummy tile itself is gone (vBeta56, now
+        // Leads) in case a future placeholder tile needs it again.
+        dummy: '<circle cx="12" cy="12" r="9" stroke-dasharray="3.5 3.5"/>',
+        // vBeta56: Leads — a phone handset with a "+" badge, reading as
+        // "a new contact/enquiry" rather than an existing saved client
+        // (which already owns the plain phone-book "clients" icon above).
+        leads: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92Z"/><path d="M18 4v4M16 6h4"/>'
     };
     function renderVistaGridIcons() {
         document.querySelectorAll('.ag-icon[data-vicon]').forEach(function(el) {
@@ -21396,7 +21455,17 @@
         lines.push(`📞 95850 88822 / 95850 88844`);
 
         let msg = lines.join('\n');
-        let url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+
+        // vBeta56: target the customer's number if one's on file, else fall
+        // back to the office number so staff can forward it manually —
+        // same 10-digit -> +91 normalization as sendBulkStatement().
+        let OFFICE_NUMBER = '919159766611'; // 91597 66611
+        let phoneRaw = document.getElementById('phoneIn') ? document.getElementById('phoneIn').value : '';
+        let digits = String(phoneRaw || '').replace(/\D/g, '');
+        if (digits.length === 10) digits = '91' + digits;
+        let targetNumber = (digits.length >= 11) ? digits : OFFICE_NUMBER;
+
+        let url = `https://wa.me/${targetNumber}?text=${encodeURIComponent(msg)}`;
         window.open(url, '_blank');
     }
 
@@ -22054,7 +22123,25 @@
         // suffixes for lookup purposes; getLedgerData matches by the plain
         // client name as it appears on documents, so strip those back off.
         let plainName = _advPoolDisplayName.replace(/\s*\([^)]*\)\s*$/, '').replace(/\s*—\s*unregistered\s*$/, '').trim();
-        openStatementPicker(plainName, 'ALL');
+        // vBeta57 FIX: for a registered client the display name is prefixed
+        // with their saved title ("Mrs. Sudha"), but documents carry the bare
+        // name ("Sudha") — getLedgerData matches names exactly, so the picker
+        // found nothing and alerted "No financial documents found" even with
+        // an advance sitting right there in the pool. Try the registered
+        // client's own name first, then the title-stripped display name, and
+        // use the first spelling that actually has documents.
+        let candidates = [];
+        if (_advPoolClientId) {
+            let c = findClientById(_advPoolClientId);
+            if (c && c.name) candidates.push(c.name);
+        }
+        candidates.push(plainName);
+        candidates.push(plainName.replace(/^(mr|mrs|ms|miss|dr|m\/s|shri|smt)\.?\s+/i, ''));
+        let chosen = candidates.find(n => {
+            let d = getLedgerData(n, 'ALL');
+            return d.allRows.length > 0 || d.openingBalance;
+        }) || plainName;
+        openStatementPicker(chosen, 'ALL');
     }
 
     function openStatementPicker(client, period) {
@@ -25789,6 +25876,142 @@
         populateSiteDropdowns();
         showToast(`✅ ${newSite.id} — ${newSite.name} added`, 'success');
     }
+    // ============================================================
+    // vBeta56: LEADS — replaces the "Dummy" placeholder tile
+    // ------------------------------------------------------------
+    // Raaja: "we can enter the phone number, name which is optional,
+    // their requirements, the price we have quoted and when they need
+    // it, and later on we can add more features like a reminder etc."
+    // Local-only (localStorage 'kenLeads') for now — no cloud-sync call
+    // like getSites()/saveSites() have, because the Apps Script backend
+    // has no saveLead/deleteLead handler to receive it yet. Leads
+    // entered here stay on the device they were entered on until that
+    // backend endpoint exists. A status field (New/Contacted/Won/Lost)
+    // was added as a reasonable default alongside the fields Raaja
+    // asked for, to make the list usable as a follow-up queue — flagged
+    // to him, not yet explicitly confirmed.
+    // ============================================================
+    function getLeads() {
+        try { return JSON.parse(localStorage.getItem('kenLeads') || '[]'); } catch(e) { return []; }
+    }
+    function saveLeads(leads) {
+        try { localStorage.setItem('kenLeads', JSON.stringify(leads)); } catch(e) {}
+    }
+
+    function getNextLeadId() {
+        let leads = getLeads();
+        let valid = leads.filter(l => String(l.id || '').match(/^L\d+$/));
+        if (valid.length === 0) return 'L1';
+        let max = valid.reduce((m, l) => {
+            let n = parseInt(String(l.id).replace('L', ''));
+            return (!isNaN(n) && n > m) ? n : m;
+        }, 0);
+        return 'L' + (max + 1);
+    }
+
+    function addLead() {
+        let phone = document.getElementById('leadNewPhone').value.trim();
+        if (!phone) { alert('Enter a phone number.'); return; }
+        let lead = {
+            id: getNextLeadId(),
+            phone,
+            name: document.getElementById('leadNewName').value.trim(),
+            requirements: document.getElementById('leadNewReq').value.trim(),
+            quotedPrice: document.getElementById('leadNewPrice').value.trim(),
+            neededBy: document.getElementById('leadNewNeededBy').value,
+            status: 'New',
+            createdAt: new Date().toISOString()
+        };
+        let leads = getLeads();
+        leads.push(lead);
+        saveLeads(leads);
+        ['leadNewPhone','leadNewName','leadNewReq','leadNewPrice','leadNewNeededBy'].forEach(id => {
+            let el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        renderLeadsList();
+        showToast(`✅ Lead added — ${lead.name || lead.phone}`, 'success');
+    }
+
+    function setLeadStatus(leadId, status) {
+        let leads = getLeads();
+        let lead = leads.find(l => l.id === leadId);
+        if (!lead) return;
+        lead.status = status;
+        saveLeads(leads);
+        renderLeadsList();
+    }
+
+    function deleteLead(leadId) {
+        let leads = getLeads();
+        let lead = leads.find(l => l.id === leadId);
+        if (!lead) return;
+        if (!confirm(`Delete lead ${lead.name || lead.phone}?`)) return;
+        saveLeads(leads.filter(l => l.id !== leadId));
+        renderLeadsList();
+        showToast('Lead deleted', 'info');
+    }
+
+    const LEAD_STATUS_COLORS = {
+        New: '#0B5A94',
+        Contacted: '#92400E',
+        Won: '#1C7A3E',
+        Lost: '#5F5D70'
+    };
+
+    function renderLeadsList() {
+        let target = document.getElementById('leadsListTarget');
+        if (!target) return;
+        let leads = getLeads();
+        if (leads.length === 0) {
+            target.innerHTML = '<p style="color:#5F5D70; font-size:12px; margin:0;">No leads yet. Add your first enquiry below.</p>';
+            return;
+        }
+        // Open leads (New/Contacted) first, soonest needed-by date first;
+        // Won/Lost sink to the bottom since they're no longer actionable.
+        let sorted = [...leads].sort((a, b) => {
+            let aOpen = a.status === 'New' || a.status === 'Contacted';
+            let bOpen = b.status === 'New' || b.status === 'Contacted';
+            if (aOpen !== bOpen) return aOpen ? -1 : 1;
+            if (a.neededBy && b.neededBy) return a.neededBy < b.neededBy ? -1 : 1;
+            if (a.neededBy) return -1;
+            if (b.neededBy) return 1;
+            return (b.createdAt || '').localeCompare(a.createdAt || '');
+        });
+        target.innerHTML = sorted.map(l => {
+            let color = LEAD_STATUS_COLORS[l.status] || '#5F5D70';
+            let waDigits = String(l.phone || '').replace(/\D/g, '');
+            if (waDigits.length === 10) waDigits = '91' + waDigits;
+            let waLink = waDigits.length >= 11
+                ? `<a href="https://wa.me/${waDigits}" target="_blank" rel="noopener" onclick="event.stopPropagation();" style="margin-left:6px; font-size:10px; font-weight:bold; color:#1C7A3E; text-decoration:none; background:#E8F5FF; padding:2px 7px; border-radius:8px; white-space:nowrap;">📲 Chat</a>`
+                : '';
+            let neededByLine = l.neededBy ? `📅 Needed by ${formatDateDisplay(l.neededBy)}` : '';
+            let priceLine = l.quotedPrice ? `💰 Quoted ₹${Number(l.quotedPrice).toLocaleString('en-IN')}` : '';
+            let metaLine = [neededByLine, priceLine].filter(Boolean).join(' · ');
+            let statusOptions = ['New','Contacted','Won','Lost'].map(s =>
+                `<option value="${s}" ${l.status===s?'selected':''}>${s}</option>`).join('');
+            return `
+            <div style="display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid #EDEDF1;">
+                <span style="background:${color}; color:#FFFFFF; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:bold; min-width:60px; text-align:center; margin-top:2px;">${l.status}</span>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-size:13px; color:#2c3e50; font-weight:bold;">${l.name || 'Unnamed'} <span style="font-weight:normal; color:#5F5D70;">· ${l.phone}</span>${waLink}</div>
+                    ${l.requirements ? `<div style="font-size:11px; color:#5F5D70; margin-top:2px;">📝 ${l.requirements}</div>` : ''}
+                    ${metaLine ? `<div style="font-size:11px; color:#5F5D70; margin-top:2px;">${metaLine}</div>` : ''}
+                    <div style="margin-top:6px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                        <select onchange="setLeadStatus('${l.id}', this.value)" style="font-size:11px; padding:3px 6px; border-radius:4px; border:1px solid #E1E1E6; background:#FFFFFF; color:#1C1C27; width:auto; margin:0;">${statusOptions}</select>
+                        <button onclick="deleteLead('${l.id}')" style="width:auto; margin:0; background:#A32A2E; padding:4px 10px; font-size:11px;">Delete</button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function openLeadsManager() {
+        document.getElementById('leadsModal').style.display = 'flex';
+        renderLeadsList();
+    }
+    function closeLeadsManager() { document.getElementById('leadsModal').style.display = 'none'; }
+
     function openSitesManager() {
         document.getElementById('sitesManagerModal').style.display = 'flex';
         renderSiteReferenceList();
