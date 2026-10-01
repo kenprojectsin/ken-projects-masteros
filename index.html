@@ -4482,7 +4482,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta57</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta58</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -8509,7 +8509,7 @@
 
         <!-- Add utilisation entry form -->
         <div style="background:#EDEDF1; border-radius:8px; padding:14px;">
-            <div style="font-size:13px; font-weight:bold; color:#2c3e50; margin-bottom:10px;">+ Log Utilisation Entry</div>
+            <div id="apFormTitle" style="font-size:13px; font-weight:bold; color:#2c3e50; margin-bottom:10px;">+ Log Utilisation Entry</div>
             <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:10px; align-items:end;">
                 <div>
                     <label style="color:#1C1C27; font-size:11px; margin:0;">Description</label>
@@ -8531,7 +8531,8 @@
                     <input type="date" id="apDate" style="background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; margin-top:4px;">
                 </div>
             </div>
-            <button onclick="addAdvPoolEntry()" style="margin-top:10px; background:#1C7A3E; padding:9px 20px; font-size:13px; width:auto;">+ Add Entry</button>
+            <button id="apSaveBtn" onclick="addAdvPoolEntry()" style="margin-top:10px; background:#1C7A3E; padding:9px 20px; font-size:13px; width:auto;">+ Add Entry</button>
+            <button id="apCancelBtn" onclick="cancelAdvPoolEdit()" style="display:none; margin-top:10px; margin-left:8px; background:#5F5D70; padding:9px 20px; font-size:13px; width:auto;">Cancel</button>
         </div>
     </div>
 </div>
@@ -8911,7 +8912,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta57";
+    const APP_VERSION = "vBeta58";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -28675,6 +28676,7 @@
     }
 
     function closeAdvancePool() {
+        if (typeof cancelAdvPoolEdit === 'function') cancelAdvPoolEdit();
         document.getElementById('advancePoolModal').style.display = 'none';
         _advPoolClientId = null;
         _advPoolDisplayName = null;
@@ -28728,7 +28730,7 @@
                  .forEach(d => {
             d.advLinks.forEach(l => {
                 Object.values(pools).forEach(p => {
-                    if (p.docNos.has(l.docNo)) p.received -= (l.amount || 0);
+                    if (p.docNos.has(l.ref)) p.received -= (parseFloat(l.amt) || 0); // vBeta57: links are {ref, amt}, not {docNo, amount}
                 });
             });
         });
@@ -28737,7 +28739,21 @@
         let stored = getAdvancePool() || {};
         Object.keys(pools).forEach(key => {
             let entries = (stored[key] && stored[key].entries) || [];
-            pools[key].received -= entries.reduce((s,e) => s + (e.amount || 0), 0);
+            // vBeta57: unregistered pools are saved by the detail screen under
+            // 'unreg:<Name> (phone)' / 'unreg:<Name> — unregistered' (original
+            // case), but keyed here as 'unreg:<name lowercased>' — so their
+            // utilisation entries were never found and never deducted. Match
+            // any stored unreg key whose cleaned-up name equals this pool's.
+            if (key.indexOf('unreg:') === 0) {
+                let want = key.slice(6);
+                entries = [];
+                Object.keys(stored).forEach(k => {
+                    if (k.indexOf('unreg:') !== 0) return;
+                    let nm = k.slice(6).replace(/\s*\([^)]*\)\s*$/, '').replace(/\s*—\s*unregistered\s*$/, '').trim().toLowerCase();
+                    if (nm === want) entries = entries.concat((stored[k] && stored[k].entries) || []);
+                });
+            }
+            pools[key].received -= entries.reduce((s,e) => s + (parseFloat(e.amount) || 0), 0);
         });
 
         return Object.entries(pools)
@@ -28870,8 +28886,8 @@
         let advDocNos = new Set(advDocs.map(d => d.docNo));
         savedDocs.filter(d => ['INV','SAL'].includes(d.type) && !d.docNo.includes('VOID') && Array.isArray(d.advLinks))
                  .forEach(d => {
-            let applied = d.advLinks.filter(l => advDocNos.has(l.docNo))
-                                    .reduce((s,l) => s + (l.amount || 0), 0);
+            let applied = d.advLinks.filter(l => advDocNos.has(l.ref))
+                                    .reduce((s,l) => s + (parseFloat(l.amt) || 0), 0);
             if (applied > 0) rows.push([formatDateDisplay(d.date), 'Applied to invoice', d.type, d.docNo, '', -applied]);
         });
 
@@ -29024,7 +29040,7 @@
                 <td>${e.desc}</td>
                 <td><span style="background:${e.scope==='our'?'#1C7A3E':'#A32A2E'};color:#FFFFFF;padding:2px 8px;border-radius:10px;font-size:11px;">${e.scope === 'our' ? 'Our Scope' : 'Client Scope'}</span></td>
                 <td style="text-align:right; font-weight:bold;">₹${(e.amount||0).toLocaleString('en-IN')}</td>
-                <td><button onclick="deleteAdvPoolEntry(${i})" class="action-btn btn-del" style="padding:3px 7px;width:auto;margin:0;font-size:11px;">✕</button></td>
+                <td style="white-space:nowrap;"><button onclick="editAdvPoolEntry(${i})" class="action-btn" style="padding:3px 9px;width:auto;margin:0 4px 0 0;font-size:11px;background:#0B5A94;color:#FFFFFF;" title="Edit">✏️ Edit</button><button onclick="deleteAdvPoolEntry(${i})" class="action-btn btn-del" style="padding:3px 7px;width:auto;margin:0;font-size:11px;">✕</button></td>
               </tr>`).join('') +
               `</tbody></table>`;
     }
@@ -29049,6 +29065,16 @@
         let key = getAdvPoolStorageKey();
         let poolData = getClientAdvPool(key);
         if (!poolData.entries) poolData.entries = [];
+        if (_apEditIdx !== null && poolData.entries[_apEditIdx]) {
+            // vBeta57: editing an existing entry — keep its original addedAt
+            let old = poolData.entries[_apEditIdx];
+            poolData.entries[_apEditIdx] = { ...old, desc, amount, scope, date, editedAt: new Date().toISOString() };
+            saveClientAdvPool(key, poolData);
+            cancelAdvPoolEdit();
+            renderAdvancePool();
+            showToast('✅ Entry updated', 'success');
+            return;
+        }
         poolData.entries.push({ desc, amount, scope, date, addedAt: new Date().toISOString() });
         saveClientAdvPool(key, poolData);
 
@@ -29058,6 +29084,34 @@
         showToast('✅ Utilisation entry added', 'success');
     }
 
+    // vBeta57: edit a utilisation entry (amount, scope, description, date).
+    // Reuses the add form below the log — loads the entry into it and flips
+    // the button to "Save Changes"; addAdvPoolEntry() does the update.
+    let _apEditIdx = null;
+    function editAdvPoolEntry(idx) {
+        if (!_advPoolDocIds) return;
+        let e = (getClientAdvPool(getAdvPoolStorageKey()).entries || [])[idx];
+        if (!e) return;
+        _apEditIdx = idx;
+        document.getElementById('apDesc').value = e.desc || '';
+        document.getElementById('apAmount').value = e.amount || '';
+        document.getElementById('apScope').value = e.scope === 'client' ? 'client' : 'our';
+        document.getElementById('apDate').value = e.date || todayISO();
+        document.getElementById('apFormTitle').innerText = '✏️ Edit Utilisation Entry';
+        document.getElementById('apSaveBtn').innerText = 'Save Changes';
+        document.getElementById('apSaveBtn').style.background = '#0B5A94';
+        document.getElementById('apCancelBtn').style.display = 'inline-block';
+        document.getElementById('apDesc').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    function cancelAdvPoolEdit() {
+        _apEditIdx = null;
+        let t = document.getElementById('apFormTitle'); if (t) t.innerText = '+ Log Utilisation Entry';
+        let b = document.getElementById('apSaveBtn'); if (b) { b.innerText = '+ Add Entry'; b.style.background = '#1C7A3E'; }
+        let c = document.getElementById('apCancelBtn'); if (c) c.style.display = 'none';
+        ['apDesc','apAmount'].forEach(id => { let el = document.getElementById(id); if (el) el.value = ''; });
+        let d = document.getElementById('apDate'); if (d) d.value = todayISO();
+    }
+
     function deleteAdvPoolEntry(idx) {
         if (!_advPoolDocIds) return;
         if (!confirm('Delete this utilisation entry?')) return;
@@ -29065,6 +29119,7 @@
         let poolData = getClientAdvPool(key);
         poolData.entries.splice(idx, 1);
         saveClientAdvPool(key, poolData);
+        cancelAdvPoolEdit();
         renderAdvancePool();
         showToast('Entry deleted', 'info');
     }
