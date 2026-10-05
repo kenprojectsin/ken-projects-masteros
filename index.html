@@ -4482,7 +4482,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta59</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta60</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -8912,7 +8912,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta59";
+    const APP_VERSION = "vBeta60";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -20991,7 +20991,13 @@
         let trash = getTrash();
         let cutoff = Date.now() - (30 * 24 * 60 * 60 * 1000);
         let kept = trash.filter(t => t._trashedAt && new Date(t._trashedAt).getTime() > cutoff);
-        if (kept.length !== trash.length) saveTrash(kept);
+        // vBeta60: this is the app's own routine 30-day expiry, not a bug or a
+        // failed sync — but when every trashed item had aged out, the write
+        // took Trash from N to 0 and the Data Guard interrupted startup with
+        // "DATA LOSS WARNING". Marked as an intended deletion so it passes
+        // quietly (the guard still snapshots the outgoing value for recovery;
+        // any OTHER unexpected shrink of Trash still prompts).
+        if (kept.length !== trash.length) guardRunDestructive(() => saveTrash(kept));
     }
 
     function openTrash() {
