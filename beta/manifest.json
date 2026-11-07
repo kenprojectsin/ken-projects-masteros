@@ -28,6 +28,38 @@
       "type": "image/png"
     }
   ],
-  "categories": ["business", "finance", "productivity"],
-  "lang": "en-IN"
+  "categories": [
+    "business",
+    "finance",
+    "productivity"
+  ],
+  "lang": "en-IN",
+  "shortcuts": [
+    {
+      "name": "Quick Sale (voice)",
+      "short_name": "Quick Sale",
+      "description": "Say a sale and review the draft",
+      "url": "./index.html?quick=sale",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Quick Quote (voice)",
+      "short_name": "Quick Quote",
+      "description": "Say a quotation and review the draft",
+      "url": "./index.html?quick=quote",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
 }

@@ -4482,7 +4482,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta66</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta67</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -7412,6 +7412,42 @@
 </div>
 
 <!-- #3: proper Edit Cash Entry modal — title, date, amount -->
+<!-- vBeta67: QUICK SALE — voice/typed sale or quote draft. Everything here is a DRAFT;
+     "Save" and "Open full form" both go through the normal form + saveDocument() gates. -->
+<style>#qsModal button{width:auto !important; margin:0; box-sizing:border-box; white-space:nowrap;} #qsModal #qsMicBtn{flex:1 1 auto;} #qsFab{width:56px !important; padding:0; margin:0;}</style>
+<button id="qsFab" class="no-print" onclick="openQuickSale()" aria-label="Quick Sale by voice" style="position:fixed; right:14px; bottom:84px; z-index:900; width:56px; height:56px; border-radius:28px; border:none; background:#2c3e50; color:#FFFFFF; font-size:24px; box-shadow:0 4px 14px rgba(0,0,0,0.3); cursor:pointer;">🎤</button>
+<div id="qsModal" class="no-print" onclick="if(event.target===this) closeQuickSale()" style="display:none; position:fixed; inset:0; z-index:2200; background:rgba(0,0,0,0.45); align-items:flex-end; justify-content:center;">
+  <div style="width:100%; max-width:480px; height:92vh; background:#F6F6F9; color:#1C1C27; border-radius:18px 18px 0 0; display:flex; flex-direction:column; overflow:hidden; font-family:inherit;">
+    <div style="flex:none; height:56px; display:flex; align-items:center; justify-content:space-between; padding:0 16px; background:#2c3e50; color:#FFFFFF;">
+      <div style="font-size:17px; font-weight:900;">Quick Sale</div>
+      <div style="display:flex; align-items:center; gap:10px;"><span style="font-size:12px; opacity:0.85;">Draft, not saved</span><button onclick="closeQuickSale()" aria-label="Close" style="width:40px; height:40px; border:none; background:transparent; color:#FFFFFF; font-size:20px; cursor:pointer; margin:0; padding:0;">✕</button></div>
+    </div>
+    <div style="flex:1; min-height:0; overflow-y:auto; padding:14px 16px; display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; gap:8px;">
+        <button id="qsTabQUO" onclick="qsSetType('QUO')" style="flex:1; height:44px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer; margin:0;">📝 Quote</button>
+        <button id="qsTabSAL" onclick="qsSetType('SAL')" style="flex:1; height:44px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer; margin:0;">🧾 Sale</button>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid #E1E1E6; border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:8px;">
+        <div style="font-size:12px; font-weight:700; color:#5F5D70; letter-spacing:0.4px;">SAY OR TYPE THE SALE</div>
+        <textarea id="qsText" rows="3" placeholder='e.g. "Sale for Sudha, Birla four inch, hundred fifty, rate sixty, and mortar two bags"' style="width:100%; box-sizing:border-box; font-size:16px; line-height:1.4; border:1px solid #D4D4DC; border-radius:10px; padding:10px; background:#FFFFFF; color:#1C1C27; margin:0;"></textarea>
+        <div style="display:flex; gap:8px;">
+          <button id="qsMicBtn" onclick="qsToggleMic()" style="flex:1; height:48px; border:none; border-radius:12px; background:#2c3e50; color:#FFFFFF; font-size:15px; font-weight:900; cursor:pointer; margin:0;">🎤 Tap to speak</button>
+          <button onclick="qsParseNow()" style="height:48px; padding:0 16px; border:1px solid #D4D4DC; border-radius:12px; background:#FFFFFF; color:#2c3e50; font-size:14px; font-weight:700; cursor:pointer; margin:0;">Read it</button>
+        </div>
+        <div id="qsMicNote" style="font-size:12px; color:#5F5D70; line-height:1.4;">Speak in English numbers and names (Tamil speech is not understood yet). You can also type, or use your keyboard's mic.</div>
+      </div>
+      <div id="qsResult"></div>
+    </div>
+    <div id="qsFooter" style="flex:none; background:#FFFFFF; border-top:1px solid #E1E1E6; padding:10px 16px; display:none; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px;"><div id="qsFootLines" style="font-size:11px; color:#5F5D70; font-weight:700;"></div><div id="qsFootTotal" style="font-size:22px; font-weight:900; color:#2c3e50;"></div></div>
+      <div style="display:flex; gap:10px;">
+        <button onclick="qsApply(false)" style="flex:1; height:48px; padding:0 12px; border:1px solid #D4D4DC; border-radius:12px; background:#FFFFFF; color:#2c3e50; font-size:14px; font-weight:700; cursor:pointer;">Open full form</button>
+        <button id="qsSaveBtn" onclick="qsApply(true)" style="flex:1; height:48px; padding:0 16px; border:none; border-radius:12px; background:#2c3e50; color:#FFFFFF; font-size:15px; font-weight:900; cursor:pointer;">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="editCashEntryModal" class="modal-overlay" onclick="if(event.target===this) closeEditCashEntry()" style="z-index:2100;">
     <div class="modal-content" style="max-width:420px;">
         <div class="modal-header">
@@ -8918,7 +8954,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta66";
+    const APP_VERSION = "vBeta67";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -25308,6 +25344,312 @@
         document.getElementById('cbCustomCategory').style.display = isCustom ? 'block' : 'none';
         if (isCustom) document.getElementById('cbCustomCategory').focus();
     }
+
+    // ================================================================
+    // vBeta67: QUICK SALE (voice or typed) — turns one spoken sentence into a DRAFT
+    // quotation/sales invoice. Nothing is saved by the parser. "Save" fills the normal
+    // form and calls saveDocument(), so every existing gate (stock, below-cost, credit
+    // period, audit lock, doc-number collision) still applies. English only for now.
+    // ================================================================
+    let _qs = { type: 'SAL', draft: null, rec: null, listening: false };
+
+    const QS_NUM_WORDS = {zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,
+        thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20,thirty:30,forty:40,
+        fifty:50,sixty:60,seventy:70,eighty:80,ninety:90};
+
+    // "hundred fifty" -> "150", "four inch" -> "4 inch", "two lakh" -> "200000", "six fifty" -> "650"
+    function qsNormalizeNumbers(raw) {
+        let toks = String(raw || '').toLowerCase().replace(/₹/g, ' rs ').replace(/,/g, ' , ').replace(/[^a-z0-9.,@" ]/g, ' ').split(/\s+/).filter(Boolean);
+        let out = [], i = 0;
+        const isNumTok = t => t in QS_NUM_WORDS || t === 'hundred' || t === 'thousand' || t === 'lakh' || t === 'lakhs' || t === 'a' && false;
+        while (i < toks.length) {
+            if (!isNumTok(toks[i])) { out.push(toks[i]); i++; continue; }
+            let total = 0, cur = 0, prevUnit = 0;
+            while (i < toks.length && isNumTok(toks[i])) {
+                let t = toks[i], n = QS_NUM_WORDS[t];
+                if (t === 'hundred') { cur = (cur || 1) * 100; prevUnit = 0; }
+                else if (t === 'thousand') { total += (cur || 1) * 1000; cur = 0; prevUnit = 0; }
+                else if (t === 'lakh' || t === 'lakhs') { total += (cur || 1) * 100000; cur = 0; prevUnit = 0; }
+                else if (prevUnit && n >= 20 && cur === prevUnit) { cur = prevUnit * 100 + n; prevUnit = 0; } // "six fifty" = 650
+                else { cur += n; prevUnit = (n >= 1 && n <= 9) ? n : 0; }
+                i++;
+            }
+            out.push(String(total + cur));
+        }
+        return out.join(' ').replace(/\s+,/g, ',').replace(/\s+/g, ' ').trim();
+    }
+
+    function qsFindAnchors(s) {
+        let anchors = [];
+        let brands = (pricingConfig.brands || []).map(b => String(b).toLowerCase());
+        let brandRx = brands.length ? '(' + brands.map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')' : null;
+        // blocks: [brand] 4 inch [block(s)] [brand]
+        let rx = new RegExp((brandRx ? '(?:' + brandRx + '\\s+)?' : '') + '\\b([4689])\\s*(?:inch|inches|in|")\\b(?:\\s*(?:aac\\s+)?blocks?)?' + (brandRx ? '(?:\\s+' + brandRx + ')?' : ''), 'g');
+        let m;
+        while ((m = rx.exec(s)) !== null) {
+            let groups = brandRx ? [m[1], m[3], m[4]] : [null, m[1], null];
+            let brandSpoken = brandRx ? (m[1] || m[3]) : null;
+            let size = parseInt(brandRx ? m[2] : m[1], 10);
+            let brand = brandSpoken ? (pricingConfig.brands || []).find(b => String(b).toLowerCase() === brandSpoken) : null;
+            anchors.push({ start: m.index, end: m.index + m[0].length, kind: 'block', size, brand });
+        }
+        // other catalogued items (mortar, transport, unloading, custom items)
+        let names = Object.keys(pricingConfig.itemDefaults || {}).concat((pricingConfig.customItems || []).map(c => c.name));
+        names.forEach(name => {
+            let key = name.toLowerCase().replace(/\(.*?\)/g, '').trim();
+            // full name, plus any single distinctive word ("mortar", "transport", "unloading")
+            let keyWords = key.split(/[^a-z0-9]+/).filter(w => w.length >= 6 && w !== 'charges');
+            [key, ...keyWords].forEach((k, idx) => {
+                if (!k || k.length < 4) return;
+                let r2 = new RegExp('\\b' + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + 's?\\b', 'g'), mm;
+                while ((mm = r2.exec(s)) !== null) {
+                    let a = { start: mm.index, end: mm.index + mm[0].length, kind: 'item', name };
+                    if (!anchors.some(x => a.start < x.end && a.end > x.start)) anchors.push(a);
+                }
+            });
+        });
+        return anchors.sort((a, b) => a.start - b.start);
+    }
+
+    function qsBlockName(size, brand) { return `AAC Block ${size} Inch` + (brand ? ` (${brand})` : ''); }
+
+    function qsMatchClient(spoken) {
+        let norm = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+        let t = norm(spoken);
+        if (!t) return { kind: 'walkin' };
+        let clients = getClients();
+        let exact = clients.filter(c => norm(c.name) === t);
+        if (exact.length === 1) return { kind: 'matched', client: exact[0] };
+        let part = clients.filter(c => { let n = norm(c.name).replace(/^(mr|mrs|ms|dr|m\/s|shri|smt)\.?\s+/, ''); return n === t || n.startsWith(t + ' ') || (' ' + n + ' ').includes(' ' + t + ' '); });
+        if (part.length === 1) return { kind: 'matched', client: part[0] };
+        if (part.length > 1) return { kind: 'ambiguous', options: part.slice(0, 5), spoken };
+        return { kind: 'new', spoken };
+    }
+
+    function qsCap(s) { return String(s || '').replace(/\b[a-z]/g, c => c.toUpperCase()); }
+
+    function qsParse(raw) {
+        let s = qsNormalizeNumbers(raw);
+        let draft = { raw, norm: s, type: _qs.type, client: { kind: 'walkin' }, lines: [], notes: [] };
+        if (/\b(quote|quotation|estimate)\b/.test(s)) draft.type = 'QUO';
+        else if (/\b(sale|sales|sell|sold|invoice|bill)\b/.test(s)) draft.type = 'SAL';
+        let anchors = qsFindAnchors(s);
+        if (!anchors.length) { draft.notes.push('I could not find any product (like "Birla 4 inch" or "mortar"). Try again or open the full form.'); return draft; }
+
+        // client = words after "for/to" before the first product
+        let pre = s.slice(0, anchors[0].start);
+        let cm = pre.match(/\b(?:for|to)\s+([a-z][a-z .'\/]*?)(?=\s*(?:,|\d|$))/);
+        let spoken = cm ? cm[1].trim() : '';
+        spoken = spoken.replace(/\b(sale|sales|quote|quotation|estimate|invoice|bill|the|customer|client)\b/g, ' ').replace(/\s+/g, ' ').trim();
+        if (!spoken) { // "...200 at 58 for Kumar" — name said after the products
+            let tm = s.slice(anchors[anchors.length - 1].end).match(/\bfor\s+([a-z][a-z .'\/]*?)\s*$/);
+            if (tm && !/\d/.test(tm[1])) spoken = tm[1].replace(/\b(the|customer|client)\b/g, ' ').replace(/\s+/g, ' ').trim();
+        }
+        if (/^walk ?in$/.test(spoken)) spoken = '';
+        draft.client = qsMatchClient(spoken);
+
+        anchors.forEach((a, i) => {
+            let spanEnd = i + 1 < anchors.length ? anchors[i + 1].start : s.length;
+            let span = s.slice(a.end, spanEnd);
+            let rate = null, qty = null;
+            let rm = span.match(/(?:\brate\b|\bprice\b|\bat\b|@|\brs\b)\s*(\d+(?:\.\d+)?)/) || span.match(/(\d+(?:\.\d+)?)\s*(?:rupees|rs)\b/);
+            if (rm) { rate = parseFloat(rm[1]); span = span.replace(rm[0], ' '); }
+            let qm = span.match(/(\d+(?:\.\d+)?)/);
+            if (qm) qty = parseFloat(qm[1]);
+            if (qty === null && i === 0) { // "150 birla 4 inch" — number said before the product
+                let pm = pre.match(/(\d+(?:\.\d+)?)\s*(?:nos|numbers|blocks?|pieces|pcs)?\s*[a-z ]*$/);
+                if (pm && !/(?:rate|price|at|rs)\s*$/.test(pre.slice(0, pm.index))) qty = parseFloat(pm[1]);
+            }
+            let line;
+            if (a.kind === 'block') {
+                line = { name: qsBlockName(a.size, a.brand), isBlock: true, brandHeard: !!a.brand };
+            } else {
+                line = { name: a.name, isBlock: false, brandHeard: true };
+            }
+            line.qty = qty;
+            line.listRate = getDynamicBlockRate(line.name, 'DEFAULT', currentDeliveryMode) || 0;
+            if (a.kind === 'block' && a.brand) { // a brand priced at 0 in the price list would otherwise show just the retail premium
+                let tr = (pricingConfig.tiers || {})[getCurrentTier()] || {};
+                if (tr[a.brand] === 0) { line.listRate = 0; line.noBrandPrice = true; }
+            }
+            line.rate = rate !== null ? rate : line.listRate;
+            line.rateSpoken = rate !== null;
+            line.flags = [];
+            if (!line.rateSpoken) line.flags.push('You did not say a rate, so the list rate was used.');
+            if (line.rateSpoken && line.listRate && Math.abs(line.rate - line.listRate) > 0.1) line.flags.push(`Rate differs from your price list (₹${line.listRate}).`);
+            if (qty === null) { line.qty = 1; line.flags.push('No quantity heard — set to 1.'); }
+            if (line.isBlock && !line.brandHeard) line.flags.push('No brand heard — using the blank-brand rate.');
+            if (line.noBrandPrice && !line.rateSpoken) line.flags.push(`No price set for ${a.brand} in your price list — enter a rate.`);
+            else if (!line.listRate && !line.rateSpoken) line.flags.push('No price on file for this item — enter a rate.');
+            line.confirmed = line.flags.length === 0;
+            draft.lines.push(line);
+        });
+        return draft;
+    }
+
+    function openQuickSale() {
+        document.getElementById('qsModal').style.display = 'flex';
+        qsSetType(_qs.type);
+        let t = document.getElementById('qsText'); if (t) t.focus();
+    }
+    function closeQuickSale() {
+        qsStopMic();
+        document.getElementById('qsModal').style.display = 'none';
+    }
+    function qsSetType(t) {
+        _qs.type = t;
+        ['QUO', 'SAL'].forEach(k => {
+            let b = document.getElementById('qsTab' + k); if (!b) return;
+            let on = (k === t);
+            b.style.background = on ? '#2c3e50' : '#FFFFFF';
+            b.style.color = on ? '#FFFFFF' : '#2c3e50';
+            b.style.border = on ? '1px solid #2c3e50' : '1px solid #D4D4DC';
+        });
+        if (_qs.draft) { _qs.draft.type = t; qsRender(); }
+    }
+
+    function qsToggleMic() { if (_qs.listening) qsStopMic(); else qsStartMic(); }
+    function qsStopMic() {
+        if (_qs.rec) { try { _qs.rec.stop(); } catch (e) {} }
+        _qs.listening = false;
+        let b = document.getElementById('qsMicBtn');
+        if (b) { b.innerText = '🎤 Tap to speak'; b.style.background = '#2c3e50'; }
+    }
+    function qsStartMic() {
+        let SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { document.getElementById('qsMicNote').innerText = 'This browser has no speech recognition (use Chrome on Android). Type the sale instead, or use your keyboard\'s mic.'; return; }
+        let rec = new SR();
+        rec.lang = 'en-IN'; rec.continuous = false; rec.interimResults = true; rec.maxAlternatives = 1;
+        let box = document.getElementById('qsText');
+        rec.onresult = e => {
+            let txt = '';
+            for (let i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript + ' ';
+            box.value = txt.trim();
+        };
+        rec.onerror = e => {
+            document.getElementById('qsMicNote').innerText = e.error === 'not-allowed' ? 'Microphone permission is blocked. Allow the mic for this site, or type instead.' : 'Could not hear that (' + e.error + '). Try again or type.';
+            qsStopMic();
+        };
+        rec.onend = () => { let had = _qs.listening; qsStopMic(); if (had && box.value.trim()) qsParseNow(); };
+        _qs.rec = rec; _qs.listening = true;
+        let b = document.getElementById('qsMicBtn'); b.innerText = '⏺ Listening… tap to stop'; b.style.background = '#A32A2E';
+        try { rec.start(); } catch (e) { qsStopMic(); }
+    }
+
+    function qsParseNow() {
+        let raw = document.getElementById('qsText').value.trim();
+        if (!raw) { document.getElementById('qsMicNote').innerText = 'Say or type the sale first.'; return; }
+        _qs.draft = qsParse(raw);
+        _qs.type = _qs.draft.type;
+        qsSetType(_qs.type);
+        qsRender();
+    }
+
+    function qsLineTotal(l) { return (parseFloat(l.qty) || 0) * (parseFloat(l.rate) || 0); }
+    function qsGrand() {
+        let d = _qs.draft; if (!d) return 0;
+        try {
+            let doc = { type: d.type, inclusiveTax: true, discountAmt: '', cart: d.lines.map(l => ({ p: l.name, q: parseFloat(l.qty) || 0, r: parseFloat(l.rate) || 0, g: l.isBlock ? 12 : 18 })) };
+            return computeDocTotals(doc).grand;
+        } catch (e) { return Math.round(d.lines.reduce((s, l) => s + qsLineTotal(l), 0)); }
+    }
+
+    function qsRender() {
+        let d = _qs.draft, box = document.getElementById('qsResult'), foot = document.getElementById('qsFooter');
+        if (!d) { box.innerHTML = ''; foot.style.display = 'none'; return; }
+        let card = 'background:#FFFFFF;border:1px solid #E1E1E6;border-radius:12px;padding:12px;';
+        let lbl = 'font-size:11px;color:#5F5D70;font-weight:700;';
+        let h = '<div style="font-size:12px;font-weight:700;color:#5F5D70;letter-spacing:0.4px;margin-bottom:8px;">WHAT I UNDERSTOOD</div><div style="display:flex;flex-direction:column;gap:8px;">';
+        h += d.notes.map(n => `<div style="${card}border:2px solid #92400E;background:#FFF8EC;font-size:14px;">${esc(n)}</div>`).join('');
+        // client
+        let c = d.client, cdesc = '';
+        if (c.kind === 'matched') cdesc = `<div style="font-size:15px;font-weight:700;">${esc(c.client.name)} <span style="font-weight:400;color:#5F5D70;">· matched ${esc(c.client.id)}</span></div>`;
+        else if (c.kind === 'walkin') cdesc = `<div style="font-size:15px;font-weight:700;">${esc(WALKIN_LABEL)} <span style="font-weight:400;color:#5F5D70;">· no name heard</span></div>`;
+        else if (c.kind === 'new') cdesc = `<div style="font-size:15px;font-weight:700;">${esc(qsCap(c.spoken))} <span style="font-weight:400;color:#92400E;">· not in your client list, will be saved as typed</span></div>`;
+        else cdesc = `<div style="font-size:14px;font-weight:700;color:#92400E;">Which "${esc(c.spoken)}"?</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">${c.options.map((o, i) => `<button onclick="qsPickClient(${i})" style="height:40px;padding:0 12px;border:1px solid #D4D4DC;border-radius:10px;background:#FFFFFF;color:#2c3e50;font-size:13px;font-weight:700;cursor:pointer;margin:0;">${esc(o.name)} (${esc(o.id)})</button>`).join('')}</div>`;
+        h += `<div style="${card}"><div style="${lbl}">CLIENT</div>${cdesc}</div>`;
+        h += `<div style="${card}display:flex;align-items:center;gap:10px;"><div style="flex:1;"><div style="${lbl}">DOCUMENT</div><div style="font-size:15px;font-weight:700;">${d.type === 'QUO' ? 'Quotation' : 'Sales Invoice'}</div></div></div>`;
+        d.lines.forEach((l, i) => {
+            let flagged = l.flags.length && !l.confirmed;
+            let st = flagged ? 'background:#FFF8EC;border:2px solid #92400E;' : 'background:#FFFFFF;border:1px solid #E1E1E6;';
+            h += `<div style="${st}border-radius:12px;padding:12px;">
+              ${flagged ? '<div style="font-size:11px;color:#92400E;font-weight:900;">CHECK THIS</div>' : ''}
+              <div style="font-size:15px;font-weight:700;">${esc(l.name)}</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                <input type="number" inputmode="decimal" value="${l.qty}" onchange="qsEdit(${i},'qty',this.value)" style="width:78px;height:40px;box-sizing:border-box;font-size:15px;border:1px solid #D4D4DC;border-radius:10px;padding:0 8px;margin:0;" aria-label="Quantity">
+                <span style="color:#5F5D70;">×  ₹</span>
+                <input type="number" inputmode="decimal" value="${l.rate}" onchange="qsEdit(${i},'rate',this.value)" style="width:90px;height:40px;box-sizing:border-box;font-size:15px;border:1px solid #D4D4DC;border-radius:10px;padding:0 8px;margin:0;" aria-label="Rate">
+                <span style="font-size:15px;font-weight:700;flex:1;text-align:right;">= ₹${Math.round(qsLineTotal(l)).toLocaleString('en-IN')}</span>
+              </div>
+              ${l.flags.map(f => `<div style="font-size:12px;color:#5F5D70;margin-top:6px;">${esc(f)}</div>`).join('')}
+              ${flagged ? `<button onclick="qsConfirm(${i})" style="height:40px;margin:8px 0 0;padding:0 16px;border:none;border-radius:10px;background:#92400E;color:#FFFFFF;font-size:13px;font-weight:700;cursor:pointer;">Confirm</button>` : ''}
+              <button onclick="qsRemove(${i})" style="height:36px;margin:8px 0 0 ${flagged ? '8px' : '0'};padding:0 12px;border:1px solid #D4D4DC;border-radius:10px;background:#FFFFFF;color:#5F5D70;font-size:12px;font-weight:700;cursor:pointer;">Remove</button>
+            </div>`;
+        });
+        h += '</div><div style="font-size:12px;color:#5F5D70;line-height:1.4;margin-top:10px;">Anything I was unsure about is highlighted. Nothing is saved until you tap Save.</div>';
+        box.innerHTML = h;
+        let pending = d.lines.filter(l => l.flags.length && !l.confirmed).length + (d.client.kind === 'ambiguous' ? 1 : 0);
+        foot.style.display = 'flex';
+        document.getElementById('qsFootLines').innerText = `${d.lines.length} LINE${d.lines.length === 1 ? '' : 'S'}${pending ? ' · ' + pending + ' TO CHECK' : ''}`;
+        document.getElementById('qsFootTotal').innerText = '₹' + qsGrand().toLocaleString('en-IN');
+        let sb = document.getElementById('qsSaveBtn');
+        sb.disabled = pending > 0 || d.lines.length === 0;
+        sb.style.opacity = sb.disabled ? '0.45' : '1';
+        sb.innerText = d.type === 'QUO' ? 'Save Quote' : 'Save Sale';
+    }
+    function qsEdit(i, field, v) {
+        let l = _qs.draft.lines[i]; l[field] = parseFloat(v) || 0;
+        if (field === 'rate') { l.rateSpoken = true; l.flags = l.flags.filter(f => !/rate/i.test(f) || /Rate differs/.test(f) && Math.abs(l.rate - l.listRate) > 0.1); l.confirmed = true; }
+        if (field === 'qty') { l.flags = l.flags.filter(f => !/quantity/i.test(f)); }
+        qsRender();
+    }
+    function qsConfirm(i) { let l = _qs.draft.lines[i]; if (!(parseFloat(l.rate) > 0)) { alert('Enter a rate first.'); return; } l.confirmed = true; qsRender(); }
+    function qsRemove(i) { _qs.draft.lines.splice(i, 1); qsRender(); }
+    function qsPickClient(i) { _qs.draft.client = { kind: 'matched', client: _qs.draft.client.options[i] }; qsRender(); }
+
+    function qsApply(save) {
+        let d = _qs.draft; if (!d || !d.lines.length) return;
+        if (cart.length > 0 && !confirm('Replace the document currently open with this Quick Sale draft?')) return;
+        hasUnsavedChanges = false; cart = [];
+        createNewDoc();
+        document.getElementById('docType').value = d.type;
+        switchAppMode();
+        let c = d.client;
+        if (c.kind === 'matched') {
+            document.getElementById('clientNameIn').value = c.client.name;
+            if (c.client.phone) document.getElementById('phoneIn').value = c.client.phone;
+            if (c.client.gstin) document.getElementById('gstinIn').value = c.client.gstin;
+            if (c.client.location) document.getElementById('locIn').value = c.client.location;
+        } else if (c.kind === 'new') {
+            document.getElementById('clientNameIn').value = qsCap(c.spoken);
+        } else {
+            document.getElementById('clientNameIn').value = WALKIN_LABEL;
+            handleClientShortcut();
+        }
+        d.lines.forEach(l => {
+            let cfg = (pricingConfig.itemDefaults || {})[l.name] || (pricingConfig.customItems || []).find(x => x.name === l.name);
+            let hsn = cfg ? (cfg.hsn || '9965') : (l.isBlock ? '6815' : '9965');
+            let g = cfg ? (cfg.gst || 18) : (l.isBlock ? 12 : 18);
+            let q = parseFloat(l.qty) || 1, r = parseFloat(l.rate) || 0;
+            cart.push({ p: l.name, hsn, q, r, g, rawQ: String(q), unit: cfg && cfg.unit ? cfg.unit : (l.isBlock ? 'Nos' : 'Nos'), notes: '',
+                defaultSortIndex: 999, isManuallyPriced: Math.abs(r - (l.listRate || 0)) > 0.1, tierOverride: 'DEFAULT', deliveryOverride: 'DEFAULT' });
+        });
+        try { executeCartDefaultSort(); } catch (e) {}
+        updateCartPricing();
+        updateInfo();
+        markDirty();
+        closeQuickSale();
+        if (save) saveDocument();
+        else showToast('Draft loaded. Check it, then Save Doc.', 'info');
+    }
+
+    window.addEventListener('load', () => {
+        if (/[?&]quick=/.test(location.search)) {
+            let m = location.search.match(/[?&]quick=(\w+)/);
+            if (m && /^(quo|quote)$/i.test(m[1])) _qs.type = 'QUO';
+            setTimeout(openQuickSale, 1200);
+        }
+    });
 
     // ================================================================
     // VOICE ENTRY — Web Speech API, no server, no API key.
