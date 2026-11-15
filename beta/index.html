@@ -4482,7 +4482,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta67</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta70</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -4606,6 +4606,7 @@
                      "coming soon" toast, nothing else) is now Leads —
                      phone/name/requirements/quoted price/needed-by date,
                      per Raaja's request. See openLeadsManager() below. -->
+                <button id="btnAnalyticsDailySales" class="analytics-grid-btn" onclick="openDailySales()"><span class="ag-icon" data-vicon="dailysales"></span><span>Daily Sales</span></button>
                 <button id="btnAnalyticsLeads" class="analytics-grid-btn" onclick="openLeadsManager()"><span class="ag-icon" data-vicon="leads"></span><span>Leads</span></button>
                 <!-- vBeta49: this tile was "Documents", a second way into the
                      same Cloud Document Manager the "📂 View List" button at
@@ -6419,7 +6420,7 @@
             <h2>👤 Customer Ledger</h2>
             <div style="display:flex; gap:8px;">
                 <button id="btnLedgerExport" onclick="exportLedgerCSV()" style="width:auto; margin:0; background:#1C7A3E; color:#FFFFFF; border:none; padding:9px 14px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold;">📄 Export CSV</button>
-                <button id="btnLedgerStatement" onclick="openStatementPickerFromLedger()" style="width:auto; margin:0; background:#2c3e50; color:#FFFFFF; border:none; padding:9px 14px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold;">🖨️ Print Statement</button>
+                <button id="btnLedgerStatement" onclick="openStatementPickerFromLedger()" style="width:auto; margin:0; background:#2c3e50; color:#FFFFFF; border:none; padding:9px 14px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold;">📄 Statement</button>
                 <button class="close-btn" onclick="closeLedger()">X</button>
             </div>
         </div>
@@ -7606,6 +7607,45 @@
     </div>
 </div>
 
+<!-- vBeta68: DAILY SALES — quick counter-sale log + one-page summary PDF per day -->
+<div id="dailySalesModal" class="modal-overlay" onclick="if(event.target===this) closeDailySales()">
+    <div class="modal-content" style="max-width:620px;">
+        <div class="modal-header">
+            <h2>📒 Daily Sales</h2>
+            <button class="close-btn" onclick="closeDailySales()">X</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <button onclick="dsShiftDay(-1)" aria-label="Previous day" style="width:44px; height:44px; margin:0; padding:0; border:1px solid #E1E1E6; border-radius:10px; background:#FFFFFF; color:#2c3e50; font-size:18px; cursor:pointer;">‹</button>
+            <input type="date" id="dsDate" onchange="dsRender()" style="flex:1; height:44px; box-sizing:border-box; margin:0; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:10px; padding:0 10px; font-size:15px;">
+            <button onclick="dsShiftDay(1)" aria-label="Next day" style="width:44px; height:44px; margin:0; padding:0; border:1px solid #E1E1E6; border-radius:10px; background:#FFFFFF; color:#2c3e50; font-size:18px; cursor:pointer;">›</button>
+        </div>
+        <div id="dsTotals" style="margin-bottom:12px;"></div>
+        <div style="background:#EDEDF1; border-radius:10px; padding:10px; margin-bottom:12px;">
+            <div style="font-size:11px; font-weight:bold; color:#5F5D70; text-transform:uppercase; margin-bottom:6px;">+ Add a sale</div>
+            <input type="text" id="dsItem" list="dsItemList" placeholder="Item (e.g. AAC Block 4 Inch (Birla))" oninput="dsItemChosen()" style="width:100%; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0 0 6px; font-size:15px;">
+            <datalist id="dsItemList"></datalist>
+            <div style="display:flex; gap:6px; margin-bottom:6px;">
+                <input type="number" inputmode="decimal" id="dsQty" placeholder="Qty" oninput="dsCalc()" style="flex:1; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
+                <input type="number" inputmode="decimal" id="dsRate" placeholder="Rate ₹" oninput="dsCalc()" style="flex:1; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
+                <input type="number" inputmode="decimal" id="dsAmount" placeholder="Amount ₹" style="flex:1.2; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
+            </div>
+            <div style="display:flex; gap:6px; margin-bottom:6px;">
+                <select id="dsMode" style="flex:1; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
+                    <option value="Cash">Cash</option><option value="UPI">UPI</option><option value="Bank">Bank</option><option value="Credit">Credit (to collect)</option>
+                </select>
+                <input type="text" id="dsClient" placeholder="Customer (optional)" style="flex:1.4; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
+            </div>
+            <button onclick="dsAdd()" style="background:#1C7A3E; color:#FFFFFF; border:none; padding:12px 14px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:bold; width:100%; margin:0;">Add sale</button>
+        </div>
+        <div id="dsList"></div>
+        <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+            <button onclick="dsPdf(false)" style="flex:1; min-width:140px; height:48px; margin:0; border:none; border-radius:10px; background:#2c3e50; color:#FFFFFF; font-size:14px; font-weight:bold; cursor:pointer;">📄 Summary PDF</button>
+            <button onclick="dsPdf(true)" style="flex:1; min-width:140px; height:48px; margin:0; border:1px solid #D4D4DC; border-radius:10px; background:#FFFFFF; color:#2c3e50; font-size:14px; font-weight:bold; cursor:pointer;">📤 Share PDF</button>
+            <button onclick="dsCopyText()" style="flex:1; min-width:140px; height:48px; margin:0; border:1px solid #D4D4DC; border-radius:10px; background:#FFFFFF; color:#2c3e50; font-size:14px; font-weight:bold; cursor:pointer;">📋 Copy text</button>
+        </div>
+    </div>
+</div>
+
 <div id="projectManagerModal" class="modal-overlay" onclick="if(event.target===this) closeProjectManager()">
     <div class="modal-content" style="max-width:980px;">
         <div class="modal-header">
@@ -8595,14 +8635,20 @@
             <button class="close-btn" onclick="closeStatementPicker()">X</button>
         </div>
         <div style="font-size:12px; color:#5F5D70; margin-bottom:10px;">
-            Everything is included by default. Uncheck anything that shouldn't appear on this particular printed statement — for example, documents from a project finished months ago.
+            Everything is included by default. Uncheck any line that shouldn't appear — for example, documents from a project finished months ago. The statement shows a running balance after each line.
         </div>
-        <div style="display:flex; gap:8px; margin-bottom:10px;">
+        <div style="display:flex; gap:8px; margin-bottom:10px; align-items:center; flex-wrap:wrap;">
+            <select id="stmtPeriodSelect" onchange="stmtChangePeriod(this.value)" style="width:auto; margin:0; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:6px; padding:6px 8px; font-size:12px;"><option value="ALL">All time</option><option value="FY">This financial year</option><option value="3M">Last 3 months</option><option value="1M">Last 1 month</option><option value="CUSTOM" hidden>Selected dates</option></select>
             <button onclick="setStatementPickerAll(true)" style="width:auto; margin:0; background:#EDEDF1; color:#1C1C27; padding:6px 12px; font-size:11px;">Select All</button>
             <button onclick="setStatementPickerAll(false)" style="width:auto; margin:0; background:#EDEDF1; color:#1C1C27; padding:6px 12px; font-size:11px;">Select None</button>
         </div>
         <div id="statementPickerList" style="max-height:45vh; overflow-y:auto; border:1px solid #EDEDF1; border-radius:6px;"></div>
-        <button onclick="confirmStatementPicker()" style="margin-top:14px; background:#2c3e50; padding:11px;">🖨️ Print Statement With Selected Documents</button>
+        <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
+            <button onclick="stmtAction('pdf')" style="flex:1 1 45%; margin:0; background:#2c3e50; color:#FFFFFF; padding:12px; min-height:48px;">📥 Save PDF</button>
+            <button onclick="stmtAction('share')" style="flex:1 1 45%; margin:0; background:#FFFFFF; color:#2c3e50; border:1px solid #D4D4DC; padding:12px; min-height:48px;">📤 Share PDF</button>
+            <button onclick="stmtAction('wa')" style="flex:1 1 45%; margin:0; background:#FFFFFF; color:#1C7A3E; border:1px solid #D4D4DC; padding:12px; min-height:48px;">💬 WhatsApp balance</button>
+            <button onclick="stmtAction('print')" style="flex:1 1 45%; margin:0; background:#FFFFFF; color:#2c3e50; border:1px solid #D4D4DC; padding:12px; min-height:48px;">🖨️ Print</button>
+        </div>
     </div>
 </div>
 
@@ -8954,7 +9000,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta67";
+    const APP_VERSION = "vBeta70";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -8999,7 +9045,7 @@
         'kenSavedDocsCache', 'kenPricingConfig', 'kenAuditDocs',
         'kenTermsTemplates', 'kenCbTemplates', 'kenBrandAssets',
         'kenAdvancePool', 'kenTrash', 'kenAddressOptions',
-        'kenCustomItemUsage', 'kenOfflineDocQueue',
+        'kenCustomItemUsage', 'kenOfflineDocQueue', 'kenDailySales',
         // v80: saved item bundles are a genuine business collection — how
         // this yard actually sells — so they get the same snapshot and
         // catastrophic-write protection as clients, sites and stock.
@@ -9091,7 +9137,8 @@
         kenCbTemplates: 'Cash Book Templates', kenBrandAssets: 'Brand Assets',
         kenAdvancePool: 'Advance Pool', kenTrash: 'Trash',
         kenAddressOptions: 'Address Options', kenCustomItemUsage: 'Custom Items',
-        kenOfflineDocQueue: 'Offline Queue'
+        kenOfflineDocQueue: 'Offline Queue',
+        kenDailySales: 'Daily Sales'
     };
 
     // THE CHOKE POINT. Every localStorage.setItem in the app routes here.
@@ -9543,6 +9590,7 @@
         // needs a backend change. Bundles are a business decision about how
         // this yard sells, and the review ceiling is a control the owner set —
         // both should follow him to a new phone, not live on one device.
+        dailySales:       'kenDailySales',       // vBeta68: everyday counter-sale log (Daily Sales)
         itemBundles:      'kenItemBundles',      // v80 item 22: saved cart combinations
         largeDocThreshold:'kenLargeDocThreshold' // v80 item 15: manual review ceiling (a scalar, stored raw)
     };
@@ -11350,6 +11398,7 @@
         // vBeta56: Leads — a phone handset with a "+" badge, reading as
         // "a new contact/enquiry" rather than an existing saved client
         // (which already owns the plain phone-book "clients" icon above).
+        dailysales: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 15h3M8 18h6"/>',
         leads: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92Z"/><path d="M18 4v4M16 6h4"/>'
     };
     function renderVistaGridIcons() {
@@ -13881,7 +13930,9 @@
     window.addEventListener('resize', () => { if (typeof fitDocNoText === 'function') fitDocNoText(); });
     window.addEventListener('orientationchange', () => setTimeout(() => { if (typeof fitDocNoText === 'function') fitDocNoText(); }, 150));
 
-    function exportToPDF() {
+    function exportToPDF(opts) {
+        // vBeta70: opts.asBlob resolves with the PDF Blob (for sharing) instead of downloading it.
+        const asBlob = !!(opts && opts.asBlob === true);
         return new Promise((resolve) => {
             // 1. Lock scroll position to absolute top to prevent Viewport Blank Canvas Bug
             const currentScroll = window.scrollY || document.documentElement.scrollTop;
@@ -13931,7 +13982,8 @@
 
             // 2. The Render Race Buffer: Give the browser 150ms to physically draw the A4 box before taking the picture
             setTimeout(() => {
-                html2pdf().set(opt).from(element).save().then(() => {
+                let _pdfJob = asBlob ? html2pdf().set(opt).from(element).outputPdf('blob') : html2pdf().set(opt).from(element).save();
+                _pdfJob.then((_pdfResult) => {
                     element.classList.remove('pdf-export-mode'); // Revert back to screen view
                     if (wasFitMode) {
                         document.body.classList.add('preview-fit');
@@ -13942,7 +13994,14 @@
                     // foot doesn't keep the export-time spans.
                     setTimeout(syncSummaryColspans, 0);
                     window.scrollTo(0, currentScroll); // Seamlessly return user to where they were looking
-                    resolve();
+                    resolve(asBlob ? _pdfResult : undefined);
+                }).catch((err) => {
+                    // vBeta70: a failed capture used to leave the page stuck in PDF-export mode
+                    element.classList.remove('pdf-export-mode');
+                    if (wasFitMode) { document.body.classList.add('preview-fit'); if (wrap) wrap.style.height = savedWrapHeight; setTimeout(applyPreviewFit, 0); }
+                    setTimeout(syncSummaryColspans, 0);
+                    window.scrollTo(0, currentScroll);
+                    if (asBlob) resolve(null); else { alert('Could not make the PDF: ' + (err && err.message || err)); resolve(); }
                 });
             }, 150);
         });
@@ -21555,7 +21614,53 @@
     // ============================================================
     // F20: WHATSAPP SHARE — compact invoice summary
     // ============================================================
-    function shareOnWhatsApp() {
+    // vBeta70: WhatsApp now sends the real A4 PDF (the same file as the "PDF A4" button)
+    // through the phone's share sheet. A wa.me link can only carry text, and a share sheet
+    // can't pre-pick a contact, so you choose WhatsApp and the customer there. The old
+    // text message stays as the fallback when the device can't share files.
+    let _waPending = null;
+    async function shareOnWhatsApp() {
+        let docNo = document.getElementById('docNoIn').value || 'Draft';
+        let type = document.getElementById('docType').value;
+        let canFiles = typeof navigator.canShare === 'function' && typeof navigator.share === 'function';
+        if (!canFiles || typeof html2pdf === 'undefined') {
+            showToast('This device cannot attach files — sending as text instead', 'info');
+            return shareOnWhatsAppText();
+        }
+        if (!cart.length && !['ADV', 'RCP', 'EXP', 'RCM'].includes(type)) { alert('Add at least one item first.'); return; }
+        showToast('📄 Preparing PDF…', 'info');
+        let blob = null;
+        try { blob = await exportToPDF({ asBlob: true }); } catch (e) { blob = null; }
+        if (!blob) { showToast('Could not make the PDF — sending as text instead', 'error'); return shareOnWhatsAppText(); }
+        let safe = String(docNo).replace(/[^a-zA-Z0-9]/g, '_') || 'Draft';
+        let file = new File([blob], safe + '.pdf', { type: 'application/pdf' });
+        let client = document.getElementById('clientNameIn').value || document.getElementById('vPaidTo').value || '';
+        let grand = (document.getElementById('dispGrand') || {}).innerText || '';
+        let caption = `*KEN TRADERS*\n${document.getElementById('printTitle').innerText} ${docNo}` + (client ? `\n${client}` : '') + (grand && ['INV', 'QUO', 'SAL', 'CRN'].includes(type) ? `\nTotal: ₹${grand}` : '');
+        if (!navigator.canShare({ files: [file] })) {
+            let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+            showToast('PDF saved. Attach it in WhatsApp.', 'info');
+            return;
+        }
+        let data = { files: [file], title: file.name, text: caption };
+        try { await navigator.share(data); }
+        catch (err) {
+            if (err && err.name === 'AbortError') return; // you closed the share sheet
+            // The browser only allows sharing right after a tap, and building the PDF can outlast that.
+            // Offer a fresh tap rather than failing.
+            _waPending = data;
+            let b = document.getElementById('waSendNow');
+            if (!b) {
+                b = document.createElement('button'); b.id = 'waSendNow'; b.className = 'no-print';
+                b.style.cssText = 'position:fixed; left:50%; bottom:110px; transform:translateX(-50%); z-index:3000; padding:14px 22px; border:none; border-radius:14px; background:#1C7A3E; color:#FFFFFF; font-size:16px; font-weight:bold; box-shadow:0 6px 18px rgba(0,0,0,0.3); width:auto; margin:0;';
+                b.onclick = () => { let d = _waPending; b.remove(); if (d) navigator.share(d).catch(() => {}); };
+                document.body.appendChild(b);
+            }
+            b.innerText = '📲 PDF ready — tap to send';
+        }
+    }
+
+    function shareOnWhatsAppText() {
         let type = document.getElementById('docType').value;
         let docNo = document.getElementById('docNoIn').value || 'Draft';
         let client = document.getElementById('clientNameIn').value || document.getElementById('vPaidTo').value || 'Customer';
@@ -22311,6 +22416,7 @@
         _stmtRows = data.allRows; _stmtOpening = data.openingBalance;
 
         document.getElementById('statementPickerClientName').innerText = client;
+        document.getElementById('stmtPeriodSelect').value = period;
         let list = document.getElementById('statementPickerList');
         list.innerHTML = _stmtRows.map((d, i) => {
             if (d._isCashPayment) {
@@ -22335,116 +22441,173 @@
         document.querySelectorAll('.stmtRowChk').forEach(cb => cb.checked = checked);
     }
 
-    function confirmStatementPicker() {
-        let selectedIdx = new Set([...document.querySelectorAll('.stmtRowChk:checked')].map(cb => parseInt(cb.dataset.idx, 10)));
-        closeStatementPicker();
-        printUnifiedClientStatement(_stmtClient, _stmtPeriod, _stmtRows.filter((_, i) => selectedIdx.has(i)), _stmtOpening);
+    // ================================================================
+    // vBeta69: CLIENT STATEMENT, rebuilt. One chronological statement of account
+    // (Date | Particulars | Debit | Credit | Running balance), proper letterhead, the
+    // pending invoices with due dates, and Save PDF / Share / Print / WhatsApp from the
+    // picker. The old version opened a popup window and printed three separate lists with
+    // no running balance; popup blockers stopped it on phones and there was no PDF save.
+    // ================================================================
+    function stmtLetterhead() {
+        let opts = getAddressOptions(), idx = parseInt(localStorage.getItem('kenLastAddressOption')) || 0;
+        let o = opts[idx] && opts[idx].lines && opts[idx].lines.length ? opts[idx] : opts[0];
+        return { gstin: (o && o.gstin) || '33ABEFK9154C1ZI', lines: (o && o.lines) || [] };
+    }
+    function stmtMoney(n) { return '₹' + (Math.abs(n) || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
+
+    function stmtCompute(client, period, rows, openingBalance) {
+        let norm = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+        let entries = [];
+        rows.forEach(r => {
+            if (r._isCashPayment) {
+                let wo = /write-off/i.test(r.party || '');
+                entries.push({ date: r.date, ord: 1, label: wo ? 'Settled for less (write-off)' : 'Payment received', sub: 'against ' + (r.docNo || ''), debit: 0, credit: r.amount || 0 });
+            } else if (['INV', 'SAL'].includes(r.type)) {
+                entries.push({ date: r.date, ord: 0, label: (r.type === 'INV' ? 'Tax Invoice ' : 'Sales Invoice ') + r.docNo, sub: r.deliverySite || '', debit: r.total || 0, credit: 0 });
+            } else if (r.type === 'ADV') entries.push({ date: r.date, ord: 1, label: 'Advance received', sub: r.docNo, debit: 0, credit: r.total || 0 });
+            else if (r.type === 'RCP') entries.push({ date: r.date, ord: 1, label: 'Payment received', sub: r.docNo, debit: 0, credit: r.total || 0 });
+            else if (r.type === 'CRN') entries.push({ date: r.date, ord: 1, label: 'Credit note', sub: r.docNo + (r.crnOrigRef ? ' (against ' + r.crnOrigRef + ')' : ''), debit: 0, credit: r.total || 0 });
+        });
+        // Advance Pool entries: Client Scope = money spent on the client's behalf that they owe us.
+        // Our Scope is settled from their advance and is shown for information only.
+        let reg = findClientByName(client);
+        let pool = getClientAdvPool(reg ? reg.id : ('unreg:' + client + ' — unregistered'));
+        if ((!pool.entries || !pool.entries.length) && !reg) pool = getClientAdvPool('unreg:' + client);
+        let pe = pool.entries || [];
+        let ourScope = pe.filter(e => e.scope === 'our'), clientScope = pe.filter(e => e.scope === 'client');
+        clientScope.forEach(e => entries.push({ date: e.date, ord: 0, label: 'Paid on your behalf', sub: e.desc || '', debit: parseFloat(e.amount) || 0, credit: 0 }));
+        entries.sort((a, b) => parseLocalDate(a.date) - parseLocalDate(b.date) || a.ord - b.ord);
+        let bal = openingBalance || 0;
+        entries.forEach(e => { bal += e.debit - e.credit; e.balance = bal; });
+        let billed = entries.reduce((s, e) => s + e.debit, 0), received = entries.reduce((s, e) => s + e.credit, 0);
+        // pending invoices (Outstanding's own calculation, so the two screens agree)
+        let pending = computeOutstandingRows(['INV', 'SAL']).filter(d => norm(d.clientName) === norm(client));
+        let creditDays = getCreditPeriodDays();
+        return { entries, opening: openingBalance || 0, billed, received, balance: bal, ourScope, pending, creditDays };
     }
 
-    // The one statement generator, styled like the old Advance Account
-    // Statement (colour-coded sections, a bold balance banner) but built
-    // from the complete getLedgerData rows rather than only advance-linked
-    // invoices — so it never misses a sale that wasn't paid via an advance.
-    function printUnifiedClientStatement(client, period, rows, openingBalance) {
-        let periodLabel = { ALL: 'All Time', FY: 'This Financial Year', '3M': 'Last 3 Months', '1M': 'Last 1 Month' }[period] || 'All Time';
-        let timestamp = new Intl.DateTimeFormat('en-IN', { dateStyle:'long', timeStyle:'short' }).format(new Date());
-
-        let invoiceRows = rows.filter(r => !r._isCashPayment && ['INV','SAL'].includes(r.type));
-        let creditRows = rows.filter(r => !r._isCashPayment && ['ADV','RCP','CRN'].includes(r.type));
-        let cashRows = rows.filter(r => r._isCashPayment);
-
-        let totalBilled = invoiceRows.reduce((s,d) => s + (d.total||0), 0);
-        let totalCredited = creditRows.reduce((s,d) => s + (d.total||0), 0) + cashRows.reduce((s,d) => s + (d.amount||0), 0);
-        let netDue = (openingBalance||0) + totalBilled - totalCredited;
-
-        // Best-effort inclusion of advance-pool utilisation entries for this
-        // client (money spent on their behalf, tracked separately from
-        // billing documents) — tries the registered clientId first, falls
-        // back to the unregistered name-based key. Purely additive: if
-        // neither exists, this section is simply omitted.
-        let poolEntries = [];
-        let regClient = findClientByName(client);
-        let poolKey = regClient ? regClient.id : ('unreg:' + client + ' — unregistered');
-        let pool = getClientAdvPool(poolKey);
-        if ((!pool.entries || pool.entries.length === 0) && !regClient) {
-            // try a couple of common unregistered-key shapes before giving up
-            pool = getClientAdvPool('unreg:' + client);
-        }
-        poolEntries = pool.entries || [];
-        let ourScopeTotal = poolEntries.filter(e => e.scope === 'our').reduce((s,e) => s+(e.amount||0), 0);
-        let clientScopeTotal = poolEntries.filter(e => e.scope === 'client').reduce((s,e) => s+(e.amount||0), 0);
-
-        let finalDue = netDue + clientScopeTotal;
-
+    function stmtBuildHtml(client, period, rows, openingBalance, width) {
+        let S = stmtCompute(client, period, rows, openingBalance);
+        let periodLabel = { ALL: 'All time', FY: 'This financial year', '3M': 'Last 3 months', '1M': 'Last 1 month', CUSTOM: 'Selected dates' }[period] || 'All time';
+        let asOf = formatDateDisplay(todayISO());
+        let lh = stmtLetterhead();
+        let reg = findClientByName(client);
+        let lastDoc = savedDocs.filter(d => d.clientName && d.clientName.trim().toLowerCase() === client.trim().toLowerCase()).slice(-1)[0] || {};
+        let phone = (reg && reg.phone) || lastDoc.phone || '', loc = (reg && reg.location) || lastDoc.location || '', gst = (reg && reg.gstin) || lastDoc.gstin || '';
         let logoSrc = document.getElementById('mainLogo') ? document.getElementById('mainLogo').src : '';
-
-        let invoiceHtml = invoiceRows.length > 0 ? `
-            <h3 style="color:#0B5A94; border-bottom:2px solid #0B5A94; padding-bottom:6px; margin-top:20px;">Invoiced</h3>
-            <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                ${invoiceRows.map(d => `<tr><td style="padding:6px 0;">${esc(d.docNo)} <span style="font-size:10px;color:#5F5D70;">(${esc(d.type)})</span></td><td>${formatDateDisplay(d.date)}</td><td style="text-align:right; font-weight:bold;">₹${(d.total||0).toLocaleString('en-IN')}</td></tr>`).join('')}
-                <tr style="font-weight:bold; border-top:1px solid #1C1C27;"><td colspan="2">Total Billed</td><td style="text-align:right; color:#0B5A94;">₹${totalBilled.toLocaleString('en-IN')}</td></tr>
-            </table>` : '';
-
-        let creditHtml = (creditRows.length > 0 || cashRows.length > 0) ? `
-            <h3 style="color:#1C7A3E; border-bottom:2px solid #1C7A3E; padding-bottom:6px; margin-top:20px;">Payments &amp; Advances Received</h3>
-            <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                ${creditRows.map(d => `<tr><td style="padding:6px 0;">${esc(d.docNo)} <span style="font-size:10px;color:#5F5D70;">(${esc(d.type)})</span></td><td>${formatDateDisplay(d.date)}</td><td style="text-align:right; font-weight:bold;">₹${(d.total||0).toLocaleString('en-IN')}</td></tr>`).join('')}
-                ${cashRows.map(d => `<tr><td style="padding:6px 0;">Payment vs ${esc(d.docNo)}</td><td>${formatDateDisplay(d.date)}</td><td style="text-align:right; font-weight:bold;">₹${(d.amount||0).toLocaleString('en-IN')}</td></tr>`).join('')}
-                <tr style="font-weight:bold; border-top:1px solid #1C1C27;"><td colspan="2">Total Received</td><td style="text-align:right; color:#1C7A3E;">₹${totalCredited.toLocaleString('en-IN')}</td></tr>
-            </table>` : '';
-
-        let poolHtml = poolEntries.length > 0 ? `
-            ${ourScopeTotal > 0 ? `
-            <h3 style="color:#92400E; border-bottom:2px solid #92400E; padding-bottom:6px; margin-top:20px;">Used — Our Scope (Settled)</h3>
-            <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                ${poolEntries.filter(e=>e.scope==='our').map(e => `<tr><td style="padding:6px 0;">${esc(e.desc)}</td><td>${formatDateDisplay(e.date)}</td><td style="text-align:right;">₹${(e.amount||0).toLocaleString('en-IN')}</td></tr>`).join('')}
-                <tr style="font-weight:bold; border-top:1px solid #1C1C27;"><td colspan="2">Total</td><td style="text-align:right;">₹${ourScopeTotal.toLocaleString('en-IN')}</td></tr>
-            </table>` : ''}
-            ${clientScopeTotal > 0 ? `
-            <h3 style="color:#A32A2E; border-bottom:2px solid #A32A2E; padding-bottom:6px; margin-top:20px;">Used — Client Scope (You Owe)</h3>
-            <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                ${poolEntries.filter(e=>e.scope==='client').map(e => `<tr><td style="padding:6px 0;">${esc(e.desc)}</td><td>${formatDateDisplay(e.date)}</td><td style="text-align:right;">₹${(e.amount||0).toLocaleString('en-IN')}</td></tr>`).join('')}
-                <tr style="font-weight:bold; border-top:1px solid #1C1C27;"><td colspan="2">Total</td><td style="text-align:right; color:#A32A2E;">₹${clientScopeTotal.toLocaleString('en-IN')}</td></tr>
-            </table>` : ''}` : '';
-
-        let openingHtml = openingBalance ? `
-            <div style="background:#EDEDF1; padding:10px 12px; border-radius:6px; margin-top:16px; font-size:12px; color:#1C1C27;">
-                Opening balance carried forward from before this period: <b style="color:${openingBalance>0?'#A32A2E':'#1C7A3E'};">₹${Math.abs(openingBalance).toLocaleString('en-IN')} ${openingBalance>0?'due':'credit'}</b>
-            </div>` : '';
-
-        let balanceHtml = finalDue > 0 ? `
-            <div style="background:#A32A2E; color:#FFFFFF; padding:20px; border-radius:6px; margin-top:20px; text-align:center;">
-                <div style="font-size:12px; font-weight:bold; text-transform:uppercase; opacity:0.95; letter-spacing:1px;">Total Due From Client</div>
-                <div style="font-size:32px; font-weight:bold; margin:6px 0;">₹${finalDue.toLocaleString('en-IN')}</div>
-                <div style="font-size:13px; font-weight:bold; opacity:0.95;">Rupees ${numberToWords(Math.round(finalDue))} Only</div>
-            </div>` : `
-            <div style="background:#2c3e50; color:#FFFFFF; padding:14px; border-radius:6px; margin-top:20px; display:flex; justify-content:space-between; align-items:center;">
-                <div><b>Account Balance</b><br><span style="font-size:11px; opacity:0.7;">${finalDue < 0 ? 'Credit remaining with us' : 'Fully settled'}</span></div>
-                <div style="font-size:22px; font-weight:bold;">₹${Math.abs(finalDue).toLocaleString('en-IN')}${finalDue<0?' CR':''}</div>
-            </div>`;
-
-        let html = `
-            <div style="font-family:'Segoe UI',sans-serif; padding:30px; color:#1C1C27; max-width:700px; margin:0 auto;">
-                <div style="text-align:center; margin-bottom:20px;">
-                    ${logoSrc ? `<img src="${logoSrc}" style="max-height:60px; margin-bottom:8px;">` : `<h2 style="margin:0; color:#2c3e50;">KEN PROJECTS</h2>`}
-                    <div style="font-size:12px; color:#5F5D70; margin-top:4px;">Client Statement — ${periodLabel} · As of ${timestamp}</div>
+        let th = 'padding:7px 8px; background:#2c3e50; color:#FFFFFF; font-size:11px; text-align:left;';
+        let td = 'padding:7px 8px; border-bottom:1px solid #E1E1E6; font-size:12px; vertical-align:top;';
+        let r = 'text-align:right; white-space:nowrap;';
+        let balTxt = b => stmtMoney(b) + (b < -0.005 ? ' CR' : b > 0.005 ? ' DR' : '');
+        let body = '';
+        if (S.opening) body += `<tr style="background:#EDEDF1;"><td style="${td}"></td><td style="${td}" colspan="3"><b>Opening balance</b> <span style="color:#5F5D70;">(brought forward)</span></td><td style="${td}${r}"></td><td style="${td}${r} font-weight:bold;">${balTxt(S.opening)}</td></tr>`;
+        body += S.entries.map(e => `<tr style="page-break-inside:avoid;"><td style="${td} white-space:nowrap;">${formatDateDisplay(e.date)}</td><td style="${td}"><b>${esc(e.label)}</b>${e.sub ? '<div style="font-size:11px; color:#5F5D70;">' + esc(e.sub) + '</div>' : ''}</td><td style="${td}${r}">${e.debit ? stmtMoney(e.debit) : ''}</td><td style="${td}${r} color:#1C7A3E;">${e.credit ? stmtMoney(e.credit) : ''}</td><td style="${td}${r} font-weight:bold;">${balTxt(e.balance)}</td></tr>`).join('');
+        let colHead = `<tr><th style="${th}">Date</th><th style="${th}">Particulars</th><th style="${th}${r}">Debit</th><th style="${th}${r}">Credit</th><th style="${th}${r}">Balance</th></tr>`;
+        // header cells rebuilt without the unused first spacer column
+        body = body.replace(/<tr style="background:#EDEDF1;"><td style="[^"]*"><\/td><td style="([^"]*)" colspan="3">/, '<tr style="background:#EDEDF1;"><td style="$1" colspan="4">');
+        let pendingHtml = S.pending.length ? `
+            <div style="font-size:12px; font-weight:bold; color:#5F5D70; text-transform:uppercase; margin:20px 0 6px;">Pending invoices</div>
+            <table style="width:100%; border-collapse:collapse;"><thead><tr><th style="${th}">Invoice</th><th style="${th}">Date</th><th style="${th}">Due date</th><th style="${th}${r}">Balance</th><th style="${th}${r}">Overdue</th></tr></thead><tbody>
+            ${S.pending.map(d => { let due = new Date(parseLocalDate(d._cDate)); due.setDate(due.getDate() + S.creditDays); return `<tr style="page-break-inside:avoid;"><td style="${td}">${esc(d.docNo)}</td><td style="${td}">${formatDateDisplay(d._cDate)}</td><td style="${td}">${formatDateDisplay(toLocalISO(due))}</td><td style="${td}${r} font-weight:bold;">${stmtMoney(d.balanceDue)}</td><td style="${td}${r} color:${d._age > 0 ? '#A32A2E' : '#5F5D70'};">${d._age > 0 ? d._age + ' days' : 'not yet due'}</td></tr>`; }).join('')}
+            </tbody></table>` : '';
+        let ourHtml = S.ourScope.length ? `
+            <div style="font-size:12px; font-weight:bold; color:#5F5D70; text-transform:uppercase; margin:20px 0 6px;">Spent from your advance (for information)</div>
+            <table style="width:100%; border-collapse:collapse;"><tbody>${S.ourScope.map(e => `<tr style="page-break-inside:avoid;"><td style="${td}">${formatDateDisplay(e.date)}</td><td style="${td}">${esc(e.desc || '')}</td><td style="${td}${r}">${stmtMoney(parseFloat(e.amount) || 0)}</td></tr>`).join('')}</tbody></table>` : '';
+        let due = S.balance > 0.005;
+        let banner = `<div style="margin-top:22px; page-break-inside:avoid; border-radius:8px; padding:16px; text-align:center; background:${due ? '#A32A2E' : '#2c3e50'}; color:#FFFFFF;">
+            <div style="font-size:12px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; opacity:0.95;">${due ? 'Total due from you' : S.balance < -0.005 ? 'Credit balance with us' : 'Account fully settled'}</div>
+            <div style="font-size:30px; font-weight:900; margin:4px 0;">${stmtMoney(S.balance)}</div>
+            ${Math.abs(S.balance) > 0.5 ? `<div style="font-size:12px; opacity:0.95;">Rupees ${numberToWords(Math.round(Math.abs(S.balance)))} Only</div>` : ''}
+        </div>`;
+        let tile = (l, v, c) => `<td style="border:1px solid #E1E1E6; padding:8px 10px; width:25%;"><div style="font-size:10px; color:#5F5D70; font-weight:bold; text-transform:uppercase;">${l}</div><div style="font-size:15px; font-weight:900; color:${c};">${v}</div></td>`;
+        return `<div style="width:${width || 794}px; box-sizing:border-box; padding:${width ? '0' : '36px 40px'}; background:#FFFFFF; color:#1C1C27; font-family:Lato, 'Segoe UI', system-ui, sans-serif;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid #2c3e50; padding-bottom:12px; gap:12px;">
+                <div style="display:flex; gap:12px; align-items:center;">
+                    ${logoSrc ? `<img src="${logoSrc}" onerror="this.style.display='none'" style="max-height:56px; max-width:110px;">` : ''}
+                    <div><div style="font-size:20px; font-weight:900; color:#2c3e50;">KEN TRADERS</div><div style="font-size:11px; color:#5F5D70; line-height:1.4;">A Unit of KEN PROJECTS · GSTIN ${esc(lh.gstin)}<br>${lh.lines.map(esc).join(', ')}<br>Phone: 91597 66611</div></div>
                 </div>
-                <div style="background:#EDEDF1; padding:12px; border-radius:6px; margin-bottom:20px;">
-                    <b>Client:</b> ${esc(client)}
-                </div>
-                ${invoiceHtml}
-                ${creditHtml}
-                ${poolHtml}
-                ${openingHtml}
-                ${balanceHtml}
-            </div>`;
-
-        let printWin = window.open('', '_blank', 'width=800,height=600');
-        printWin.document.write('<html><body>' + html + '</body></html>');
-        printWin.document.close();
-        printWin.focus();
-        setTimeout(() => { printWin.print(); }, 300);
+                <div style="text-align:right;"><div style="font-size:18px; font-weight:900; color:#2c3e50;">STATEMENT OF ACCOUNT</div><div style="font-size:11px; color:#5F5D70;">${periodLabel} · as on ${asOf}</div></div>
+            </div>
+            <div style="background:#EDEDF1; border-radius:8px; padding:10px 12px; margin:14px 0; font-size:13px; line-height:1.5;">
+                <b style="font-size:15px;">${esc(client)}</b>${reg ? ' <span style="color:#5F5D70;">(' + esc(reg.id) + ')</span>' : ''}<br>
+                <span style="color:#5F5D70;">${[phone ? 'Ph: ' + esc(phone) : '', loc ? esc(loc) : '', gst && gst !== 'URD' ? 'GSTIN: ' + esc(gst) : ''].filter(Boolean).join(' · ')}</span>
+            </div>
+            <table style="width:100%; border-collapse:collapse; margin-bottom:16px;"><tr>${tile('Opening', balTxt(S.opening), '#1C1C27')}${tile('Billed', stmtMoney(S.billed), '#0B5A94')}${tile('Received', stmtMoney(S.received), '#1C7A3E')}${tile('Balance', balTxt(S.balance), due ? '#A32A2E' : '#2c3e50')}</tr></table>
+            <table style="width:100%; border-collapse:collapse;"><thead>${colHead}</thead><tbody>${body}</tbody></table>
+            ${banner}
+            ${pendingHtml}
+            ${ourHtml}
+            <div style="margin-top:22px; font-size:10px; color:#5F5D70; line-height:1.5;">DR = amount you owe us. CR = credit in your favour. This is a computer-generated statement; please report any mismatch within 7 days.</div>
+        </div>`;
     }
+
+    function stmtSelectedRows() {
+        let sel = new Set([...document.querySelectorAll('.stmtRowChk:checked')].map(cb => parseInt(cb.dataset.idx, 10)));
+        return _stmtRows.filter((_, i) => sel.has(i));
+    }
+    function stmtFileName() { return 'Statement-' + String(_stmtClient || 'client').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + todayISO() + '.pdf'; }
+
+    function stmtAction(kind) {
+        if (!_stmtClient) return;
+        let rows = stmtSelectedRows();
+        if (!rows.length && !_stmtOpening) { alert('Tick at least one line for the statement.'); return; }
+        if (kind === 'wa') return stmtWhatsApp(rows);
+        if (kind === 'print') return stmtPrint(rows);
+        if (typeof html2pdf === 'undefined') { alert('PDF tool did not load (connect to the internet once, then try again). You can use Print and choose "Save as PDF".'); return; }
+        let mm = 8, widthPx = Math.round((210 - 2 * mm) * 96 / 25.4);
+        let wrap = document.createElement('div');
+        wrap.style.cssText = 'position:fixed; left:0; top:0; z-index:-1; background:#FFFFFF;';
+        wrap.innerHTML = stmtBuildHtml(_stmtClient, _stmtPeriod, rows, _stmtOpening, widthPx);
+        document.body.appendChild(wrap);
+        let filename = stmtFileName();
+        let opt = { margin: [mm, mm, mm + 4, mm], filename, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.pb-avoid'] } };
+        let done = () => { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); };
+        setTimeout(() => {
+            if (kind === 'share' && navigator.canShare) {
+                html2pdf().set(opt).from(wrap.firstElementChild).outputPdf('blob').then(blob => {
+                    let file = new File([blob], filename, { type: 'application/pdf' });
+                    done();
+                    if (navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: 'Statement — ' + _stmtClient }).catch(() => {});
+                    let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+                }).catch(err => { done(); alert('Could not make the PDF: ' + err.message); });
+            } else {
+                html2pdf().set(opt).from(wrap.firstElementChild).save().then(() => { done(); showToast('📥 Statement PDF saved', 'success'); }).catch(err => { done(); alert('Could not make the PDF: ' + err.message); });
+            }
+        }, 150);
+    }
+    function stmtPrint(rows) {
+        // hidden iframe, not window.open: popup blockers kill the old approach on phones
+        let fr = document.createElement('iframe');
+        fr.style.cssText = 'position:fixed; right:0; bottom:0; width:0; height:0; border:0;';
+        document.body.appendChild(fr);
+        let doc = fr.contentWindow.document;
+        doc.open();
+        doc.write('<html><head><title>' + esc(stmtFileName()) + '</title><style>@page{size:A4;margin:10mm;} body{margin:0;} tr{page-break-inside:avoid;} thead{display:table-header-group;}</style></head><body>' + stmtBuildHtml(_stmtClient, _stmtPeriod, rows, _stmtOpening, 700) + '</body></html>');
+        doc.close();
+        setTimeout(() => { try { fr.contentWindow.focus(); fr.contentWindow.print(); } catch (e) { alert('Could not open the print dialog.'); } setTimeout(() => fr.remove(), 4000); }, 400);
+    }
+    function stmtWhatsApp(rows) {
+        let S = stmtCompute(_stmtClient, _stmtPeriod, rows, _stmtOpening);
+        let reg = findClientByName(_stmtClient);
+        let lastDoc = savedDocs.filter(d => d.clientName && d.clientName.trim().toLowerCase() === _stmtClient.trim().toLowerCase()).slice(-1)[0] || {};
+        let digits = String((reg && reg.phone) || lastDoc.phone || '').replace(/\D/g, '');
+        if (digits.length === 10) digits = '91' + digits;
+        let L = [`Dear ${_stmtClient},`, '', `Statement from *KEN TRADERS* as on ${formatDateDisplay(todayISO())}:`];
+        if (S.balance > 0.5) {
+            L.push(`*Amount due: ${stmtMoney(S.balance)}*`);
+            S.pending.slice(0, 6).forEach(d => L.push(`• ${d.docNo} (${formatDateDisplay(d._cDate)}) — ${stmtMoney(d.balanceDue)}`));
+            L.push('', 'Kindly arrange the payment. Thank you.');
+        } else L.push(S.balance < -0.5 ? `You have a credit balance of ${stmtMoney(S.balance)} with us.` : 'Your account is fully settled. Thank you!');
+        L.push('', '📞 91597 66611');
+        window.open((digits.length >= 11 ? `https://wa.me/${digits}` : 'https://wa.me/') + '?text=' + encodeURIComponent(L.join('\n')), '_blank');
+    }
+    // kept for any older caller
+    function confirmStatementPicker() { stmtAction('pdf'); }
+    function printUnifiedClientStatement(client, period, rows, openingBalance) {
+        _stmtClient = client; _stmtPeriod = period; _stmtOpening = openingBalance || 0; _stmtRows = rows;
+        stmtPrint(rows);
+    }
+    function stmtChangePeriod(p) { if (_stmtClient) openStatementPicker(_stmtClient, p); }
 
     function typeColor(t) {
         return {INV:'#0B5A94',SAL:'#1C7A3E',QUO:'#6B3FA0',ADV:'#92400E',RCP:'#0B5A94',CRN:'#A32A2E',EXP:'#5F5D70',RCM:'#92400E'}[t] || '#1C1C27';
@@ -26541,6 +26704,170 @@
                 </div>
             </div>`;
         }).join('');
+    }
+
+    // ================================================================
+    // vBeta68: DAILY SALES — a fast log of everyday counter sales, plus a one-page
+    // summary PDF per day. Stored in localStorage 'kenDailySales' and synced through
+    // the generic Config store (same path as Advance Pool etc). Deliberately SEPARATE
+    // from invoices: it never creates documents, stock movements or ledger entries.
+    // ================================================================
+    function getDailySales() {
+        try {
+            return JSON.parse(localStorage.getItem('kenDailySales') || '[]').map(e => {
+                if (typeof e.amount === 'string') e.amount = parseFloat(e.amount) || 0;
+                return e;
+            });
+        } catch (e) { return []; }
+    }
+    function saveDailySales(list) {
+        try { localStorage.setItem('kenDailySales', JSON.stringify(list)); } catch (e) { alert('Storage full! Export data first.'); return; }
+        queueConfigCollectionSync('dailySales', list);
+    }
+    function dsDay() { return document.getElementById('dsDate').value || todayISO(); }
+    function dsEntries(day) { return getDailySales().filter(e => e.date === day).sort((a, b) => String(a.ts || '').localeCompare(String(b.ts || ''))); }
+    function dsFmt(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
+
+    function openDailySales() {
+        document.getElementById('dsDate').value = todayISO();
+        let names = [];
+        [4, 6, 8, 9].forEach(sz => { (pricingConfig.brands || []).forEach(b => names.push(qsBlockName(sz, b))); names.push(qsBlockName(sz, null)); });
+        names = names.concat(Object.keys(pricingConfig.itemDefaults || {}), (pricingConfig.customItems || []).map(c => c.name));
+        document.getElementById('dsItemList').innerHTML = [...new Set(names)].map(n => `<option value="${esc(n)}"></option>`).join('');
+        document.getElementById('dailySalesModal').style.display = 'flex';
+        resetModalView('dailySalesModal');
+        dsRender();
+    }
+    function closeDailySales() { document.getElementById('dailySalesModal').style.display = 'none'; }
+    function dsShiftDay(delta) {
+        let p = parseLocalDate(dsDay());
+        p.setDate(p.getDate() + delta);
+        document.getElementById('dsDate').value = toLocalISO(p);
+        dsRender();
+    }
+    function dsItemChosen() {
+        let name = document.getElementById('dsItem').value.trim();
+        let r = 0;
+        try { r = getDynamicBlockRate(name, 'DEFAULT', currentDeliveryMode) || 0; } catch (e) {}
+        let known = r > 0 && (getBlockSize(name) > 0 || (pricingConfig.itemDefaults || {})[name] || (pricingConfig.customItems || []).some(c => c.name === name));
+        if (known && !document.getElementById('dsRate').value) { document.getElementById('dsRate').value = r; dsCalc(); }
+    }
+    function dsCalc() {
+        let q = parseFloat(document.getElementById('dsQty').value) || 0, r = parseFloat(document.getElementById('dsRate').value) || 0;
+        if (q > 0 && r > 0) document.getElementById('dsAmount').value = Math.round(q * r * 100) / 100;
+    }
+    function dsAdd() {
+        let item = document.getElementById('dsItem').value.trim();
+        let qty = parseFloat(document.getElementById('dsQty').value) || 0;
+        let rate = parseFloat(document.getElementById('dsRate').value) || 0;
+        let amount = parseFloat(document.getElementById('dsAmount').value) || (qty * rate);
+        let mode = document.getElementById('dsMode').value;
+        let client = document.getElementById('dsClient').value.trim();
+        if (!item) { alert('Enter the item sold.'); return; }
+        if (!(amount > 0)) { alert('Enter the amount (or quantity and rate).'); return; }
+        if (mode === 'Credit' && !client) { alert('For a credit sale, enter the customer name so you know who owes you.'); return; }
+        let list = getDailySales();
+        list.push({ id: 'DS' + Date.now() + Math.floor(Math.random() * 1000), date: dsDay(), ts: new Date().toISOString(), item, qty, rate, amount, mode, client });
+        saveDailySales(list);
+        ['dsItem', 'dsQty', 'dsRate', 'dsAmount', 'dsClient'].forEach(id => document.getElementById(id).value = '');
+        dsRender();
+        showToast('✅ Sale added', 'success');
+    }
+    function dsDelete(id) {
+        if (!confirm('Delete this sale entry?')) return;
+        saveDailySales(getDailySales().filter(e => e.id !== id));
+        dsRender();
+    }
+    function dsSummary(day) {
+        let es = dsEntries(day);
+        let total = es.reduce((s, e) => s + e.amount, 0);
+        let byMode = { Cash: 0, UPI: 0, Bank: 0, Credit: 0 };
+        es.forEach(e => { byMode[e.mode] = (byMode[e.mode] || 0) + e.amount; });
+        let items = {};
+        es.forEach(e => {
+            let k = e.item.trim().toLowerCase();
+            if (!items[k]) items[k] = { item: e.item, qty: 0, amount: 0 };
+            items[k].qty += e.qty || 0; items[k].amount += e.amount;
+        });
+        let credits = es.filter(e => e.mode === 'Credit');
+        return { es, total, byMode, items: Object.values(items).sort((a, b) => b.amount - a.amount), credits, received: total - byMode.Credit };
+    }
+    function dsRender() {
+        let day = dsDay(), s = dsSummary(day);
+        let tile = (label, val, color) => `<div style="flex:1; min-width:90px; background:#FFFFFF; border:1px solid #E1E1E6; border-radius:10px; padding:8px 10px;"><div style="font-size:10px; color:#5F5D70; font-weight:bold; text-transform:uppercase;">${label}</div><div style="font-size:16px; font-weight:900; color:${color};">${dsFmt(val)}</div></div>`;
+        document.getElementById('dsTotals').innerHTML = `<div style="display:flex; gap:6px; flex-wrap:wrap;">${tile('Day total', s.total, '#2c3e50')}${tile('Cash', s.byMode.Cash, '#1C7A3E')}${tile('UPI / Bank', s.byMode.UPI + s.byMode.Bank, '#0B5A94')}${tile('To collect', s.byMode.Credit, s.byMode.Credit ? '#A32A2E' : '#5F5D70')}</div>`;
+        if (!s.es.length) { document.getElementById('dsList').innerHTML = '<p style="color:#5F5D70; padding:14px 0; font-size:13px;">No sales logged for this day yet.</p>'; return; }
+        document.getElementById('dsList').innerHTML = s.es.map(e => `
+            <div style="display:flex; align-items:center; gap:8px; padding:10px 0; border-bottom:1px solid #EDEDF1;">
+                <div style="flex:1; min-width:0;">
+                    <div style="font-size:14px; font-weight:bold; overflow-wrap:anywhere;">${esc(e.item)}</div>
+                    <div style="font-size:12px; color:#5F5D70;">${e.qty ? e.qty + ' × ₹' + e.rate + ' · ' : ''}${esc(e.mode)}${e.client ? ' · ' + esc(e.client) : ''}</div>
+                </div>
+                <div style="font-size:15px; font-weight:900; color:${e.mode === 'Credit' ? '#A32A2E' : '#1C1C27'};">${dsFmt(e.amount)}</div>
+                <button onclick="dsDelete('${e.id}')" aria-label="Delete" style="width:40px; height:40px; margin:0; padding:0; border:1px solid #E1E1E6; border-radius:8px; background:#FFFFFF; color:#A32A2E; cursor:pointer;">🗑</button>
+            </div>`).join('');
+    }
+    function dsText(day) {
+        let s = dsSummary(day);
+        let L = [`📒 *KEN TRADERS — Daily Sales*`, `📅 ${formatDateDisplay(day)}`, ''];
+        s.es.forEach((e, i) => L.push(`${i + 1}. ${e.item}${e.qty ? ' × ' + e.qty : ''} — ${dsFmt(e.amount)} (${e.mode}${e.client ? ', ' + e.client : ''})`));
+        L.push('', `*Total: ${dsFmt(s.total)}*`, `Cash ${dsFmt(s.byMode.Cash)} · UPI/Bank ${dsFmt(s.byMode.UPI + s.byMode.Bank)} · To collect ${dsFmt(s.byMode.Credit)}`);
+        return L.join('\n');
+    }
+    function dsCopyText() {
+        let day = dsDay();
+        if (!dsEntries(day).length) { alert('No sales logged for this day.'); return; }
+        let t = dsText(day);
+        if (navigator.clipboard) navigator.clipboard.writeText(t).then(() => showToast('📋 Copied — paste into WhatsApp', 'success'), () => prompt('Copy this text:', t));
+        else prompt('Copy this text:', t);
+    }
+    function dsBuildPdfHtml(day) {
+        let s = dsSummary(day);
+        let th = 'text-align:left; padding:6px 8px; background:#2c3e50; color:#FFFFFF; font-size:12px;';
+        let td = 'padding:6px 8px; border-bottom:1px solid #E1E1E6; font-size:12px; vertical-align:top;';
+        let rows = s.es.map((e, i) => `<tr><td style="${td}">${i + 1}</td><td style="${td}">${esc(e.item)}</td><td style="${td} text-align:right;">${e.qty || ''}</td><td style="${td} text-align:right;">${e.rate ? '₹' + e.rate : ''}</td><td style="${td}">${esc(e.mode)}${e.client ? ' · ' + esc(e.client) : ''}</td><td style="${td} text-align:right; font-weight:bold;">${dsFmt(e.amount)}</td></tr>`).join('');
+        let itemRows = s.items.map(it => `<tr><td style="${td}">${esc(it.item)}</td><td style="${td} text-align:right;">${it.qty || '—'}</td><td style="${td} text-align:right;">${dsFmt(it.amount)}</td></tr>`).join('');
+        let box = (label, val, color) => `<td style="border:1px solid #E1E1E6; padding:8px 10px; width:25%;"><div style="font-size:10px; color:#5F5D70; font-weight:bold; text-transform:uppercase;">${label}</div><div style="font-size:16px; font-weight:900; color:${color};">${dsFmt(val)}</div></td>`;
+        let credit = s.credits.length ? `<div style="margin-top:14px; font-size:12px;"><b>To collect (credit sales):</b> ${s.credits.map(c => esc(c.client) + ' ' + dsFmt(c.amount)).join(' · ')}</div>` : '';
+        return `<div style="width:794px; box-sizing:border-box; padding:36px 40px; background:#FFFFFF; color:#1C1C27; font-family:Lato, system-ui, sans-serif;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid #2c3e50; padding-bottom:10px;">
+                <div><div style="font-size:22px; font-weight:900; color:#2c3e50;">KEN TRADERS</div><div style="font-size:13px; color:#5F5D70;">Daily Sales Summary</div></div>
+                <div style="text-align:right;"><div style="font-size:11px; color:#5F5D70; font-weight:bold;">DATE</div><div style="font-size:18px; font-weight:900;">${formatDateDisplay(day)}</div></div>
+            </div>
+            <table style="width:100%; border-collapse:collapse; margin:16px 0;"><tr>${box('Day total', s.total, '#2c3e50')}${box('Cash', s.byMode.Cash, '#1C7A3E')}${box('UPI / Bank', s.byMode.UPI + s.byMode.Bank, '#0B5A94')}${box('To collect', s.byMode.Credit, '#A32A2E')}</tr></table>
+            <div style="font-size:12px; font-weight:bold; color:#5F5D70; text-transform:uppercase; margin-bottom:6px;">Sales (${s.es.length})</div>
+            <table style="width:100%; border-collapse:collapse;"><thead><tr><th style="${th}">#</th><th style="${th}">Item</th><th style="${th} text-align:right;">Qty</th><th style="${th} text-align:right;">Rate</th><th style="${th}">Paid by</th><th style="${th} text-align:right;">Amount</th></tr></thead><tbody>${rows}
+            <tr><td colspan="5" style="padding:8px; text-align:right; font-weight:900;">TOTAL</td><td style="padding:8px; text-align:right; font-weight:900; font-size:14px;">${dsFmt(s.total)}</td></tr></tbody></table>
+            <div style="font-size:12px; font-weight:bold; color:#5F5D70; text-transform:uppercase; margin:18px 0 6px;">Items sold</div>
+            <table style="width:100%; border-collapse:collapse;"><thead><tr><th style="${th}">Item</th><th style="${th} text-align:right;">Qty</th><th style="${th} text-align:right;">Amount</th></tr></thead><tbody>${itemRows}</tbody></table>
+            <div style="margin-top:14px; font-size:12px;"><b>Money received today:</b> ${dsFmt(s.received)} (Cash ${dsFmt(s.byMode.Cash)}, UPI ${dsFmt(s.byMode.UPI)}, Bank ${dsFmt(s.byMode.Bank)})</div>
+            ${credit}
+            <div style="margin-top:28px; font-size:10px; color:#5F5D70;">Counter-sale log summary. Invoices are listed separately in the Sales and Audit reports.</div>
+        </div>`;
+    }
+    function dsPdf(share) {
+        let day = dsDay();
+        if (!dsEntries(day).length) { alert('No sales logged for this day.'); return; }
+        if (typeof html2pdf === 'undefined') { alert('PDF tool did not load (check your internet connection once, then try again).'); return; }
+        let wrap = document.createElement('div');
+        wrap.style.cssText = 'position:fixed; left:0; top:0; z-index:-1; background:#FFFFFF;';
+        wrap.innerHTML = dsBuildPdfHtml(day);
+        document.body.appendChild(wrap);
+        let filename = `KEN-DailySales-${day}.pdf`;
+        let opt = { margin: 0, filename, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['css', 'legacy'] } };
+        let done = () => { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); };
+        setTimeout(() => {
+            if (share && navigator.canShare) {
+                html2pdf().set(opt).from(wrap.firstElementChild).outputPdf('blob').then(blob => {
+                    let file = new File([blob], filename, { type: 'application/pdf' });
+                    done();
+                    if (navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: 'Daily Sales ' + formatDateDisplay(day) }).catch(() => {});
+                    let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+                }).catch(err => { done(); alert('Could not make the PDF: ' + err.message); });
+            } else {
+                html2pdf().set(opt).from(wrap.firstElementChild).save().then(done).catch(err => { done(); alert('Could not make the PDF: ' + err.message); });
+            }
+        }, 150);
     }
 
     function openLeadsManager() {
