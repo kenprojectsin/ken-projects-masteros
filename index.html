@@ -546,7 +546,7 @@
             margin: 16px 0 20px; border: 1.5px solid var(--hp-border);
             box-shadow: var(--hp-shadow, 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35));
         }
-        /* vBeta80: sticky Doc Type + tabs bar, prominent centred doc-type selector */
+        /* vBeta81: sticky Doc Type + tabs bar, prominent centred doc-type selector */
         .doc-sticky-top { position: sticky; top: 0; z-index: 16; background: var(--hp-surface); padding: 8px 0 10px; margin: 0 0 14px; border-bottom: 1px solid var(--hp-border); }
         @media (min-width: 1101px) { .doc-sticky-top { top: -20px; padding-top: 28px; margin-top: -8px; } } /* desktop: the editor box has 20px padding that the bar must cover */
         .doc-sticky-top .doctype-spotlight { margin: 0; }
@@ -4490,7 +4490,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta80</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta81</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -4579,7 +4579,7 @@
         <div class="analytics-section pm-row" style="cursor:pointer;" onclick="openProjectManager()">
             <div class="analytics-section-title"><span>🏗️ Project Manager</span></div>
         </div>
-        <!-- vBeta80: one-tap popup of what is in stock right now -->
+        <!-- vBeta81: one-tap popup of what is in stock right now -->
         <div class="analytics-section pm-row" id="btnCurrentStock" style="cursor:pointer; background:#1C7A3E !important; border-color:#145c2d !important;" onclick="openCurrentStock()">
             <div class="analytics-section-title"><span style="color:#FFFFFF !important;">📦 Current Stock</span></div>
         </div>
@@ -4746,7 +4746,7 @@
         <div style="padding:0 4px; margin:4px 0 10px;">
             <button id="btnQuickSalePage" onclick="openQuickTap()" style="width:100%; margin:0; padding:17px 12px; font-size:19px; font-weight:900; letter-spacing:.5px; background:#D9480F !important; color:#FFFFFF !important; border-radius:12px; box-shadow:0 3px 10px rgba(217,72,15,.35);">⚡ QUICK SALE<span id="qtHomeBadge" style="font-size:13px; font-weight:700;"></span></button>
         </div>
-        <!-- vBeta80: Doc Type + the Info/Customer/Pricing/Product tabs form ONE sticky bar, so the top of the screen
+        <!-- vBeta81: Doc Type + the Info/Customer/Pricing/Product tabs form ONE sticky bar, so the top of the screen
              always shows what kind of document this is and lets you jump between sections. The Convert / Pen / Boss / Void
              card follows underneath and scrolls away normally. -->
         <div class="doc-sticky-top" id="docStickyTop">
@@ -6664,7 +6664,7 @@
                 <button class="close-btn" onclick="closeSummary()">X</button>
             </div>
         </div>
-        <!-- vBeta80: Monthly and Daily sit side by side. The Daily tab is the old Daily Sales page, moved here. -->
+        <!-- vBeta81: Monthly and Daily sit side by side. The Daily tab is the old Daily Sales page, moved here. -->
         <div class="tab-bar" style="margin-bottom:12px;">
             <button class="tab-btn active" id="tabSumMonthly" onclick="setSummaryMode('monthly')">📊 Monthly Summary</button>
             <button class="tab-btn" id="tabSumDaily" onclick="setSummaryMode('daily')">📒 Daily Summary</button>
@@ -7474,7 +7474,7 @@
 <!-- vBeta67: QUICK SALE — voice/typed sale or quote draft. Everything here is a DRAFT;
      "Save" and "Open full form" both go through the normal form + saveDocument() gates. -->
 <style>#qsModal button{width:auto !important; margin:0; box-sizing:border-box; white-space:nowrap;} #qsModal #qsMicBtn{flex:1 1 auto;} #qsFab{width:56px !important; padding:0; margin:0;}
-/* vBeta80: the floating mic button is hidden for now (the tap-based Quick Sale replaced it on the home page). To bring it back, delete the next line. */
+/* vBeta81: the floating mic button is hidden for now (the tap-based Quick Sale replaced it on the home page). To bring it back, delete the next line. */
 #qsFab{display:none !important;}</style>
 <button id="qsFab" class="no-print" onclick="openQuickSale()" aria-label="Quick Sale by voice" style="position:fixed; right:14px; bottom:84px; z-index:900; width:56px; height:56px; border-radius:28px; border:none; background:#2c3e50; color:#FFFFFF; font-size:24px; box-shadow:0 4px 14px rgba(0,0,0,0.3); cursor:pointer;">🎤</button>
 <div id="qsModal" class="no-print" onclick="if(event.target===this) closeQuickSale()" style="display:none; position:fixed; inset:0; z-index:2200; background:rgba(0,0,0,0.45); align-items:flex-end; justify-content:center;">
@@ -7668,7 +7668,7 @@
 </div>
 
 <!-- vBeta68: DAILY SALES — quick counter-sale log + one-page summary PDF per day -->
-<!-- vBeta80: QUICK SALE (tap version). Seven item buttons -> quantity/price popup -> list + total.
+<!-- vBeta81: QUICK SALE (tap version). Seven item buttons -> quantity/price popup -> list + total.
      Saved as internal "Quick Sale" records that can be converted into a Sales Invoice later. -->
 <style>
     #qtModal .qt-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
@@ -9115,7 +9115,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta80";
+    const APP_VERSION = "vBeta81";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -9706,8 +9706,8 @@
         // this yard sells, and the review ceiling is a control the owner set —
         // both should follow him to a new phone, not live on one device.
         dailySales:       'kenDailySales',       // vBeta68: everyday counter-sale log (Daily Sales)
-        quickSales:       'kenQuickSales',       // vBeta80: tap-version Quick Sale records waiting to become Sales Invoices
-        quickPresets:     'kenQuickPresets',     // vBeta80: user-defined price presets for the Quick Sale buttons
+        quickSales:       'kenQuickSales',       // vBeta81: tap-version Quick Sale records waiting to become Sales Invoices
+        quickPresets:     'kenQuickPresets',     // vBeta81: user-defined price presets for the Quick Sale buttons
         itemBundles:      'kenItemBundles',      // v80 item 22: saved cart combinations
         largeDocThreshold:'kenLargeDocThreshold' // v80 item 15: manual review ceiling (a scalar, stored raw)
     };
@@ -9743,7 +9743,7 @@
             }
         } catch (e) {}
 
-        // vBeta80: one Google Sheets cell holds at most ~50,000 characters. Lists that keep growing
+        // vBeta81: one Google Sheets cell holds at most ~50,000 characters. Lists that keep growing
         // (Quick Sales, Daily Sales) are cut into 30,000-character pieces saved as <key>__1, <key>__2 ...
         // and a small "<key>" row says how many pieces there are. Short lists stay a single plain row.
         const _pushRow = (key, val) => fetch(WEB_APP_URL, {
@@ -15189,7 +15189,7 @@
                         if (typeof val === 'string') {
                             try { val = JSON.parse(val); } catch(e) { /* may be a plain scalar string */ }
                         }
-                        // vBeta80: a list that was saved in pieces — put the pieces back together
+                        // vBeta81: a list that was saved in pieces — put the pieces back together
                         if (CHUNKED_CONFIG_KEYS.has(configKey) && val && typeof val === 'object' && !Array.isArray(val) && val._chunked) {
                             let parts = [];
                             for (let i = 1; i <= val._chunked; i++) {
@@ -22512,7 +22512,7 @@
     let _stmtPeriod = 'ALL';
     let _stmtRows = [];       // allRows from getLedgerData, cached for the picker
     let _stmtOpening = 0;
-    let _stmtOpts = null;     // vBeta80: set for a PROJECT statement ({project, behalf, refunds, title, fileLabel}); null for a client statement
+    let _stmtOpts = null;     // vBeta81: set for a PROJECT statement ({project, behalf, refunds, title, fileLabel}); null for a client statement
 
     // Called from the Ledger's Print Statement button.
     function openStatementPickerFromLedger() {
@@ -22618,7 +22618,7 @@
         });
         // Advance Pool entries: Client Scope = money spent on the client's behalf that they owe us.
         // Our Scope is settled from their advance and is shown for information only.
-        // vBeta80: a PROJECT statement brings its own entries (opts) instead of the client's pool.
+        // vBeta81: a PROJECT statement brings its own entries (opts) instead of the client's pool.
         let ourScope = [];
         if (opts && opts.project) {
             (opts.behalf || []).forEach(e => entries.push({ date: e.date, ord: 0, label: 'Paid on your behalf', sub: e.sub || '', debit: e.debit || 0, credit: 0 }));
@@ -22761,7 +22761,7 @@
             }
         }, 150);
     }
-    // vBeta80: adds "label · Page x of y" at the foot of every page (long statements run to several pages)
+    // vBeta81: adds "label · Page x of y" at the foot of every page (long statements run to several pages)
     function stmtPdfWorker(opt, el) {
         let label = (_stmtOpts && _stmtOpts.title) ? _stmtOpts.title : (_stmtClient || '');
         return html2pdf().set(opt).from(el).toPdf().get('pdf').then(pdf => {
@@ -23450,7 +23450,7 @@
         populateSummaryFYDropdown();
         renderSummary();
     }
-    // vBeta80: Summary has two tabs — Monthly (the old report) and Daily (the Daily Sales log + PDF).
+    // vBeta81: Summary has two tabs — Monthly (the old report) and Daily (the Daily Sales log + PDF).
     function setSummaryMode(mode) {
         let daily = mode === 'daily';
         document.getElementById('summaryMonthlyPane').style.display = daily ? 'none' : '';
@@ -26015,7 +26015,7 @@
     window.addEventListener('load', () => {
         if (/[?&]quick=/.test(location.search)) {
             let m = location.search.match(/[?&]quick=(\w+)/);
-            // vBeta80: ?quick=tap opens the tap-based Quick Sale page, ?quick=stock the Current Stock popup
+            // vBeta81: ?quick=tap opens the tap-based Quick Sale page, ?quick=stock the Current Stock popup
             if (m && /^tap$/i.test(m[1])) { setTimeout(openQuickTap, 1200); return; }
             if (m && /^stock$/i.test(m[1])) { setTimeout(openCurrentStock, 1200); return; }
             if (m && /^(quo|quote)$/i.test(m[1])) _qs.type = 'QUO';
@@ -26938,7 +26938,7 @@
     function dsFmt(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
 
     // ================================================================
-    // vBeta80: QUICK SALE (tap version). Seven buttons -> quantity + price popup -> running list.
+    // vBeta81: QUICK SALE (tap version). Seven buttons -> quantity + price popup -> running list.
     // Saved as an internal "Quick Sale" record (kenQuickSales, cloud-synced like Daily Sales)
     // that can be loaded into a Sales Invoice later. Never touches stock or the ledger by itself.
     // Price presets are user-defined per button (kenQuickPresets).
@@ -27262,41 +27262,69 @@
     }
     window.addEventListener('load', () => setTimeout(qtRefreshBadge, 1500));
 
-    // vBeta80: CURRENT STOCK popup (home page button). One row per tracked item — each block
+    // vBeta81: CURRENT STOCK popup (home page button). One row per tracked item — each block
     // size/brand and the jointing mortar — using the same live quantity the Stock grid shows
     // (what is left in the stock batches, all locations added together).
-    function openCurrentStock() {
+    let _csBrand = 'ALL';
+    function csSetBrand(b) { _csBrand = b; openCurrentStock(true); }
+    function openCurrentStock(keep) {
+        if (keep !== true) _csBrand = 'ALL';
         let names = getAllTrackedItemNames();
         let order = n => { let i = STOCK_SIZE_GROUP_ORDER.indexOf(getStockSizeGroupLabel(n)); return i === -1 ? 99 : i; };
         names.sort((a, b) => order(a) - order(b) || (getBlockBrand(a) ? 1 : 0) - (getBlockBrand(b) ? 1 : 0) || a.localeCompare(b));
-        let items = getStockItems();
+        let items = getStockItems(), batches = getStockBatches();
         let body = document.getElementById('currentStockBody');
         if (!names.length) {
             body.innerHTML = '<p style="color:#333; padding:14px; text-align:center; font-size:13px;">No stock recorded yet. Add a batch in the Stock page to get started.</p>';
         } else {
-            let totalBlocks = 0;
-            body.innerHTML = names.map(n => {
-                let qty = getStockQty(n), isMortar = n.toLowerCase().includes('mortar'), size = getBlockSize(n);
-                let it = items.find(x => x.name === n), threshold = it && it.lowStockThreshold != null ? it.lowStockThreshold : 50;
-                if (size > 0) totalBlocks += qty;
-                let color = qty <= 0 ? '#A32A2E' : (qty < threshold ? '#B25E00' : '#1C7A3E');
-                let label = size > 0 ? size + '" AAC Block' : (isMortar ? 'Jointing Mortar' : n);
-                let brand = isMortar ? null : getBlockBrand(n);
-                let locs = [...new Set(getStockBatches().filter(b => b.itemName === n).map(b => b.location))].map(l => [l, getStockQty(n, l)]).filter(x => x[1] !== 0);
-                let split = locs.length > 1 ? '<div style="font-size:11px; color:#333; margin-top:2px;">' + locs.map(x => esc(x[0]) + ' ' + x[1]).join(' · ') + '</div>' : '';
-                let flag = qty <= 0 ? 'Out of stock' : (qty < threshold ? 'Low' : '');
-                return `<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 4px; border-bottom:1px solid #E1E1E6;">
-                    <div><div style="font-size:15px; font-weight:700; color:#000;">${esc(label)}${brand ? ' <span style="font-size:12px; font-weight:700; background:#EDEDF1; border-radius:6px; padding:2px 7px;">' + esc(brand) + '</span>' : ''}</div>${split}${flag ? '<div style="font-size:11px; font-weight:700; color:' + color + ';">' + flag + '</div>' : ''}</div>
-                    <div style="text-align:right; white-space:nowrap;"><span style="font-size:26px; font-weight:900; color:${color};">${qty.toLocaleString('en-IN')}</span> <span style="font-size:12px; color:#333;">${isMortar ? 'bags' : 'Nos'}</span></div>
+            const NOB = 'No brand';
+            let isMortarN = n => n.toLowerCase().includes('mortar');
+            let brandOf = n => isMortarN(n) ? null : (getBlockBrand(n) || NOB);
+            let brands = [...new Set(names.map(brandOf).filter(Boolean))].sort((x, y) => (x === NOB) - (y === NOB) || x.localeCompare(y));
+            if (_csBrand !== 'ALL' && brands.indexOf(_csBrand) === -1) _csBrand = 'ALL';
+            let chip = (val, lab) => `<button onclick="csSetBrand('${esc(val).replace(/'/g, "\\'")}')" style="margin:0 6px 6px 0; padding:7px 14px; border-radius:18px; font-size:13px; font-weight:700; border:1.5px solid ${_csBrand === val ? '#1C7A3E' : '#B8B8C4'} !important; background:${_csBrand === val ? '#1C7A3E' : '#FFFFFF'} !important; color:${_csBrand === val ? '#FFFFFF' : '#000'} !important;">${esc(lab)}</button>`;
+            let chips = brands.length > 1 ? '<div style="padding:2px 0 8px;">' + chip('ALL', 'All brands') + brands.map(b => chip(b, b)).join('') + '</div>' : '';
+            let colorFor = (qty, th) => qty <= 0 ? '#A32A2E' : (qty < th ? '#B25E00' : '#1C7A3E');
+            let thFor = n => { let it = items.find(x => x.name === n); return it && it.lowStockThreshold != null ? it.lowStockThreshold : 50; };
+            let rowHtml = (label, qty, unit, color, sub, flag, tag) => `<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 4px; border-bottom:1px solid #E1E1E6;">
+                    <div><div style="font-size:15px; font-weight:700; color:#000;">${esc(label)}${tag ? ' <span style="font-size:12px; font-weight:700; background:#EDEDF1; border-radius:6px; padding:2px 7px;">' + esc(tag) + '</span>' : ''}</div>${sub}${flag ? '<div style="font-size:11px; font-weight:700; color:' + color + ';">' + flag + '</div>' : ''}</div>
+                    <div style="text-align:right; white-space:nowrap;"><span style="font-size:26px; font-weight:900; color:${color};">${qty.toLocaleString('en-IN')}</span> <span style="font-size:12px; color:#333;">${unit}</span></div>
                 </div>`;
-            }).join('') + (totalBlocks ? `<div style="display:flex; justify-content:space-between; padding:12px 4px; font-weight:700; font-size:14px;"><span>Total blocks</span><span>${totalBlocks.toLocaleString('en-IN')} Nos</span></div>` : '');
+            let rows = '', totalBlocks = 0;
+            let sizes = [...new Set(names.map(getBlockSize).filter(z => z > 0))].sort((p, q) => p - q);
+            sizes.forEach(sz => {
+                let group = names.filter(n => getBlockSize(n) === sz && (_csBrand === 'ALL' || brandOf(n) === _csBrand));
+                if (!group.length) return;
+                let qty = group.reduce((t, n) => t + getStockQty(n), 0);
+                totalBlocks += qty;
+                let th = group.reduce((t, n) => t + thFor(n), 0);
+                let color = colorFor(qty, th);
+                let sub = '';
+                if (_csBrand === 'ALL' && group.length > 1) {
+                    sub = '<div style="font-size:12px; color:#333; margin-top:3px;">' + group.map(n => esc(brandOf(n)) + ' <b>' + getStockQty(n).toLocaleString('en-IN') + '</b>').join(' · ') + '</div>';
+                } else if (_csBrand !== 'ALL' || group.length === 1) {
+                    let locs = [...new Set(batches.filter(b => group.some(n => n === b.itemName)).map(b => b.location))].map(l => [l, group.reduce((t, n) => t + getStockQty(n, l), 0)]).filter(x => x[1] !== 0);
+                    if (locs.length > 1) sub = '<div style="font-size:11px; color:#333; margin-top:2px;">' + locs.map(x => esc(x[0]) + ' ' + x[1]).join(' · ') + '</div>';
+                }
+                let tag = _csBrand !== 'ALL' ? _csBrand : (group.length === 1 && brandOf(group[0]) !== NOB ? brandOf(group[0]) : '');
+                rows += rowHtml(sz + '" AAC Block', qty, 'Nos', color, sub, qty <= 0 ? 'Out of stock' : (qty < th ? 'Low' : ''), tag);
+            });
+            if (_csBrand === 'ALL') {
+                names.filter(n => getBlockSize(n) <= 0).forEach(n => {
+                    let qty = getStockQty(n), th = thFor(n), color = colorFor(qty, th), mort = isMortarN(n);
+                    rows += rowHtml(mort ? 'Jointing Mortar' : n, qty, mort ? 'bags' : 'Nos', color, '', qty <= 0 ? 'Out of stock' : (qty < th ? 'Low' : ''), '');
+                });
+            }
+            let totalLabel = _csBrand === 'ALL' ? 'Total blocks (all brands)' : 'Total blocks · ' + _csBrand;
+            body.innerHTML = chips + (rows || '<p style="padding:14px; text-align:center; font-size:13px; color:#333;">Nothing in stock for this brand.</p>')
+                + (totalBlocks ? `<div style="display:flex; justify-content:space-between; padding:12px 4px; font-weight:700; font-size:14px;"><span>${esc(totalLabel)}</span><span>${totalBlocks.toLocaleString('en-IN')} Nos</span></div>` : '');
         }
         document.getElementById('currentStockAsOf').innerText = 'As of ' + formatDateDisplay(todayISO()) + ' · ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
         document.getElementById('currentStockModal').style.display = 'flex';
     }
     function closeCurrentStock() { document.getElementById('currentStockModal').style.display = 'none'; }
 
-    // vBeta80: Daily Sales now lives in the Summary page's Daily tab (the old standalone page is gone).
+    // vBeta81: Daily Sales now lives in the Summary page's Daily tab (the old standalone page is gone).
     function dsOpenPane() {
         if (!document.getElementById('dsDate').value) document.getElementById('dsDate').value = todayISO();
         let names = [];
@@ -27892,7 +27920,7 @@
         return site ? site.name : null;
     }
 
-    // vBeta80: PROJECT STATEMENT — the same statement as a client's, for one project.
+    // vBeta81: PROJECT STATEMENT — the same statement as a client's, for one project.
     // Documents are matched exactly as getProjectFinancials does (delivery site or manually
     // linked). Money fronted for the customer, reimbursements and return refunds come from
     // the Cash Book entries tagged to the project. Runs to as many pages as it needs.
