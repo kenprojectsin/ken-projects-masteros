@@ -28,6 +28,38 @@
       "type": "image/png"
     }
   ],
-  "categories": ["business", "finance", "productivity"],
-  "lang": "en-IN"
+  "categories": [
+    "business",
+    "finance",
+    "productivity"
+  ],
+  "lang": "en-IN",
+  "shortcuts": [
+    {
+      "name": "Quick Sale",
+      "short_name": "Quick Sale",
+      "description": "Open the Quick Sale page",
+      "url": "./index.html?quick=tap",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Current Stock",
+      "short_name": "Stock",
+      "description": "See current stock",
+      "url": "./index.html?quick=stock",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
 }

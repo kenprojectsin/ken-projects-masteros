@@ -369,7 +369,7 @@
         .doc-section {
             background: var(--hp-surface); border-radius: var(--hp-radius-lg);
             border: 1px solid var(--hp-border); box-shadow: var(--hp-shadow);
-            padding: 16px 16px 18px; margin-bottom: 16px; scroll-margin-top: 62px;
+            padding: 16px 16px 18px; margin-bottom: 16px; scroll-margin-top: calc(var(--docStickyH, 130px) + 10px);
         }
         .doc-section-title {
             font-size: 13px; font-weight: 800; letter-spacing: -0.2px; color: var(--hp-ink);
@@ -546,6 +546,14 @@
             margin: 16px 0 20px; border: 1.5px solid var(--hp-border);
             box-shadow: var(--hp-shadow, 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35));
         }
+        /* vBeta80: sticky Doc Type + tabs bar, prominent centred doc-type selector */
+        .doc-sticky-top { position: sticky; top: 0; z-index: 16; background: var(--hp-surface); padding: 8px 0 10px; margin: 0 0 14px; border-bottom: 1px solid var(--hp-border); }
+        @media (min-width: 1101px) { .doc-sticky-top { top: -20px; padding-top: 28px; margin-top: -8px; } } /* desktop: the editor box has 20px padding that the bar must cover */
+        .doc-sticky-top .doctype-spotlight { margin: 0; }
+        .doc-sticky-top .doctype-spotlight label { display: block; text-align: center; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: var(--hp-ink); margin: 0 0 5px; }
+        .doc-sticky-top .doctype-spotlight select { width: 100%; font-size: 20px; font-weight: 900; padding: 14px 38px 14px 14px; text-align: center; text-align-last: center; border-radius: 14px; box-shadow: 0 3px 10px rgba(28,28,39,0.28); }
+        .doc-sticky-top .doctype-spotlight select option { text-align: center; }
+        .doc-sticky-top .doc-jumpnav-wrap { position: static !important; top: auto !important; margin: 8px 0 0 !important; padding: 0 !important; border: none !important; background: none; }
         .doctype-spotlight { background: none; padding: 0; border-radius: 0; margin: 0 0 10px; border: none; box-shadow: none; }
         .doctype-spotlight label { color: var(--hp-ink-muted); font-size: 10px; margin: 0 0 6px 0; opacity: 1; }
         /* vBeta15: dark background needs its own white-stroke arrow — the
@@ -4482,7 +4490,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta61</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta80</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -4570,6 +4578,10 @@
              Reports & Tools + Blocks Calculator side by side underneath it. -->
         <div class="analytics-section pm-row" style="cursor:pointer;" onclick="openProjectManager()">
             <div class="analytics-section-title"><span>🏗️ Project Manager</span></div>
+        </div>
+        <!-- vBeta80: one-tap popup of what is in stock right now -->
+        <div class="analytics-section pm-row" id="btnCurrentStock" style="cursor:pointer; background:#1C7A3E !important; border-color:#145c2d !important;" onclick="openCurrentStock()">
+            <div class="analytics-section-title"><span style="color:#FFFFFF !important;">📦 Current Stock</span></div>
         </div>
         <!-- vBeta17: Reports & Tools / Blocks Calculator are now a true tab
              pair — see .section-tab/.section-tab-body CSS and
@@ -4731,7 +4743,13 @@
              (.doc-header-card) — per request, so this "about the document
              as a whole" cluster is visually one group with real spacing
              below it before the Info/Customer/Pricing/Product tab bar. -->
-        <div class="doc-header-card">
+        <div style="padding:0 4px; margin:4px 0 10px;">
+            <button id="btnQuickSalePage" onclick="openQuickTap()" style="width:100%; margin:0; padding:17px 12px; font-size:19px; font-weight:900; letter-spacing:.5px; background:#D9480F !important; color:#FFFFFF !important; border-radius:12px; box-shadow:0 3px 10px rgba(217,72,15,.35);">⚡ QUICK SALE<span id="qtHomeBadge" style="font-size:13px; font-weight:700;"></span></button>
+        </div>
+        <!-- vBeta80: Doc Type + the Info/Customer/Pricing/Product tabs form ONE sticky bar, so the top of the screen
+             always shows what kind of document this is and lets you jump between sections. The Convert / Pen / Boss / Void
+             card follows underneath and scrolls away normally. -->
+        <div class="doc-sticky-top" id="docStickyTop">
         <!-- U5: Doc Type gets its own dedicated, visually prominent block —
              it's the single most important selector in the form. -->
         <div class="doctype-spotlight">
@@ -4744,9 +4762,22 @@
                 <option value="INV">📄 Tax Invoice</option>
                 <option value="CRN">↩️ Credit Note</option>
                 <option value="EXP">💸 General Expense Voucher</option>
-                <option value="RCM">🔄 RCM Payment Voucher</option>
+                <option value="RCM">🔄 RCM Voucher</option>
             </select>
         </div>
+            <div class="doc-jumpnav-wrap">
+            <div class="doc-jumpnav" id="docJumpNav">
+                <div class="doc-jumpnav-item active" data-target="docSectionInfo" onclick="jumpToDocSection('docSectionInfo')">Info</div>
+                <div class="doc-jumpnav-item" data-target="docSectionCustomer" onclick="jumpToDocSection('docSectionCustomer')">Customer</div>
+                <div class="doc-jumpnav-item" data-target="docSectionPricing" onclick="jumpToDocSection('docSectionPricing')">Pricing</div>
+                <div class="doc-jumpnav-item" data-target="docSectionProduct" onclick="jumpToDocSection('docSectionProduct')">Product</div>
+                <div class="doc-jumpnav-item" data-target="docSectionPayment" onclick="jumpToDocSection('docSectionPayment')">Payment</div>
+                <div class="doc-jumpnav-item" data-target="docSectionDiscountDocs" onclick="jumpToDocSection('docSectionDiscountDocs')">Discount &amp; Docs</div>
+            </div>
+            </div>
+        </div>
+
+        <div class="doc-header-card">
 
         <!-- vBeta15: contextual actions for the CURRENTLY SELECTED document type,
              right under the selector that determines them — replaces the old
@@ -4876,16 +4907,6 @@
              don't have that tab system, switchAppMode() hides every pill
              except Info, since Info is the only thing here that applies
              to them. See switchAppMode() (JS) for the pill-hiding logic. -->
-        <div class="doc-jumpnav-wrap">
-            <div class="doc-jumpnav" id="docJumpNav">
-                <div class="doc-jumpnav-item active" data-target="docSectionInfo" onclick="jumpToDocSection('docSectionInfo')">Info</div>
-                <div class="doc-jumpnav-item" data-target="docSectionCustomer" onclick="jumpToDocSection('docSectionCustomer')">Customer</div>
-                <div class="doc-jumpnav-item" data-target="docSectionPricing" onclick="jumpToDocSection('docSectionPricing')">Pricing</div>
-                <div class="doc-jumpnav-item" data-target="docSectionProduct" onclick="jumpToDocSection('docSectionProduct')">Product</div>
-                <div class="doc-jumpnav-item" data-target="docSectionPayment" onclick="jumpToDocSection('docSectionPayment')">Payment</div>
-                <div class="doc-jumpnav-item" data-target="docSectionDiscountDocs" onclick="jumpToDocSection('docSectionDiscountDocs')">Discount &amp; Docs</div>
-            </div>
-        </div>
 
         <!-- vBeta34: Company Address / Document No. / Date grouped into
              their own section ("Info" — the user's suggested name, since
@@ -6419,7 +6440,7 @@
             <h2>👤 Customer Ledger</h2>
             <div style="display:flex; gap:8px;">
                 <button id="btnLedgerExport" onclick="exportLedgerCSV()" style="width:auto; margin:0; background:#1C7A3E; color:#FFFFFF; border:none; padding:9px 14px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold;">📄 Export CSV</button>
-                <button id="btnLedgerStatement" onclick="openStatementPickerFromLedger()" style="width:auto; margin:0; background:#2c3e50; color:#FFFFFF; border:none; padding:9px 14px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold;">🖨️ Print Statement</button>
+                <button id="btnLedgerStatement" onclick="openStatementPickerFromLedger()" style="width:auto; margin:0; background:#2c3e50; color:#FFFFFF; border:none; padding:9px 14px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold;">📄 Statement</button>
                 <button class="close-btn" onclick="closeLedger()">X</button>
             </div>
         </div>
@@ -6637,12 +6658,18 @@
 <div id="summaryModal" class="modal-overlay" onclick="if(event.target===this) closeSummary()">
     <div class="modal-content analytics-modal">
         <div class="modal-header">
-            <h2>📊 Monthly Sales Summary</h2>
+            <h2>📊 Summary</h2>
             <div style="display:flex; gap:8px;">
-                <button onclick="exportSummaryCSV()" style="width:auto; margin:0; background:#1C7A3E; color:#FFFFFF; border:none; padding:9px 14px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold;">📄 Export CSV</button>
+                <button id="btnSummaryCsv" onclick="exportSummaryCSV()" style="width:auto; margin:0; background:#1C7A3E; color:#FFFFFF; border:none; padding:9px 14px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold;">📄 Export CSV</button>
                 <button class="close-btn" onclick="closeSummary()">X</button>
             </div>
         </div>
+        <!-- vBeta80: Monthly and Daily sit side by side. The Daily tab is the old Daily Sales page, moved here. -->
+        <div class="tab-bar" style="margin-bottom:12px;">
+            <button class="tab-btn active" id="tabSumMonthly" onclick="setSummaryMode('monthly')">📊 Monthly Summary</button>
+            <button class="tab-btn" id="tabSumDaily" onclick="setSummaryMode('daily')">📒 Daily Summary</button>
+        </div>
+        <div id="summaryMonthlyPane">
         <div class="period-select-row" style="flex-wrap:wrap; gap:8px;">
             <label>FY:</label>
             <select id="summaryFY" onchange="renderSummary()" aria-label="Financial year"></select>
@@ -6675,6 +6702,38 @@
         <div id="summaryScopeNote" style="display:none; font-size:12px; margin-bottom:12px; padding:8px 12px; border-radius:6px; background:var(--vista-amber-tint,#FEF3E0); color:#92400E;"></div>
         <div id="summaryStatsGrid" class="stat-grid"></div>
         <div id="summaryBody"></div>
+        </div><!-- /summaryMonthlyPane -->
+        <div id="summaryDailyPane" style="display:none;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <button onclick="dsShiftDay(-1)" aria-label="Previous day" style="width:44px; height:44px; margin:0; padding:0; border:1px solid #E1E1E6; border-radius:10px; background:#FFFFFF; color:#2c3e50; font-size:18px; cursor:pointer;">‹</button>
+            <input type="date" id="dsDate" onchange="dsRender()" style="flex:1; height:44px; box-sizing:border-box; margin:0; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:10px; padding:0 10px; font-size:15px;">
+            <button onclick="dsShiftDay(1)" aria-label="Next day" style="width:44px; height:44px; margin:0; padding:0; border:1px solid #E1E1E6; border-radius:10px; background:#FFFFFF; color:#2c3e50; font-size:18px; cursor:pointer;">›</button>
+        </div>
+        <div id="dsTotals" style="margin-bottom:12px;"></div>
+        <div style="background:#EDEDF1; border-radius:10px; padding:10px; margin-bottom:12px;">
+            <div style="font-size:11px; font-weight:bold; color:#5F5D70; text-transform:uppercase; margin-bottom:6px;">+ Add a sale</div>
+            <input type="text" id="dsItem" list="dsItemList" placeholder="Item (e.g. AAC Block 4 Inch (Birla))" oninput="dsItemChosen()" style="width:100%; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0 0 6px; font-size:15px;">
+            <datalist id="dsItemList"></datalist>
+            <div style="display:flex; gap:6px; margin-bottom:6px;">
+                <input type="number" inputmode="decimal" id="dsQty" placeholder="Qty" oninput="dsCalc()" style="flex:1; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
+                <input type="number" inputmode="decimal" id="dsRate" placeholder="Rate ₹" oninput="dsCalc()" style="flex:1; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
+                <input type="number" inputmode="decimal" id="dsAmount" placeholder="Amount ₹" style="flex:1.2; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
+            </div>
+            <div style="display:flex; gap:6px; margin-bottom:6px;">
+                <select id="dsMode" style="flex:1; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
+                    <option value="Cash">Cash</option><option value="UPI">UPI</option><option value="Bank">Bank</option><option value="Credit">Credit (to collect)</option>
+                </select>
+                <input type="text" id="dsClient" placeholder="Customer (optional)" style="flex:1.4; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
+            </div>
+            <button onclick="dsAdd()" style="background:#1C7A3E; color:#FFFFFF; border:none; padding:12px 14px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:bold; width:100%; margin:0;">Add sale</button>
+        </div>
+        <div id="dsList"></div>
+        <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+            <button onclick="dsPdf(false)" style="flex:1; min-width:140px; height:48px; margin:0; border:none; border-radius:10px; background:#2c3e50; color:#FFFFFF; font-size:14px; font-weight:bold; cursor:pointer;">📄 Summary PDF</button>
+            <button onclick="dsPdf(true)" style="flex:1; min-width:140px; height:48px; margin:0; border:1px solid #D4D4DC; border-radius:10px; background:#FFFFFF; color:#2c3e50; font-size:14px; font-weight:bold; cursor:pointer;">📤 Share PDF</button>
+            <button onclick="dsCopyText()" style="flex:1; min-width:140px; height:48px; margin:0; border:1px solid #D4D4DC; border-radius:10px; background:#FFFFFF; color:#2c3e50; font-size:14px; font-weight:bold; cursor:pointer;">📋 Copy text</button>
+        </div>
+        </div><!-- /summaryDailyPane -->
     </div>
 </div>
 
@@ -7412,6 +7471,44 @@
 </div>
 
 <!-- #3: proper Edit Cash Entry modal — title, date, amount -->
+<!-- vBeta67: QUICK SALE — voice/typed sale or quote draft. Everything here is a DRAFT;
+     "Save" and "Open full form" both go through the normal form + saveDocument() gates. -->
+<style>#qsModal button{width:auto !important; margin:0; box-sizing:border-box; white-space:nowrap;} #qsModal #qsMicBtn{flex:1 1 auto;} #qsFab{width:56px !important; padding:0; margin:0;}
+/* vBeta80: the floating mic button is hidden for now (the tap-based Quick Sale replaced it on the home page). To bring it back, delete the next line. */
+#qsFab{display:none !important;}</style>
+<button id="qsFab" class="no-print" onclick="openQuickSale()" aria-label="Quick Sale by voice" style="position:fixed; right:14px; bottom:84px; z-index:900; width:56px; height:56px; border-radius:28px; border:none; background:#2c3e50; color:#FFFFFF; font-size:24px; box-shadow:0 4px 14px rgba(0,0,0,0.3); cursor:pointer;">🎤</button>
+<div id="qsModal" class="no-print" onclick="if(event.target===this) closeQuickSale()" style="display:none; position:fixed; inset:0; z-index:2200; background:rgba(0,0,0,0.45); align-items:flex-end; justify-content:center;">
+  <div style="width:100%; max-width:480px; height:92vh; background:#F6F6F9; color:#1C1C27; border-radius:18px 18px 0 0; display:flex; flex-direction:column; overflow:hidden; font-family:inherit;">
+    <div style="flex:none; height:56px; display:flex; align-items:center; justify-content:space-between; padding:0 16px; background:#2c3e50; color:#FFFFFF;">
+      <div style="font-size:17px; font-weight:900;">Quick Sale</div>
+      <div style="display:flex; align-items:center; gap:10px;"><span style="font-size:12px; opacity:0.85;">Draft, not saved</span><button onclick="closeQuickSale()" aria-label="Close" style="width:40px; height:40px; border:none; background:transparent; color:#FFFFFF; font-size:20px; cursor:pointer; margin:0; padding:0;">✕</button></div>
+    </div>
+    <div style="flex:1; min-height:0; overflow-y:auto; padding:14px 16px; display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; gap:8px;">
+        <button id="qsTabQUO" onclick="qsSetType('QUO')" style="flex:1; height:44px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer; margin:0;">📝 Quote</button>
+        <button id="qsTabSAL" onclick="qsSetType('SAL')" style="flex:1; height:44px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer; margin:0;">🧾 Sale</button>
+      </div>
+      <div style="background:#FFFFFF; border:1px solid #E1E1E6; border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:8px;">
+        <div style="font-size:12px; font-weight:700; color:#5F5D70; letter-spacing:0.4px;">SAY OR TYPE THE SALE</div>
+        <textarea id="qsText" rows="3" placeholder='e.g. "Sale for Sudha, Birla four inch, hundred fifty, rate sixty, and mortar two bags"' style="width:100%; box-sizing:border-box; font-size:16px; line-height:1.4; border:1px solid #D4D4DC; border-radius:10px; padding:10px; background:#FFFFFF; color:#1C1C27; margin:0;"></textarea>
+        <div style="display:flex; gap:8px;">
+          <button id="qsMicBtn" onclick="qsToggleMic()" style="flex:1; height:48px; border:none; border-radius:12px; background:#2c3e50; color:#FFFFFF; font-size:15px; font-weight:900; cursor:pointer; margin:0;">🎤 Tap to speak</button>
+          <button onclick="qsParseNow()" style="height:48px; padding:0 16px; border:1px solid #D4D4DC; border-radius:12px; background:#FFFFFF; color:#2c3e50; font-size:14px; font-weight:700; cursor:pointer; margin:0;">Read it</button>
+        </div>
+        <div id="qsMicNote" style="font-size:12px; color:#5F5D70; line-height:1.4;">Speak in English numbers and names (Tamil speech is not understood yet). You can also type, or use your keyboard's mic.</div>
+      </div>
+      <div id="qsResult"></div>
+    </div>
+    <div id="qsFooter" style="flex:none; background:#FFFFFF; border-top:1px solid #E1E1E6; padding:10px 16px; display:none; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px;"><div id="qsFootLines" style="font-size:11px; color:#5F5D70; font-weight:700;"></div><div id="qsFootTotal" style="font-size:22px; font-weight:900; color:#2c3e50;"></div></div>
+      <div style="display:flex; gap:10px;">
+        <button onclick="qsApply(false)" style="flex:1; height:48px; padding:0 12px; border:1px solid #D4D4DC; border-radius:12px; background:#FFFFFF; color:#2c3e50; font-size:14px; font-weight:700; cursor:pointer;">Open full form</button>
+        <button id="qsSaveBtn" onclick="qsApply(true)" style="flex:1; height:48px; padding:0 16px; border:none; border-radius:12px; background:#2c3e50; color:#FFFFFF; font-size:15px; font-weight:900; cursor:pointer;">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="editCashEntryModal" class="modal-overlay" onclick="if(event.target===this) closeEditCashEntry()" style="z-index:2100;">
     <div class="modal-content" style="max-width:420px;">
         <div class="modal-header">
@@ -7420,6 +7517,11 @@
         </div>
         <label style="color:#1C1C27; margin-top:0;">Description / Title</label>
         <input type="text" id="editCashEntryParty" style="background:#EDEDF1; color:#1C1C27; border:1px solid #E1E1E6;">
+        <label style="color:#1C1C27;">Direction</label>
+        <select id="editCashEntryDirection" style="background:#EDEDF1; color:#1C1C27; border:1px solid #E1E1E6;">
+            <option value="IN">IN (money received)</option>
+            <option value="OUT">OUT (money paid)</option>
+        </select>
         <div style="display:flex; gap:10px;">
             <div style="flex:1;">
                 <label style="color:#1C1C27;">Date</label>
@@ -7562,6 +7664,100 @@
             </div>
             <button onclick="addLead()" style="background:#1C7A3E; color:#FFFFFF; border:none; padding:9px 14px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold; width:100%; margin-top:2px;">+ Add Lead</button>
         </div>
+    </div>
+</div>
+
+<!-- vBeta68: DAILY SALES — quick counter-sale log + one-page summary PDF per day -->
+<!-- vBeta80: QUICK SALE (tap version). Seven item buttons -> quantity/price popup -> list + total.
+     Saved as internal "Quick Sale" records that can be converted into a Sales Invoice later. -->
+<style>
+    #qtModal .qt-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+    #qtModal .qt-btn { margin:0; width:100%; min-height:70px; border-radius:12px; border:2.5px solid #2c3e50 !important; background:#FFFFFF !important; color:#000 !important; font-size:20px; font-weight:900; line-height:1.15; padding:8px 6px; touch-action:manipulation; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    #qtModal .qt-btn small { display:block; font-size:12px; font-weight:700; margin-top:3px; }
+    #qtModal .qt-btn.sel { background:#1C7A3E !important; border-color:#145c2d !important; color:#FFFFFF !important; }
+    #qtModal .qt-btn.wide { grid-column:1 / span 2; }
+    #qtModal .qt-card { background:#EDEDF1; border-radius:10px; padding:12px; margin-bottom:14px; }
+    #qtModal .qt-card input { margin:0; width:100%; box-sizing:border-box; font-size:16px; padding:10px; border:1.5px solid #B8B8C4; border-radius:8px; background:#FFFFFF; color:#000; }
+    #qtModal .qt-tab { flex:1; margin:0; padding:10px; font-size:14px; font-weight:700; border-radius:8px; background:#EDEDF1 !important; color:#000 !important; }
+    #qtModal .qt-tab.on { background:#2c3e50 !important; color:#FFFFFF !important; }
+    #qtModal .qt-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:11px 4px; border-bottom:1px solid #E1E1E6; touch-action:manipulation; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+    #qtEntry .qt-chip { margin:0; width:auto; padding:9px 14px; font-size:16px; font-weight:800; border-radius:20px; background:#EDEDF1 !important; color:#000 !important; border:2px solid #B8B8C4 !important; }
+    #qtEntry .qt-chip.on { background:#1C7A3E !important; color:#FFFFFF !important; border-color:#145c2d !important; }
+    #qtEntry input.qt-big { margin:0; width:100%; box-sizing:border-box; font-size:28px; font-weight:900; padding:10px; border:2px solid #2c3e50; border-radius:10px; background:#FFFFFF; color:#000; text-align:center; }
+</style>
+<div id="qtModal" class="modal-overlay" onclick="if(event.target===this) closeQuickTap()">
+    <div class="modal-content" style="max-width:520px;">
+        <div class="modal-header">
+            <h2>⚡ Quick Sale</h2>
+            <button class="close-btn" onclick="closeQuickTap()">X</button>
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+            <button id="qtTabNew" class="qt-tab on" onclick="qtSwitchTab('new')">New sale</button>
+            <button id="qtTabSaved" class="qt-tab" onclick="qtSwitchTab('saved')">Saved (0)</button>
+        </div>
+
+        <div id="qtNewPane">
+            <div id="qtBtns" class="qt-grid"></div>
+
+            <div class="qt-card">
+                <div style="font-size:12px; font-weight:700; color:#000; margin-bottom:6px;">Customer (optional)</div>
+                <input type="text" id="qtName" list="qtNameList" placeholder="Customer name" autocomplete="off" oninput="qtNameChanged()">
+                <datalist id="qtNameList"></datalist>
+                <div style="display:flex; gap:8px; margin-top:8px;">
+                    <input type="tel" id="qtPhone" placeholder="Phone number" inputmode="numeric" autocomplete="off" oninput="qtPhoneChanged()" style="flex:1;">
+                    <button onclick="qtPasteFromClipboard(false)" style="width:auto; margin:0; padding:0 14px; background:#2c3e50 !important; color:#FFFFFF !important; border-radius:8px; font-size:14px; font-weight:700;">📋 Paste</button>
+                </div>
+                <div id="qtCustHint" style="font-size:12px; color:#145c2d; font-weight:700; margin-top:6px; display:none;"></div>
+            </div>
+
+            <div style="font-size:13px; font-weight:800; color:#000; margin-bottom:2px;">Selected items <span style="font-weight:400; color:#333; font-size:11px;">(tap to change · hold to remove)</span></div>
+            <div id="qtList"></div>
+            <div id="qtUndo" style="display:none; background:#2c3e50; color:#FFFFFF; border-radius:8px; padding:8px 12px; margin-top:8px; font-size:13px; justify-content:space-between; align-items:center;"></div>
+            <div id="qtTotal" style="display:flex; justify-content:space-between; align-items:center; padding:14px 4px; font-size:22px; font-weight:900; border-top:2.5px solid #000; margin-top:6px;"><span>Total</span><span id="qtTotalVal">₹0</span></div>
+            <div style="display:flex; gap:8px;">
+                <button onclick="qtClear()" style="flex:1; margin:0; padding:14px; background:#EDEDF1 !important; color:#000 !important; border-radius:10px; font-size:14px; font-weight:700;">Clear</button>
+                <button id="qtSaveBtn" onclick="qtSave()" style="flex:3; margin:0; padding:14px; background:#1C7A3E !important; color:#FFFFFF !important; border-radius:10px; font-size:17px; font-weight:900;">💾 Save Quick Sale</button>
+            </div>
+        </div>
+
+        <div id="qtSavedPane" style="display:none;"></div>
+    </div>
+</div>
+
+<div id="qtEntry" class="modal-overlay" style="z-index:2300;" onclick="if(event.target===this) qtCloseEntry()">
+    <div class="modal-content" style="max-width:420px;">
+        <div class="modal-header">
+            <h2 id="qtEntryTitle">Item</h2>
+            <button class="close-btn" onclick="qtCloseEntry()">X</button>
+        </div>
+        <div style="font-size:12px; font-weight:700; color:#000; margin-bottom:4px;" id="qtQtyLbl">Quantity</div>
+        <input type="text" id="qtQty" class="qt-big" inputmode="decimal" placeholder="0" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('qtPrice').focus();}" oninput="qtEntryChanged()">
+        <div style="font-size:12px; font-weight:700; color:#000; margin:12px 0 4px;">Price per unit (₹)</div>
+        <input type="text" id="qtPrice" class="qt-big" inputmode="decimal" placeholder="0" onkeydown="if(event.key==='Enter'){event.preventDefault();qtConfirmEntry();}" oninput="qtEntryChanged()">
+        <div id="qtChips" style="display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 6px;"></div>
+        <div style="margin-bottom:10px;"><a href="#" onclick="qtTogglePresetEdit();return false;" style="font-size:13px; color:#0B5A94; font-weight:700;">✎ Edit price presets</a></div>
+        <div id="qtPresetEdit" style="display:none; margin-bottom:12px;">
+            <input type="text" id="qtPresetIn" placeholder="e.g. 66, 70-73, 58-60" style="width:100%; box-sizing:border-box; font-size:15px; padding:10px; border:1.5px solid #B8B8C4; border-radius:8px; margin:0 0 6px 0; background:#FFFFFF; color:#000;">
+            <button onclick="qtSavePresets()" style="width:100%; margin:0; padding:10px; background:#2c3e50 !important; color:#FFFFFF !important; border-radius:8px; font-size:14px; font-weight:700;">Save presets</button>
+        </div>
+        <div id="qtEntryTotal" style="text-align:center; font-size:15px; font-weight:800; margin-bottom:10px; color:#000;"></div>
+        <div id="qtEntryErr" style="color:#A32A2E; font-size:13px; font-weight:700; text-align:center; margin-bottom:8px; display:none;"></div>
+        <div style="display:flex; gap:8px;">
+            <button id="qtRemoveBtn" onclick="qtRemoveFromEntry()" style="flex:1; margin:0; padding:14px; background:#A32A2E !important; color:#FFFFFF !important; border-radius:10px; font-size:14px; font-weight:700; display:none;">Remove</button>
+            <button id="qtOkBtn" onclick="qtConfirmEntry()" style="flex:3; margin:0; padding:14px; background:#1C7A3E !important; color:#FFFFFF !important; border-radius:10px; font-size:17px; font-weight:900;">Add</button>
+        </div>
+    </div>
+</div>
+
+<div id="currentStockModal" class="modal-overlay" onclick="if(event.target===this) closeCurrentStock()">
+    <div class="modal-content" style="max-width:460px;">
+        <div class="modal-header">
+            <h2>📦 Current Stock</h2>
+            <button class="close-btn" onclick="closeCurrentStock()">X</button>
+        </div>
+        <div id="currentStockBody"></div>
+        <div id="currentStockAsOf" style="font-size:11px; color:#333; margin:10px 0 12px; text-align:center;"></div>
+        <button onclick="closeCurrentStock(); openStockManager();" style="width:100%; margin:0; background:#2c3e50 !important; color:#FFFFFF !important; padding:10px; font-size:13px; border-radius:8px;">Open full Stock page</button>
     </div>
 </div>
 
@@ -7953,7 +8149,7 @@
     <div class="modal-content" style="max-width:920px;">
         <div class="modal-header">
             <h2><span id="pdProjectBadge" style="background:#0B5A94;color:#FFFFFF;padding:3px 10px;border-radius:10px;font-size:14px;margin-right:8px;"></span><span id="pdProjectName"></span> <span id="pdProjectClientLabel" style="font-size:13px; font-weight:normal; color:#5F5D70;"></span></h2>
-            <button class="close-btn" onclick="closeProjectDetail()">X</button>
+            <button onclick="openProjectStatement()" style="width:auto; margin:0 8px 0 0; background:#2c3e50; color:#FFFFFF; padding:6px 12px; font-size:12px; border-radius:6px;">📄 Statement</button><button class="close-btn" onclick="closeProjectDetail()">X</button>
         </div>
 
         <!-- Summary cards: mirrors the old Site Manager header stat row -->
@@ -8280,6 +8476,7 @@
                         <option value="SALE">Sale</option>
                         <option value="TRANSFER_OUT">Transfer Out</option>
                         <option value="TRANSFER_RETURN">Return</option>
+                        <option value="SALE_SHORTFALL">Sold w/o stock</option>
                         <option value="ADJUSTMENT">Adjustment</option>
                     </select>
                 </div>
@@ -8553,14 +8750,20 @@
             <button class="close-btn" onclick="closeStatementPicker()">X</button>
         </div>
         <div style="font-size:12px; color:#5F5D70; margin-bottom:10px;">
-            Everything is included by default. Uncheck anything that shouldn't appear on this particular printed statement — for example, documents from a project finished months ago.
+            Everything is included by default. Uncheck any line that shouldn't appear — for example, documents from a project finished months ago. The statement shows a running balance after each line.
         </div>
-        <div style="display:flex; gap:8px; margin-bottom:10px;">
+        <div style="display:flex; gap:8px; margin-bottom:10px; align-items:center; flex-wrap:wrap;">
+            <select id="stmtPeriodSelect" onchange="stmtChangePeriod(this.value)" style="width:auto; margin:0; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:6px; padding:6px 8px; font-size:12px;"><option value="ALL">All time</option><option value="FY">This financial year</option><option value="3M">Last 3 months</option><option value="1M">Last 1 month</option><option value="CUSTOM" hidden>Selected dates</option></select>
             <button onclick="setStatementPickerAll(true)" style="width:auto; margin:0; background:#EDEDF1; color:#1C1C27; padding:6px 12px; font-size:11px;">Select All</button>
             <button onclick="setStatementPickerAll(false)" style="width:auto; margin:0; background:#EDEDF1; color:#1C1C27; padding:6px 12px; font-size:11px;">Select None</button>
         </div>
         <div id="statementPickerList" style="max-height:45vh; overflow-y:auto; border:1px solid #EDEDF1; border-radius:6px;"></div>
-        <button onclick="confirmStatementPicker()" style="margin-top:14px; background:#2c3e50; padding:11px;">🖨️ Print Statement With Selected Documents</button>
+        <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
+            <button onclick="stmtAction('pdf')" style="flex:1 1 45%; margin:0; background:#2c3e50; color:#FFFFFF; padding:12px; min-height:48px;">📥 Save PDF</button>
+            <button onclick="stmtAction('share')" style="flex:1 1 45%; margin:0; background:#FFFFFF; color:#2c3e50; border:1px solid #D4D4DC; padding:12px; min-height:48px;">📤 Share PDF</button>
+            <button onclick="stmtAction('wa')" style="flex:1 1 45%; margin:0; background:#FFFFFF; color:#1C7A3E; border:1px solid #D4D4DC; padding:12px; min-height:48px;">💬 WhatsApp balance</button>
+            <button onclick="stmtAction('print')" style="flex:1 1 45%; margin:0; background:#FFFFFF; color:#2c3e50; border:1px solid #D4D4DC; padding:12px; min-height:48px;">🖨️ Print</button>
+        </div>
     </div>
 </div>
 
@@ -8912,7 +9115,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta61";
+    const APP_VERSION = "vBeta80";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -8957,7 +9160,7 @@
         'kenSavedDocsCache', 'kenPricingConfig', 'kenAuditDocs',
         'kenTermsTemplates', 'kenCbTemplates', 'kenBrandAssets',
         'kenAdvancePool', 'kenTrash', 'kenAddressOptions',
-        'kenCustomItemUsage', 'kenOfflineDocQueue',
+        'kenCustomItemUsage', 'kenOfflineDocQueue', 'kenDailySales', 'kenQuickSales',
         // v80: saved item bundles are a genuine business collection — how
         // this yard actually sells — so they get the same snapshot and
         // catastrophic-write protection as clients, sites and stock.
@@ -9049,7 +9252,8 @@
         kenCbTemplates: 'Cash Book Templates', kenBrandAssets: 'Brand Assets',
         kenAdvancePool: 'Advance Pool', kenTrash: 'Trash',
         kenAddressOptions: 'Address Options', kenCustomItemUsage: 'Custom Items',
-        kenOfflineDocQueue: 'Offline Queue'
+        kenOfflineDocQueue: 'Offline Queue',
+        kenDailySales: 'Daily Sales', kenQuickSales: 'Quick Sales'
     };
 
     // THE CHOKE POINT. Every localStorage.setItem in the app routes here.
@@ -9501,6 +9705,9 @@
         // needs a backend change. Bundles are a business decision about how
         // this yard sells, and the review ceiling is a control the owner set —
         // both should follow him to a new phone, not live on one device.
+        dailySales:       'kenDailySales',       // vBeta68: everyday counter-sale log (Daily Sales)
+        quickSales:       'kenQuickSales',       // vBeta80: tap-version Quick Sale records waiting to become Sales Invoices
+        quickPresets:     'kenQuickPresets',     // vBeta80: user-defined price presets for the Quick Sale buttons
         itemBundles:      'kenItemBundles',      // v80 item 22: saved cart combinations
         largeDocThreshold:'kenLargeDocThreshold' // v80 item 15: manual review ceiling (a scalar, stored raw)
     };
@@ -9512,9 +9719,11 @@
         _syncTimers[configKey] = setTimeout(() => runConfigCollectionSync(configKey, value), SYNC_DEBOUNCE_MS);
     }
 
+    const CHUNKED_CONFIG_KEYS = new Set(['quickSales', 'dailySales']);
+    const CONFIG_CHUNK_SIZE = 30000;
     function runConfigCollectionSync(configKey, value) {
         if (WEB_APP_URL === "PASTE_YOUR_WEB_APP_URL_HERE") return;
-        if (_syncInFlight[configKey]) return;
+        if (_syncInFlight[configKey]) { _configRepush[configKey] = true; return; } // vBeta64: an edit made mid-push is pushed again afterwards, not dropped
         _syncInFlight[configKey] = true;
         // Read live from localStorage rather than trusting a captured value —
         // by the time a debounced/flushed push actually fires, a newer edit
@@ -9534,23 +9743,43 @@
             }
         } catch (e) {}
 
-        fetch(WEB_APP_URL, {
+        // vBeta80: one Google Sheets cell holds at most ~50,000 characters. Lists that keep growing
+        // (Quick Sales, Daily Sales) are cut into 30,000-character pieces saved as <key>__1, <key>__2 ...
+        // and a small "<key>" row says how many pieces there are. Short lists stay a single plain row.
+        const _pushRow = (key, val) => fetch(WEB_APP_URL, {
             method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: 'saveConfig', data: { key: configKey, value: payload } })
-        })
-        .then(r => r.json())
-        .then(() => {
+            body: JSON.stringify({ action: 'saveConfig', data: { key, value: val } })
+        }).then(r => r.json());
+        let _job;
+        let _str = CHUNKED_CONFIG_KEYS.has(configKey) ? JSON.stringify(payload) : '';
+        if (_str.length > CONFIG_CHUNK_SIZE) {
+            let pieces = []; for (let i = 0; i < _str.length; i += CONFIG_CHUNK_SIZE) pieces.push('c:' + _str.slice(i, i + CONFIG_CHUNK_SIZE));
+            _job = pieces.reduce((chain, piece, i) => chain.then(r0 => (r0 && r0.success === false) ? r0 : _pushRow(configKey + '__' + (i + 1), piece)), Promise.resolve({ success: true }))
+                .then(r0 => (r0 && r0.success === false) ? r0 : _pushRow(configKey, { _chunked: pieces.length }));
+        } else _job = _pushRow(configKey, payload);
+        _job
+        .then(res => {
             _syncInFlight[configKey] = false;
+            if (res && res.success === false) {
+                // vBeta64: a rejected push used to be treated as success and the
+                // pending flag cleared, so the next load's pull wiped the edit.
+                _syncFailedQueue.add(configKey);
+                updateUnsyncedIndicator();
+                return;
+            }
             _syncFailedQueue.delete(configKey);
+            if (_configRepush[configKey]) { _configRepush[configKey] = false; runConfigCollectionSync(configKey, null); return; }
             clearPendingPush(configKey);
             updateUnsyncedIndicator();
         })
         .catch(() => {
             _syncInFlight[configKey] = false;
+            _configRepush[configKey] = false;
             _syncFailedQueue.add(configKey);
             updateUnsyncedIndicator();
         });
     }
+    let _configRepush = {};
 
     //
     // Every local change starts a 2.5s DEBOUNCED cloud push. On mobile,
@@ -9838,6 +10067,10 @@
             .then(raw => {
                 let stamp = null;
                 if (raw && !Array.isArray(raw) && raw.stamp) stamp = raw.stamp;
+                // vBeta64: this retry force-pushes THIS device's copy over the cloud's.
+                // Keep the cloud version it is about to replace, so if the other
+                // device's newer edits were in it they can be recovered.
+                try { localStorage.setItem('kenConflictBackup_' + collectionName, JSON.stringify({ at: new Date().toISOString(), cloud: raw })); } catch (e) {}
                 // Record the correct stamp — either from the fresh GET
                 // response, or from the conflict response (lastWrittenAt)
                 recordStamp(collectionName, stamp || res.lastWrittenAt);
@@ -11294,6 +11527,7 @@
         // vBeta56: Leads — a phone handset with a "+" badge, reading as
         // "a new contact/enquiry" rather than an existing saved client
         // (which already owns the plain phone-book "clients" icon above).
+        dailysales: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 15h3M8 18h6"/>',
         leads: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92Z"/><path d="M18 4v4M16 6h4"/>'
     };
     function renderVistaGridIcons() {
@@ -11350,6 +11584,12 @@
     // section scrolls past in between — it simply confirms the same pill
     // once the scroll settles, and takes back over for ordinary free-scroll
     // after that.
+    function updateDocStickyH() {
+        let b = document.getElementById('docStickyTop');
+        if (b) document.documentElement.style.setProperty('--docStickyH', b.offsetHeight + 'px');
+    }
+    window.addEventListener('load', () => setTimeout(updateDocStickyH, 300));
+    window.addEventListener('resize', updateDocStickyH);
     var docJumpNavSuppressUntil = 0;
     function jumpToDocSection(id) {
         let el = document.getElementById(id);
@@ -11396,7 +11636,7 @@
                 navItems[idx].classList.add('active');
                 if (quickDots[idx]) { quickDots.forEach(d => d.classList.remove('active')); quickDots[idx].classList.add('active'); }
             });
-        }, { rootMargin: '-56px 0px -55% 0px', threshold: 0 });
+        }, { rootMargin: '-150px 0px -55% 0px', threshold: 0 });
         sections.forEach(s => obs.observe(s));
     })();
 
@@ -12255,7 +12495,7 @@
     // once the bills are in hand. isDraft / estimatedCost distinguish a
     // draft from a normal finalized batch; finalizeDraftBatch() converts one
     // to the other without ever blocking it from being sold in the meantime.
-    function createStockBatch({ itemName, location, qty, baseCost, transportCost, unloadingCost, landingCost, purchaseDate, sourceTransferId, isDraft, estimatedCost }) {
+    function createStockBatch({ itemName, location, qty, baseCost, transportCost, unloadingCost, landingCost, purchaseDate, sourceTransferId, isDraft, estimatedCost, origin }) {
         addStockItem(itemName); // ensures it's in the catalog
         ensureStockLocation(location);
         let batches = getStockBatches();
@@ -12270,6 +12510,7 @@
             purchaseDate: purchaseDate || todayISO(),
             createdAt: new Date().toISOString(),
             sourceTransferId: sourceTransferId || null,
+            origin: origin || null, // vBeta65: 'CRN_RETURN' / 'ADJUSTMENT' — not a real purchase, so never counted as 'Bought'
             isDraft: !!isDraft
         };
         batches.push(batch);
@@ -12391,8 +12632,12 @@
     }
 
     function getSimpleBoughtQty(itemName) {
+        // vBeta65: transfer/return batches, credit-note returns
+        // are re-entries of stock already counted, not purchases. Counting
+        // them inflated "Bought" (a CRN was even subtracted from Sold AND added here).
+        let crnBatchIds = new Set(getStockMovements().filter(m => m.type === 'CRN_RETURN' && m.batchId).map(m => m.batchId));
         return getStockBatches()
-            .filter(b => b.itemName === itemName)
+            .filter(b => b.itemName === itemName && !b.sourceTransferId && b.origin !== 'CRN_RETURN' && !crnBatchIds.has(b.id))
             .reduce((s, b) => s + (parseFloat(b.qtyOriginal) || 0), 0);
     }
 
@@ -12505,6 +12750,14 @@
                 note: `Sold against ${docNo}`
             });
         });
+        // vBeta65: the shortfall (units sold that were never in stock) was silently
+        // lost. Record it so it is visible in history and unwinds with the document.
+        if (shortfall > 0) {
+            logStockMovement({
+                type: 'SALE_SHORTFALL', itemName, location, qty: shortfall, sellPrice: sellPricePerUnit, docNo,
+                note: `⚠️ ${shortfall} sold on ${docNo} with no stock on record — cost unknown, profit not counted`
+            });
+        }
         return { consumed, shortfall, totalProfit: Math.round(totalProfit * 100) / 100 };
     }
 
@@ -12538,7 +12791,8 @@
             let mNo = String(m.docNo || '').replace(/\s*-\s*VOID\s*$/i, '').trim();
             return mNo === baseNo && (m.type === 'SALE' || m.type === 'CRN_RETURN');
         });
-        if (toReverse.length === 0) return;
+        const _isShort = m => m.type === 'SALE_SHORTFALL' && String(m.docNo || '').replace(/\s*-\s*VOID\s*$/i, '').trim() === baseNo;
+        if (toReverse.length === 0 && !moves.some(_isShort)) return;
 
         let batches = getStockBatches();
         toReverse.forEach(m => {
@@ -12564,7 +12818,7 @@
 
         let remaining = moves.filter(m => {
             let mNo = String(m.docNo || '').replace(/\s*-\s*VOID\s*$/i, '').trim();
-            return !(mNo === baseNo && (m.type === 'SALE' || m.type === 'CRN_RETURN'));
+            return !(mNo === baseNo && (m.type === 'SALE' || m.type === 'CRN_RETURN')) && !_isShort(m);
         });
         // v84 FIX: removing this document's own movements is the whole point of a
         // reversal, and the user already authorised it (they typed "yes" to VOID,
@@ -12608,9 +12862,17 @@
             // a manual increase — the units already carried a real cost from
             // their original purchase batch; that FIFO history doesn't need
             // to be reconstructed for this to be a correct quantity count.
+            // vBeta65: re-enter at the cost the units were SOLD at (from the original
+            // invoice's SALE movements), else the current average, else 0. At 0 the
+            // next sale of these units booked the whole price as profit.
+            let origNo = String(doc.crnOrigRef || '').trim();
+            let soldMoves = origNo ? getStockMovements().filter(m => m.type === 'SALE' && m.docNo === origNo && m.itemName === item.p && m.landingCost) : [];
+            let soldQty = soldMoves.reduce((s, m) => s + m.qty, 0);
+            let returnCost = soldQty > 0 ? soldMoves.reduce((s, m) => s + m.qty * m.landingCost, 0) / soldQty : getWeightedAvgCost(item.p);
+            returnCost = Math.round((returnCost || 0) * 100) / 100;
             let batch = createStockBatch({
-                itemName: item.p, location, qty, baseCost: 0, transportCost: 0,
-                unloadingCost: 0, landingCost: 0, purchaseDate: todayISO()
+                itemName: item.p, location, qty, baseCost: returnCost, transportCost: 0,
+                unloadingCost: 0, landingCost: returnCost, purchaseDate: todayISO(), origin: 'CRN_RETURN'
             });
             logStockMovement({
                 type: 'CRN_RETURN', itemName: item.p, location, qty,
@@ -12625,9 +12887,12 @@
             // Increasing stock with no batch cost info — treated as a zero-cost
             // correction (e.g. found miscounted stock). Flagged clearly in the
             // ledger so it's never mistaken for a real purchase.
+            // vBeta65: enters at the current average cost (0 only if there is no costed
+            // stock), so a correction does not later look like pure profit when sold.
+            let adjCost = getWeightedAvgCost(itemName) || 0;
             createStockBatch({
-                itemName, location, qty: qtyDelta, baseCost: 0, transportCost: 0,
-                unloadingCost: 0, landingCost: 0, purchaseDate: todayISO()
+                itemName, location, qty: qtyDelta, baseCost: adjCost, transportCost: 0,
+                unloadingCost: 0, landingCost: adjCost, purchaseDate: todayISO(), origin: 'ADJUSTMENT'
             });
             logStockMovement({ type: 'ADJUSTMENT', itemName, location, qty: qtyDelta, note: reason || 'Manual increase' });
         } else if (qtyDelta < 0) {
@@ -13629,6 +13894,7 @@
         SALE: { label: '💰 Sale', color: '#1C7A3E' },
         TRANSFER_OUT: { label: '📤 Transfer Out', color: '#92400E' },
         TRANSFER_RETURN: { label: '📥 Return', color: '#6B3FA0' },
+        SALE_SHORTFALL: { label: '⚠️ Sold w/o stock', color: '#A32A2E' },
         ADJUSTMENT: { label: '✏️ Adjustment', color: '#5F5D70' }
     };
 
@@ -13799,7 +14065,9 @@
     window.addEventListener('resize', () => { if (typeof fitDocNoText === 'function') fitDocNoText(); });
     window.addEventListener('orientationchange', () => setTimeout(() => { if (typeof fitDocNoText === 'function') fitDocNoText(); }, 150));
 
-    function exportToPDF() {
+    function exportToPDF(opts) {
+        // vBeta70: opts.asBlob resolves with the PDF Blob (for sharing) instead of downloading it.
+        const asBlob = !!(opts && opts.asBlob === true);
         return new Promise((resolve) => {
             // 1. Lock scroll position to absolute top to prevent Viewport Blank Canvas Bug
             const currentScroll = window.scrollY || document.documentElement.scrollTop;
@@ -13849,7 +14117,8 @@
 
             // 2. The Render Race Buffer: Give the browser 150ms to physically draw the A4 box before taking the picture
             setTimeout(() => {
-                html2pdf().set(opt).from(element).save().then(() => {
+                let _pdfJob = asBlob ? html2pdf().set(opt).from(element).outputPdf('blob') : html2pdf().set(opt).from(element).save();
+                _pdfJob.then((_pdfResult) => {
                     element.classList.remove('pdf-export-mode'); // Revert back to screen view
                     if (wasFitMode) {
                         document.body.classList.add('preview-fit');
@@ -13860,7 +14129,14 @@
                     // foot doesn't keep the export-time spans.
                     setTimeout(syncSummaryColspans, 0);
                     window.scrollTo(0, currentScroll); // Seamlessly return user to where they were looking
-                    resolve();
+                    resolve(asBlob ? _pdfResult : undefined);
+                }).catch((err) => {
+                    // vBeta70: a failed capture used to leave the page stuck in PDF-export mode
+                    element.classList.remove('pdf-export-mode');
+                    if (wasFitMode) { document.body.classList.add('preview-fit'); if (wrap) wrap.style.height = savedWrapHeight; setTimeout(applyPreviewFit, 0); }
+                    setTimeout(syncSummaryColspans, 0);
+                    window.scrollTo(0, currentScroll);
+                    if (asBlob) resolve(null); else { alert('Could not make the PDF: ' + (err && err.message || err)); resolve(); }
                 });
             }, 150);
         });
@@ -14912,6 +15188,17 @@
                         let val = data[configKey];
                         if (typeof val === 'string') {
                             try { val = JSON.parse(val); } catch(e) { /* may be a plain scalar string */ }
+                        }
+                        // vBeta80: a list that was saved in pieces — put the pieces back together
+                        if (CHUNKED_CONFIG_KEYS.has(configKey) && val && typeof val === 'object' && !Array.isArray(val) && val._chunked) {
+                            let parts = [];
+                            for (let i = 1; i <= val._chunked; i++) {
+                                let c = data[configKey + '__' + i];
+                                if (typeof c !== 'string' || !c.startsWith('c:')) { parts = null; break; }
+                                parts.push(c.slice(2));
+                            }
+                            if (!parts) return; // a piece is missing — keep what this device has rather than guess
+                            try { val = JSON.parse(parts.join('')); } catch (e) { return; }
                         }
                         if (val === null || val === undefined) return;
                         try {
@@ -16243,7 +16530,7 @@
         }
 
         // Print titles
-        const titles = { INV:'TAX INVOICE', QUO:'QUOTATION', ADV:'ADVANCE RECEIPT', RCP:'PAYMENT RECEIPT', SAL:'SALES INVOICE', CRN:'CREDIT NOTE', RCM:'PAYMENT VOUCHER', EXP:'EXPENSE VOUCHER' };
+        const titles = { INV:'TAX INVOICE', QUO:'QUOTATION', ADV:'ADVANCE RECEIPT', RCP:'PAYMENT RECEIPT', SAL:'SALES INVOICE', CRN:'CREDIT NOTE', RCM:'RCM VOUCHER', EXP:'EXPENSE VOUCHER' };
         document.getElementById('printTitle').innerText = titles[type] || type;
 
         // A4: SAL "prices inclusive of GST" badge — moved out from above the doc
@@ -18734,6 +19021,14 @@
         // Audit lock — protects already-filed GST periods from accidental edits
         let docDateForLock = document.getElementById('dateIn').value;
         if (!checkAuditLock(docDateForLock, 'save this document', document.getElementById('docType').value)) return;
+        // vBeta62: also check the ORIGINAL saved date. Moving a locked-period invoice
+        // to a later date used to bypass the lock because only the typed date was tested.
+        if (currentlyLoadedDocId !== null) {
+            let _prevSaved = savedDocs.find(d => d.id === currentlyLoadedDocId);
+            if (_prevSaved && _prevSaved.date && cleanDate(_prevSaved.date) !== cleanDate(docDateForLock)) {
+                if (!checkAuditLock(_prevSaved.date, 'move this document out of its original period', document.getElementById('docType').value)) return;
+            }
+        }
 
         let saveBtn = document.querySelector('.btn-save');
         
@@ -18921,35 +19216,36 @@
         updateOfflineQueueBadge();
     }
 
+    let _offlineFlushing = false;
+    function removeFromOfflineQueue(sentDoc) {
+        // vBeta64: remove ONLY the exact version that was sent. Re-reading the live
+        // queue means a document saved/queued while the flush was running is kept,
+        // instead of being overwritten by a stale snapshot taken at flush start.
+        let sentJson = JSON.stringify(sentDoc);
+        saveOfflineDocQueue(getOfflineDocQueue().filter(d => JSON.stringify(d) !== sentJson));
+        updateOfflineQueueBadge();
+    }
     function flushOfflineDocQueue() {
         let q = getOfflineDocQueue();
         if (q.length === 0 || WEB_APP_URL === "PASTE_YOUR_WEB_APP_URL_HERE") return;
+        if (_offlineFlushing) return;
+        _offlineFlushing = true;
 
-        // Process sequentially (not Promise.all) so a duplicate_docno
-        // rejection on one queued document doesn't abandon the others
-        // mid-flight — each gets its own turn and its own outcome.
+        // Sequential so one rejection doesn't abandon the others. vBeta64: an item
+        // leaves the queue ONLY when the server confirms it saved. Previously any
+        // non-duplicate error reply (success:false) was silently dropped, and the
+        // final write replaced the whole queue with a stale snapshot.
         let remaining = [...q];
-        let stillNeedsAttention = []; // duplicate_docno items — kept, never silently dropped
+        let needAttention = 0;
         let processNext = () => {
             if (remaining.length === 0) {
-                // BUG FIX: previously this removed EVERY processed item from
-                // the queue regardless of outcome, including ones that hit
-                // duplicate_docno — a toast is easy to miss (especially on
-                // mobile), and once dropped from the queue the document had
-                // no durable record anywhere. Now duplicate_docno items stay
-                // in the queue, visible via the persistent offline-queue
-                // badge, until manually resolved (re-opened and re-saved
-                // with a fresh number) rather than vanishing after one
-                // missed toast.
-                saveOfflineDocQueue(stillNeedsAttention);
+                _offlineFlushing = false;
                 updateOfflineQueueBadge();
-                if (stillNeedsAttention.length > 0) {
-                    showToast(`⚠️ ${stillNeedsAttention.length} document(s) need manual attention (number conflict) — check the offline queue`, 'error');
+                if (needAttention > 0) {
+                    showToast(`⚠️ ${needAttention} document(s) could not be saved to the cloud and are still in the offline queue — check the badge`, 'error');
                 } else {
                     showToast('☁️ Offline documents synced', 'success');
                 }
-                // Refresh the visible doc list if it's open, so anything
-                // that just successfully pushed appears immediately.
                 if (document.getElementById('docModal') && document.getElementById('docModal').style.display === 'flex') {
                     renderDocList();
                 }
@@ -18963,21 +19259,13 @@
             })
             .then(r => r.json())
             .then(res => {
-                if (res && res.success === false && res.error === 'duplicate_docno') {
-                    // Kept in the queue rather than discarded — see note above.
-                    stillNeedsAttention.push(docData);
-                }
-                // Whether it succeeded, hit a different error, or needs
-                // attention, move on to the next queued item — the queue
-                // itself gets saved once at the end (see remaining.length
-                // === 0 branch above), reflecting stillNeedsAttention only.
+                if (res && res.success === false) needAttention++;   // stays queued (duplicate number or any other rejection)
+                else removeFromOfflineQueue(docData);
                 processNext();
             })
             .catch(() => {
-                // Still offline / request failed — stop here, leave this
-                // item AND everything still unprocessed in the queue for
-                // next time (don't lose items that hadn't been tried yet).
-                saveOfflineDocQueue([docData, ...remaining, ...stillNeedsAttention]);
+                // Still offline — leave this and everything unprocessed in the queue.
+                _offlineFlushing = false;
                 updateOfflineQueueBadge();
             });
         };
@@ -19953,7 +20241,7 @@
 
     const DOC_TYPE_SUMMARY_LABELS = {
         QUO: 'Quotation', SAL: 'Sales Invoice', INV: 'Tax Invoice', CRN: 'Credit Note',
-        ADV: 'Advance Receipt', RCP: 'Payment Receipt', EXP: 'Expense Voucher', RCM: 'RCM Payment Voucher'
+        ADV: 'Advance Receipt', RCP: 'Payment Receipt', EXP: 'Expense Voucher', RCM: 'RCM Voucher'
     };
 
     // Deliberately NOT a mini print preview — no header/company block, no
@@ -21084,6 +21372,9 @@
         if (!confirm(confirmMsg)) return;
 
         stashInTrash(docToDelete, 'deleted'); // safety net — restorable for 30 days
+        // vBeta62: deleting an invoice/credit note used to leave its stock deducted
+        // (and its profit booked) forever. Unwind the stock movements it made.
+        try { if (docToDelete && docToDelete.docNo) reverseStockMovementsForDoc(docToDelete.docNo); } catch (e) { console.warn('Stock reversal on delete failed', e); }
         mutateSavedDocs(docs => docs.filter(d => d.id !== id));
         renderDocList();
 
@@ -21416,7 +21707,22 @@
         // live and un-voided while writing the VOID copy as a separate document.
         // An amendment then left three records and double-counted the sale.
         _loadedDocOriginalDocNo = document.getElementById('docNoIn').value;
+        let _amendVoidNo = document.getElementById('docNoIn').value;
+        let _amendLoadedId = currentlyLoadedDocId;
         saveDocument(); // save the voided original
+        // vBeta62: saveDocument() can be blocked (audit-lock password cancelled, etc.)
+        // without telling us. Previously amend carried on, leaving the original LIVE
+        // beside the new invoice, so the sale was counted twice. Verify it stuck.
+        let _voidSaved = savedDocs.some(d => d.docNo === _amendVoidNo && d.voided);
+        if (!_voidSaved) {
+            document.getElementById('docNoIn').value = origDocNo;
+            document.getElementById('watermark').style.display = 'none';
+            isCurrentVoided = false;
+            _loadedDocOriginalDocNo = origDocNo;
+            updateInfo();
+            alert('Amend cancelled: the original invoice could not be voided (the save was blocked or cancelled). Nothing was changed.');
+            return;
+        }
 
         // Step 2: Snapshot everything
         let clientName = document.getElementById('clientNameIn').value;
@@ -21454,7 +21760,53 @@
     // ============================================================
     // F20: WHATSAPP SHARE — compact invoice summary
     // ============================================================
-    function shareOnWhatsApp() {
+    // vBeta70: WhatsApp now sends the real A4 PDF (the same file as the "PDF A4" button)
+    // through the phone's share sheet. A wa.me link can only carry text, and a share sheet
+    // can't pre-pick a contact, so you choose WhatsApp and the customer there. The old
+    // text message stays as the fallback when the device can't share files.
+    let _waPending = null;
+    async function shareOnWhatsApp() {
+        let docNo = document.getElementById('docNoIn').value || 'Draft';
+        let type = document.getElementById('docType').value;
+        let canFiles = typeof navigator.canShare === 'function' && typeof navigator.share === 'function';
+        if (!canFiles || typeof html2pdf === 'undefined') {
+            showToast('This device cannot attach files — sending as text instead', 'info');
+            return shareOnWhatsAppText();
+        }
+        if (!cart.length && !['ADV', 'RCP', 'EXP', 'RCM'].includes(type)) { alert('Add at least one item first.'); return; }
+        showToast('📄 Preparing PDF…', 'info');
+        let blob = null;
+        try { blob = await exportToPDF({ asBlob: true }); } catch (e) { blob = null; }
+        if (!blob) { showToast('Could not make the PDF — sending as text instead', 'error'); return shareOnWhatsAppText(); }
+        let safe = String(docNo).replace(/[^a-zA-Z0-9]/g, '_') || 'Draft';
+        let file = new File([blob], safe + '.pdf', { type: 'application/pdf' });
+        let client = document.getElementById('clientNameIn').value || document.getElementById('vPaidTo').value || '';
+        let grand = (document.getElementById('dispGrand') || {}).innerText || '';
+        let caption = `*KEN TRADERS*\n${document.getElementById('printTitle').innerText} ${docNo}` + (client ? `\n${client}` : '') + (grand && ['INV', 'QUO', 'SAL', 'CRN'].includes(type) ? `\nTotal: ₹${grand}` : '');
+        if (!navigator.canShare({ files: [file] })) {
+            let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+            showToast('PDF saved. Attach it in WhatsApp.', 'info');
+            return;
+        }
+        let data = { files: [file], title: file.name, text: caption };
+        try { await navigator.share(data); }
+        catch (err) {
+            if (err && err.name === 'AbortError') return; // you closed the share sheet
+            // The browser only allows sharing right after a tap, and building the PDF can outlast that.
+            // Offer a fresh tap rather than failing.
+            _waPending = data;
+            let b = document.getElementById('waSendNow');
+            if (!b) {
+                b = document.createElement('button'); b.id = 'waSendNow'; b.className = 'no-print';
+                b.style.cssText = 'position:fixed; left:50%; bottom:110px; transform:translateX(-50%); z-index:3000; padding:14px 22px; border:none; border-radius:14px; background:#1C7A3E; color:#FFFFFF; font-size:16px; font-weight:bold; box-shadow:0 6px 18px rgba(0,0,0,0.3); width:auto; margin:0;';
+                b.onclick = () => { let d = _waPending; b.remove(); if (d) navigator.share(d).catch(() => {}); };
+                document.body.appendChild(b);
+            }
+            b.innerText = '📲 PDF ready — tap to send';
+        }
+    }
+
+    function shareOnWhatsAppText() {
         let type = document.getElementById('docType').value;
         let docNo = document.getElementById('docNoIn').value || 'Draft';
         let client = document.getElementById('clientNameIn').value || document.getElementById('vPaidTo').value || 'Customer';
@@ -21945,7 +22297,9 @@
         let allClientDocs = savedDocs.filter(d => normName(d.clientName) === target && !d.docNo.includes('VOID'));
         let allCashForClientEver = getCashEntries().filter(e =>
             e.direction === 'IN' && e.linkedDoc &&
-            allClientDocs.some(d => d.docNo === e.linkedDoc)
+            // vBeta62: a cash entry linked to an ADV/RCP is the same money as that
+            // receipt document — counting both credited it twice.
+            allClientDocs.some(d => d.docNo === e.linkedDoc && ['INV','SAL'].includes(d.type))
         );
 
         // A8 FIX: period boundaries used to keep the current time-of-day, so
@@ -21979,7 +22333,7 @@
             allClientDocs.forEach(d => {
                 if (parseLocalDate(d.date) < periodStart) {
                     let amt = d.total || 0;
-                    if (['INV','SAL'].includes(d.type)) openingBalance += amt;
+                    if (['INV','SAL'].includes(d.type)) openingBalance += amt - Math.max(0, Number(d.writeOffAmt) || 0); // vBeta62: write-offs reduce the balance
                     if (['ADV','RCP','CRN'].includes(d.type)) openingBalance -= amt;
                 }
             });
@@ -22001,6 +22355,12 @@
             if(d.type === 'CRN') totalPaid += amt;
         });
         totalPaid += allCashForClient.reduce((s,e) => s + (e.amount||0), 0);
+        // vBeta62: "Settle for Less" write-offs are real credits. Outstanding already
+        // honoured them; the Ledger/Statement ignored them and still showed the ₹150.
+        let writeOffRows = docs.filter(d => ['INV','SAL'].includes(d.type) && (Number(d.writeOffAmt) || 0) > 0)
+            .map(d => ({ _isCashPayment: true, id: 'wo-' + d.id, date: d.writeOffDate || d.date, docNo: d.docNo,
+                         amount: Math.max(0, Number(d.writeOffAmt) || 0), party: 'Settled for less (write-off)' }));
+        totalPaid += writeOffRows.reduce((s,r) => s + r.amount, 0);
         let netDue = openingBalance + totalBilled - totalPaid;
 
         let financialDocs = docs.filter(d => ['INV','SAL','ADV','RCP','CRN'].includes(d.type));
@@ -22008,7 +22368,7 @@
             _isCashPayment: true, id: e.id, date: e.date, docNo: e.linkedDoc,
             amount: e.amount, party: e.party
         }));
-        let allRows = [...financialDocs.map(d => ({...d, _isCashPayment:false})), ...cashRows]
+        let allRows = [...financialDocs.map(d => ({...d, _isCashPayment:false})), ...cashRows, ...writeOffRows]
             .sort((a,b) => parseLocalDate(a.date) - parseLocalDate(b.date));
 
         return { totalBilled, totalPaid, netDue, allRows, openingBalance };
@@ -22152,6 +22512,7 @@
     let _stmtPeriod = 'ALL';
     let _stmtRows = [];       // allRows from getLedgerData, cached for the picker
     let _stmtOpening = 0;
+    let _stmtOpts = null;     // vBeta80: set for a PROJECT statement ({project, behalf, refunds, title, fileLabel}); null for a client statement
 
     // Called from the Ledger's Print Statement button.
     function openStatementPickerFromLedger() {
@@ -22198,10 +22559,12 @@
             alert('No financial documents found for this client in this period.');
             return;
         }
-        _stmtClient = client; _stmtPeriod = period;
+        _stmtClient = client; _stmtPeriod = period; _stmtOpts = null;
         _stmtRows = data.allRows; _stmtOpening = data.openingBalance;
+        document.getElementById('stmtPeriodSelect').style.display = '';
 
         document.getElementById('statementPickerClientName').innerText = client;
+        document.getElementById('stmtPeriodSelect').value = period;
         let list = document.getElementById('statementPickerList');
         list.innerHTML = _stmtRows.map((d, i) => {
             if (d._isCashPayment) {
@@ -22226,116 +22589,219 @@
         document.querySelectorAll('.stmtRowChk').forEach(cb => cb.checked = checked);
     }
 
-    function confirmStatementPicker() {
-        let selectedIdx = new Set([...document.querySelectorAll('.stmtRowChk:checked')].map(cb => parseInt(cb.dataset.idx, 10)));
-        closeStatementPicker();
-        printUnifiedClientStatement(_stmtClient, _stmtPeriod, _stmtRows.filter((_, i) => selectedIdx.has(i)), _stmtOpening);
+    // ================================================================
+    // vBeta69: CLIENT STATEMENT, rebuilt. One chronological statement of account
+    // (Date | Particulars | Debit | Credit | Running balance), proper letterhead, the
+    // pending invoices with due dates, and Save PDF / Share / Print / WhatsApp from the
+    // picker. The old version opened a popup window and printed three separate lists with
+    // no running balance; popup blockers stopped it on phones and there was no PDF save.
+    // ================================================================
+    function stmtLetterhead() {
+        let opts = getAddressOptions(), idx = parseInt(localStorage.getItem('kenLastAddressOption')) || 0;
+        let o = opts[idx] && opts[idx].lines && opts[idx].lines.length ? opts[idx] : opts[0];
+        return { gstin: (o && o.gstin) || '33ABEFK9154C1ZI', lines: (o && o.lines) || [] };
     }
+    function stmtMoney(n) { return '₹' + (Math.abs(n) || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
 
-    // The one statement generator, styled like the old Advance Account
-    // Statement (colour-coded sections, a bold balance banner) but built
-    // from the complete getLedgerData rows rather than only advance-linked
-    // invoices — so it never misses a sale that wasn't paid via an advance.
-    function printUnifiedClientStatement(client, period, rows, openingBalance) {
-        let periodLabel = { ALL: 'All Time', FY: 'This Financial Year', '3M': 'Last 3 Months', '1M': 'Last 1 Month' }[period] || 'All Time';
-        let timestamp = new Intl.DateTimeFormat('en-IN', { dateStyle:'long', timeStyle:'short' }).format(new Date());
-
-        let invoiceRows = rows.filter(r => !r._isCashPayment && ['INV','SAL'].includes(r.type));
-        let creditRows = rows.filter(r => !r._isCashPayment && ['ADV','RCP','CRN'].includes(r.type));
-        let cashRows = rows.filter(r => r._isCashPayment);
-
-        let totalBilled = invoiceRows.reduce((s,d) => s + (d.total||0), 0);
-        let totalCredited = creditRows.reduce((s,d) => s + (d.total||0), 0) + cashRows.reduce((s,d) => s + (d.amount||0), 0);
-        let netDue = (openingBalance||0) + totalBilled - totalCredited;
-
-        // Best-effort inclusion of advance-pool utilisation entries for this
-        // client (money spent on their behalf, tracked separately from
-        // billing documents) — tries the registered clientId first, falls
-        // back to the unregistered name-based key. Purely additive: if
-        // neither exists, this section is simply omitted.
-        let poolEntries = [];
-        let regClient = findClientByName(client);
-        let poolKey = regClient ? regClient.id : ('unreg:' + client + ' — unregistered');
-        let pool = getClientAdvPool(poolKey);
-        if ((!pool.entries || pool.entries.length === 0) && !regClient) {
-            // try a couple of common unregistered-key shapes before giving up
-            pool = getClientAdvPool('unreg:' + client);
+    function stmtCompute(client, period, rows, openingBalance, opts) {
+        let norm = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+        let entries = [];
+        rows.forEach(r => {
+            if (r._isCashPayment) {
+                let wo = /write-off/i.test(r.party || '');
+                entries.push({ date: r.date, ord: 1, label: wo ? 'Settled for less (write-off)' : (r.party === 'Reimbursement' ? 'Reimbursement received' : 'Payment received'), sub: r.docNo ? 'against ' + r.docNo : '', debit: 0, credit: r.amount || 0 });
+            } else if (['INV', 'SAL'].includes(r.type)) {
+                entries.push({ date: r.date, ord: 0, label: (r.type === 'INV' ? 'Tax Invoice ' : 'Sales Invoice ') + r.docNo, sub: r.deliverySite || '', debit: r.total || 0, credit: 0 });
+            } else if (r.type === 'ADV') entries.push({ date: r.date, ord: 1, label: 'Advance received', sub: r.docNo, debit: 0, credit: r.total || 0 });
+            else if (r.type === 'RCP') entries.push({ date: r.date, ord: 1, label: 'Payment received', sub: r.docNo, debit: 0, credit: r.total || 0 });
+            else if (r.type === 'CRN') entries.push({ date: r.date, ord: 1, label: 'Credit note', sub: r.docNo + (r.crnOrigRef ? ' (against ' + r.crnOrigRef + ')' : ''), debit: 0, credit: r.total || 0 });
+        });
+        // Advance Pool entries: Client Scope = money spent on the client's behalf that they owe us.
+        // Our Scope is settled from their advance and is shown for information only.
+        // vBeta80: a PROJECT statement brings its own entries (opts) instead of the client's pool.
+        let ourScope = [];
+        if (opts && opts.project) {
+            (opts.behalf || []).forEach(e => entries.push({ date: e.date, ord: 0, label: 'Paid on your behalf', sub: e.sub || '', debit: e.debit || 0, credit: 0 }));
+            (opts.refunds || []).forEach(e => entries.push({ date: e.date, ord: 2, label: 'Refund paid to client', sub: e.sub || '', debit: e.debit || 0, credit: 0 }));
+        } else {
+            let reg = findClientByName(client);
+            let pool = getClientAdvPool(reg ? reg.id : ('unreg:' + client + ' — unregistered'));
+            if ((!pool.entries || !pool.entries.length) && !reg) pool = getClientAdvPool('unreg:' + client);
+            let pe = pool.entries || [];
+            ourScope = pe.filter(e => e.scope === 'our');
+            let clientScope = pe.filter(e => e.scope === 'client');
+            clientScope.forEach(e => entries.push({ date: e.date, ord: 0, label: 'Paid on your behalf', sub: e.desc || '', debit: parseFloat(e.amount) || 0, credit: 0 }));
         }
-        poolEntries = pool.entries || [];
-        let ourScopeTotal = poolEntries.filter(e => e.scope === 'our').reduce((s,e) => s+(e.amount||0), 0);
-        let clientScopeTotal = poolEntries.filter(e => e.scope === 'client').reduce((s,e) => s+(e.amount||0), 0);
-
-        let finalDue = netDue + clientScopeTotal;
-
-        let logoSrc = document.getElementById('mainLogo') ? document.getElementById('mainLogo').src : '';
-
-        let invoiceHtml = invoiceRows.length > 0 ? `
-            <h3 style="color:#0B5A94; border-bottom:2px solid #0B5A94; padding-bottom:6px; margin-top:20px;">Invoiced</h3>
-            <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                ${invoiceRows.map(d => `<tr><td style="padding:6px 0;">${esc(d.docNo)} <span style="font-size:10px;color:#5F5D70;">(${esc(d.type)})</span></td><td>${formatDateDisplay(d.date)}</td><td style="text-align:right; font-weight:bold;">₹${(d.total||0).toLocaleString('en-IN')}</td></tr>`).join('')}
-                <tr style="font-weight:bold; border-top:1px solid #1C1C27;"><td colspan="2">Total Billed</td><td style="text-align:right; color:#0B5A94;">₹${totalBilled.toLocaleString('en-IN')}</td></tr>
-            </table>` : '';
-
-        let creditHtml = (creditRows.length > 0 || cashRows.length > 0) ? `
-            <h3 style="color:#1C7A3E; border-bottom:2px solid #1C7A3E; padding-bottom:6px; margin-top:20px;">Payments &amp; Advances Received</h3>
-            <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                ${creditRows.map(d => `<tr><td style="padding:6px 0;">${esc(d.docNo)} <span style="font-size:10px;color:#5F5D70;">(${esc(d.type)})</span></td><td>${formatDateDisplay(d.date)}</td><td style="text-align:right; font-weight:bold;">₹${(d.total||0).toLocaleString('en-IN')}</td></tr>`).join('')}
-                ${cashRows.map(d => `<tr><td style="padding:6px 0;">Payment vs ${esc(d.docNo)}</td><td>${formatDateDisplay(d.date)}</td><td style="text-align:right; font-weight:bold;">₹${(d.amount||0).toLocaleString('en-IN')}</td></tr>`).join('')}
-                <tr style="font-weight:bold; border-top:1px solid #1C1C27;"><td colspan="2">Total Received</td><td style="text-align:right; color:#1C7A3E;">₹${totalCredited.toLocaleString('en-IN')}</td></tr>
-            </table>` : '';
-
-        let poolHtml = poolEntries.length > 0 ? `
-            ${ourScopeTotal > 0 ? `
-            <h3 style="color:#92400E; border-bottom:2px solid #92400E; padding-bottom:6px; margin-top:20px;">Used — Our Scope (Settled)</h3>
-            <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                ${poolEntries.filter(e=>e.scope==='our').map(e => `<tr><td style="padding:6px 0;">${esc(e.desc)}</td><td>${formatDateDisplay(e.date)}</td><td style="text-align:right;">₹${(e.amount||0).toLocaleString('en-IN')}</td></tr>`).join('')}
-                <tr style="font-weight:bold; border-top:1px solid #1C1C27;"><td colspan="2">Total</td><td style="text-align:right;">₹${ourScopeTotal.toLocaleString('en-IN')}</td></tr>
-            </table>` : ''}
-            ${clientScopeTotal > 0 ? `
-            <h3 style="color:#A32A2E; border-bottom:2px solid #A32A2E; padding-bottom:6px; margin-top:20px;">Used — Client Scope (You Owe)</h3>
-            <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                ${poolEntries.filter(e=>e.scope==='client').map(e => `<tr><td style="padding:6px 0;">${esc(e.desc)}</td><td>${formatDateDisplay(e.date)}</td><td style="text-align:right;">₹${(e.amount||0).toLocaleString('en-IN')}</td></tr>`).join('')}
-                <tr style="font-weight:bold; border-top:1px solid #1C1C27;"><td colspan="2">Total</td><td style="text-align:right; color:#A32A2E;">₹${clientScopeTotal.toLocaleString('en-IN')}</td></tr>
-            </table>` : ''}` : '';
-
-        let openingHtml = openingBalance ? `
-            <div style="background:#EDEDF1; padding:10px 12px; border-radius:6px; margin-top:16px; font-size:12px; color:#1C1C27;">
-                Opening balance carried forward from before this period: <b style="color:${openingBalance>0?'#A32A2E':'#1C7A3E'};">₹${Math.abs(openingBalance).toLocaleString('en-IN')} ${openingBalance>0?'due':'credit'}</b>
-            </div>` : '';
-
-        let balanceHtml = finalDue > 0 ? `
-            <div style="background:#A32A2E; color:#FFFFFF; padding:20px; border-radius:6px; margin-top:20px; text-align:center;">
-                <div style="font-size:12px; font-weight:bold; text-transform:uppercase; opacity:0.95; letter-spacing:1px;">Total Due From Client</div>
-                <div style="font-size:32px; font-weight:bold; margin:6px 0;">₹${finalDue.toLocaleString('en-IN')}</div>
-                <div style="font-size:13px; font-weight:bold; opacity:0.95;">Rupees ${numberToWords(Math.round(finalDue))} Only</div>
-            </div>` : `
-            <div style="background:#2c3e50; color:#FFFFFF; padding:14px; border-radius:6px; margin-top:20px; display:flex; justify-content:space-between; align-items:center;">
-                <div><b>Account Balance</b><br><span style="font-size:11px; opacity:0.7;">${finalDue < 0 ? 'Credit remaining with us' : 'Fully settled'}</span></div>
-                <div style="font-size:22px; font-weight:bold;">₹${Math.abs(finalDue).toLocaleString('en-IN')}${finalDue<0?' CR':''}</div>
-            </div>`;
-
-        let html = `
-            <div style="font-family:'Segoe UI',sans-serif; padding:30px; color:#1C1C27; max-width:700px; margin:0 auto;">
-                <div style="text-align:center; margin-bottom:20px;">
-                    ${logoSrc ? `<img src="${logoSrc}" style="max-height:60px; margin-bottom:8px;">` : `<h2 style="margin:0; color:#2c3e50;">KEN PROJECTS</h2>`}
-                    <div style="font-size:12px; color:#5F5D70; margin-top:4px;">Client Statement — ${periodLabel} · As of ${timestamp}</div>
-                </div>
-                <div style="background:#EDEDF1; padding:12px; border-radius:6px; margin-bottom:20px;">
-                    <b>Client:</b> ${esc(client)}
-                </div>
-                ${invoiceHtml}
-                ${creditHtml}
-                ${poolHtml}
-                ${openingHtml}
-                ${balanceHtml}
-            </div>`;
-
-        let printWin = window.open('', '_blank', 'width=800,height=600');
-        printWin.document.write('<html><body>' + html + '</body></html>');
-        printWin.document.close();
-        printWin.focus();
-        setTimeout(() => { printWin.print(); }, 300);
+        entries.sort((a, b) => parseLocalDate(a.date) - parseLocalDate(b.date) || a.ord - b.ord);
+        let bal = openingBalance || 0;
+        entries.forEach(e => { bal += e.debit - e.credit; e.balance = bal; });
+        let billed = entries.reduce((s, e) => s + e.debit, 0), received = entries.reduce((s, e) => s + e.credit, 0);
+        // pending invoices (Outstanding's own calculation, so the two screens agree)
+        let pending = (opts && opts.project) ? [] : computeOutstandingRows(['INV', 'SAL']).filter(d => norm(d.clientName) === norm(client));
+        let creditDays = getCreditPeriodDays();
+        return { entries, opening: openingBalance || 0, billed, received, balance: bal, ourScope, pending, creditDays };
     }
+
+    function stmtBuildHtml(client, period, rows, openingBalance, width, opts) {
+        let S = stmtCompute(client, period, rows, openingBalance, opts);
+        let periodLabel = { ALL: 'All Time', FY: 'This Financial Year', '3M': 'Last 3 Months', '1M': 'Last 1 Month', CUSTOM: 'Selected Dates' }[period] || 'All Time';
+        let asOf = formatDateDisplay(todayISO());
+        let reg = findClientByName(client);
+        let lastDoc = savedDocs.filter(d => d.clientName && d.clientName.trim().toLowerCase() === client.trim().toLowerCase()).slice(-1)[0] || {};
+        let phone = (reg && reg.phone) || lastDoc.phone || '', loc = (reg && reg.location) || lastDoc.location || '', gst = (reg && reg.gstin) || lastDoc.gstin || '';
+        let logoSrc = document.getElementById('mainLogo') ? document.getElementById('mainLogo').src : '';
+        let m = n => '₹' + (Math.round((Number(n) || 0) * 100) / 100).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+        let neg = n => '− ' + m(n);
+        let isRet = r => !r._isCashPayment && ['CRN', 'RET'].includes(r.type);
+        let invRows = rows.filter(r => !r._isCashPayment && ['INV', 'SAL'].includes(r.type));
+        let retRows = rows.filter(isRet);
+        let payRows = rows.filter(r => r._isCashPayment || ['ADV', 'RCP', 'REC'].includes(r.type));
+        let billed = invRows.reduce((s, d) => s + (d.total || 0), 0);
+        let returned = retRows.reduce((s, d) => s + (d.total || 0), 0);
+        let payAmt = r => r._isCashPayment ? (r.amount || 0) : (r.total || 0);
+        let received = payRows.reduce((s, r) => s + payAmt(r), 0);
+        let behalf = S.entries.filter(e => e.label === 'Paid on your behalf');
+        let behalfTotal = behalf.reduce((s, e) => s + e.debit, 0);
+
+        let sec = (t, c) => `<div class="pb-avoid" style="font-size:19px; font-weight:700; color:${c}; border-bottom:2.5px solid ${c}; padding-bottom:6px; margin:24px 0 4px;">${t}</div>`;
+        let line = (l, r2, bold) => `<div class="pb-avoid" style="display:flex; justify-content:space-between; gap:12px; padding:5px 0; font-size:${bold ? 13 : 12}px; ${bold ? 'font-weight:700;' : ''} page-break-inside:avoid;"><span>${l}</span><span style="white-space:nowrap; ${bold ? '' : 'font-weight:700;'}">${r2}</span></div>`;
+        let totRow = (l, v, c) => `<div class="pb-avoid" style="display:flex; justify-content:space-between; border-top:1.5px solid #000; margin-top:6px; padding-top:6px; font-weight:700; font-size:13px;"><span>${l}</span><span style="color:${c};">${v}</span></div>`;
+        // One document: its number/date/total, then each item line underneath
+        let docBlock = (d, sign, accent) => {
+            let c = computeDocLines(d), lines = c.lines.filter(l => (l._gross || 0) > 0);
+            let kind = d.type === 'INV' ? 'Tax Invoice' : d.type === 'SAL' ? 'Sales Invoice' : d.type === 'CRN' ? 'Credit Note' : d.type === 'RET' ? 'Sales Return' : d.type;
+            let head = `<div class="pb-avoid" style="display:flex; justify-content:space-between; gap:12px; margin-top:12px; font-size:13px; font-weight:700; page-break-after:avoid;"><span>${esc(d.docNo)} <span style="font-weight:400; font-size:11px; color:#333;">(${kind}) · ${formatDateDisplay(d.date)}${d.crnOrigRef ? ' · against ' + esc(d.crnOrigRef) : ''}</span></span><span style="white-space:nowrap; color:${accent};">${sign}${m(d.total)}</span></div>`;
+            let sum = lines.reduce((s, l) => s + l._gross, 0), disc = c.discount || 0;
+            let itemArr = lines.map(l => {
+                let q = Number(l.q) || 0, r = Number(l.r) || 0;
+                return `<div class="pb-avoid" style="display:flex; justify-content:space-between; gap:12px; padding:3px 0 3px 14px; font-size:12px; color:#111; page-break-inside:avoid;"><span>${esc(l.p || l.name || 'Item')}${l.notes ? '<div style="font-size:11px; color:#333;">' + esc(l.notes) + '</div>' : ''}<div style="font-size:11px; color:#333;">${q} ${esc(l.unit || 'Nos')} × ${m(r)}</div></span><span style="white-space:nowrap;">${m(l._gross)}</span></div>`;
+            });
+            let extra = '';
+            if (disc > 0) extra += `<div style="display:flex; justify-content:space-between; padding:3px 0 3px 14px; font-size:12px;"><span>Discount</span><span>− ${m(disc)}</span></div>`;
+            let resid = Math.round((d.total || 0) - (sum - disc));
+            if (lines.length && Math.abs(resid) >= 1) extra += `<div style="display:flex; justify-content:space-between; padding:3px 0 3px 14px; font-size:12px;"><span>${resid > 0 ? 'GST &amp; other charges' : 'Rounding / adjustment'}</span><span>${resid > 0 ? '' : '− '}${m(Math.abs(resid))}</span></div>`;
+            return '<div class="pb-avoid">' + head + (itemArr[0] || '') + '</div>' + itemArr.slice(1).join('') + extra;
+        };
+
+        let invHtml = invRows.length ? sec('Invoiced', '#0B5A94') + invRows.map(d => docBlock(d, '', '#0B5A94')).join('') + totRow('Total Billed', m(billed), '#0B5A94') : '';
+        let retHtml = retRows.length ? sec('Goods Returned / Credit Notes', '#B25E00') + retRows.map(d => docBlock(d, '− ', '#B25E00')).join('') + totRow('Total Returned', neg(returned), '#B25E00') : '';
+        let payHtml = payRows.length ? sec('Payments &amp; Advances Received', '#1C7A3E') + payRows.map(r => {
+            let wo = r._isCashPayment && /write-off/i.test(r.party || '');
+            let lbl = r._isCashPayment ? (wo ? 'Settled for less (write-off)' : (r.party === 'Reimbursement' ? 'Reimbursement received' : 'Payment received')) + (r.docNo ? ' <span style="font-weight:400; font-size:11px; color:#333;">· against ' + esc(r.docNo) + ' ·</span>' : '')
+                : (r.type === 'ADV' ? 'Advance received' : 'Payment received') + ' <span style="font-weight:400; font-size:11px; color:#333;">· ' + esc(r.docNo) + ' ·</span>';
+            return line(lbl + ' <span style="font-size:11px; color:#333;">' + formatDateDisplay(r.date) + '</span>', m(payAmt(r)));
+        }).join('') + totRow('Total Received', m(received), '#1C7A3E') : '';
+        let behalfHtml = behalf.length ? sec('Paid on Your Behalf (You Owe)', '#A32A2E') + behalf.map(e => line(esc(e.sub || e.label) + ' <span style="font-size:11px; color:#333;">' + formatDateDisplay(e.date) + '</span>', m(e.debit))).join('') + totRow('Total', m(behalfTotal), '#A32A2E') : '';
+        let refunds = S.entries.filter(e => e.label === 'Refund paid to client');
+        let refundTotal = refunds.reduce((s, e) => s + e.debit, 0);
+        let refundHtml = refunds.length ? sec('Refunds Paid to Client', '#B25E00') + refunds.map(e => line(esc(e.sub || 'Refund') + ' <span style="font-size:11px; color:#333;">' + formatDateDisplay(e.date) + '</span>', m(e.debit))).join('') + totRow('Total Refunded', m(refundTotal), '#B25E00') : '';
+        let ourHtml = S.ourScope.length ? sec('Spent From Your Advance (For Information)', '#333') + S.ourScope.map(e => line(esc(e.desc || '') + ' <span style="font-size:11px; color:#333;">' + formatDateDisplay(e.date) + '</span>', m(parseFloat(e.amount) || 0))).join('') : '';
+        let openHtml = S.opening ? `<div style="background:#EDEDF1; border-radius:6px; padding:10px 12px; margin-top:16px; font-size:12px;">Opening balance brought forward: <b>${m(Math.abs(S.opening))} ${S.opening > 0 ? 'due from you' : 'in your favour'}</b></div>` : '';
+
+        let bal = S.balance, due = bal > 0.005, credit = bal < -0.005;
+        let bg = due ? '#A32A2E' : credit ? '#1C7A3E' : '#2c3e50';
+        let head2 = due ? 'Total Due From Client' : credit ? 'Balance With KEN PROJECTS' : '✓ Settled';
+        let sub = due ? 'Rupees ' + numberToWords(Math.round(bal)) + ' Only' : credit ? 'Payable to client · Rupees ' + numberToWords(Math.round(-bal)) + ' Only' : 'Nothing due either way';
+        let banner = `<div class="pb-avoid" style="margin-top:22px; page-break-inside:avoid; border-radius:10px; padding:18px; text-align:center; background:${bg}; color:#FFFFFF;">
+            <div style="font-size:12px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase;">${head2}</div>
+            <div style="font-size:34px; font-weight:900; margin:6px 0;">${m(Math.abs(bal))}</div>
+            <div style="font-size:12px; font-weight:700;">${sub}</div></div>`;
+        let parts = [];
+        if (S.opening) parts.push(`${m(S.opening)} opening`);
+        parts.push(`${m(billed)} billed`);
+        if (behalfTotal) parts.push(`${m(behalfTotal)} paid on your behalf`);
+        if (refundTotal) parts.push(`${m(refundTotal)} refunded`);
+        let recon = parts.join(' + ') + (returned ? ` − ${m(returned)} returned` : '') + ` − ${m(received)} received = ${m(Math.abs(bal))}${bal < -0.005 ? ' payable to you' : ''}`;
+
+        return `<div style="width:${width || 794}px; box-sizing:border-box; padding:${width ? '0' : '36px 40px'}; background:#FFFFFF; color:#000; font-family:Lato, 'Segoe UI', system-ui, sans-serif;">
+            <div style="text-align:center;">
+                ${logoSrc ? `<img src="${logoSrc}" onerror="this.style.display='none'" style="max-height:62px; max-width:240px;">` : '<div style="font-size:22px; font-weight:900; color:#2c3e50;">KEN PROJECTS</div>'}
+                <div style="font-size:11.5px; color:#333; margin:8px 0 18px;">${opts && opts.project ? 'Project Statement' : 'Client Statement — ' + periodLabel} · As of ${asOf}</div>
+            </div>
+            <div style="background:#EDEDF1; border-radius:8px; padding:12px 16px; font-size:15px; line-height:1.5;">
+                ${opts && opts.project ? '<b>Project:</b> ' + esc(opts.title) + '<div style="font-size:13px;"><b>Client:</b> ' + esc(client) + '</div>' : '<b>Client:</b> ' + esc(client) + (reg ? ' <span style="color:#333; font-size:12px;">(' + esc(reg.id) + ')</span>' : '')}
+                ${(phone || loc || (gst && gst !== 'URD')) ? '<div style="font-size:12px; color:#333;">' + [phone ? 'Ph: ' + esc(phone) : '', loc ? esc(loc) : '', gst && gst !== 'URD' ? 'GSTIN: ' + esc(gst) : ''].filter(Boolean).join(' · ') + '</div>' : ''}
+            </div>
+            ${openHtml}${invHtml}${retHtml}${payHtml}${behalfHtml}${refundHtml}${ourHtml}${banner}
+            <div style="margin-top:14px; text-align:center; font-size:10.5px; color:#333; line-height:1.5;">${recon}<br>Internal statement — not a GST document. Please report any mismatch within 7 days.</div>
+        </div>`;
+    }
+
+    function stmtSelectedRows() {
+        let sel = new Set([...document.querySelectorAll('.stmtRowChk:checked')].map(cb => parseInt(cb.dataset.idx, 10)));
+        return _stmtRows.filter((_, i) => sel.has(i));
+    }
+    function stmtFileName() { return 'Statement-' + String((_stmtOpts && _stmtOpts.fileLabel) || _stmtClient || 'client').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + todayISO() + '.pdf'; }
+
+    function stmtAction(kind) {
+        if (!_stmtClient) return;
+        let rows = stmtSelectedRows();
+        if (!rows.length && !_stmtOpening) { alert('Tick at least one line for the statement.'); return; }
+        if (kind === 'wa') return stmtWhatsApp(rows);
+        if (kind === 'print') return stmtPrint(rows);
+        if (typeof html2pdf === 'undefined') { alert('PDF tool did not load (connect to the internet once, then try again). You can use Print and choose "Save as PDF".'); return; }
+        let mm = 8, widthPx = Math.round((210 - 2 * mm) * 96 / 25.4);
+        let wrap = document.createElement('div');
+        wrap.style.cssText = 'position:fixed; left:0; top:0; z-index:-1; background:#FFFFFF;';
+        wrap.innerHTML = stmtBuildHtml(_stmtClient, _stmtPeriod, rows, _stmtOpening, widthPx, _stmtOpts);
+        document.body.appendChild(wrap);
+        let filename = stmtFileName();
+        let opt = { margin: [mm, mm, mm + 4, mm], filename, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.pb-avoid'] } };
+        let done = () => { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); };
+        setTimeout(() => {
+            if (kind === 'share' && navigator.canShare) {
+                stmtPdfWorker(opt, wrap.firstElementChild).outputPdf('blob').then(blob => {
+                    let file = new File([blob], filename, { type: 'application/pdf' });
+                    done();
+                    if (navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: 'Statement — ' + _stmtClient }).catch(() => {});
+                    let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+                }).catch(err => { done(); alert('Could not make the PDF: ' + err.message); });
+            } else {
+                stmtPdfWorker(opt, wrap.firstElementChild).save().then(() => { done(); showToast('📥 Statement PDF saved', 'success'); }).catch(err => { done(); alert('Could not make the PDF: ' + err.message); });
+            }
+        }, 150);
+    }
+    // vBeta80: adds "label · Page x of y" at the foot of every page (long statements run to several pages)
+    function stmtPdfWorker(opt, el) {
+        let label = (_stmtOpts && _stmtOpts.title) ? _stmtOpts.title : (_stmtClient || '');
+        return html2pdf().set(opt).from(el).toPdf().get('pdf').then(pdf => {
+            let n = pdf.internal.getNumberOfPages(), w = pdf.internal.pageSize.getWidth(), h = pdf.internal.pageSize.getHeight();
+            for (let i = 1; i <= n; i++) { pdf.setPage(i); pdf.setFontSize(8); pdf.setTextColor(60); pdf.text('KEN PROJECTS · ' + label + ' · Page ' + i + ' of ' + n, w / 2, h - 5, { align: 'center' }); }
+        });
+    }
+    function stmtPrint(rows) {
+        // hidden iframe, not window.open: popup blockers kill the old approach on phones
+        let fr = document.createElement('iframe');
+        fr.style.cssText = 'position:fixed; right:0; bottom:0; width:0; height:0; border:0;';
+        document.body.appendChild(fr);
+        let doc = fr.contentWindow.document;
+        doc.open();
+        doc.write('<html><head><title>' + esc(stmtFileName()) + '</title><style>@page{size:A4;margin:10mm;} body{margin:0;} tr{page-break-inside:avoid;} thead{display:table-header-group;}</style></head><body>' + stmtBuildHtml(_stmtClient, _stmtPeriod, rows, _stmtOpening, 700, _stmtOpts) + '</body></html>');
+        doc.close();
+        setTimeout(() => { try { fr.contentWindow.focus(); fr.contentWindow.print(); } catch (e) { alert('Could not open the print dialog.'); } setTimeout(() => fr.remove(), 4000); }, 400);
+    }
+    function stmtWhatsApp(rows) {
+        let S = stmtCompute(_stmtClient, _stmtPeriod, rows, _stmtOpening, _stmtOpts);
+        let reg = findClientByName(_stmtClient);
+        let lastDoc = savedDocs.filter(d => d.clientName && d.clientName.trim().toLowerCase() === _stmtClient.trim().toLowerCase()).slice(-1)[0] || {};
+        let digits = String((reg && reg.phone) || lastDoc.phone || '').replace(/\D/g, '');
+        if (digits.length === 10) digits = '91' + digits;
+        let L = [`Dear ${_stmtClient},`, '', `${_stmtOpts && _stmtOpts.title ? 'Project statement (' + _stmtOpts.title + ')' : 'Statement'} from *KEN TRADERS* as on ${formatDateDisplay(todayISO())}:`];
+        if (S.balance > 0.5) {
+            L.push(`*Amount due: ${stmtMoney(S.balance)}*`);
+            S.pending.slice(0, 6).forEach(d => L.push(`• ${d.docNo} (${formatDateDisplay(d._cDate)}) — ${stmtMoney(d.balanceDue)}`));
+            L.push('', 'Kindly arrange the payment. Thank you.');
+        } else L.push(S.balance < -0.5 ? `*KEN PROJECTS holds a balance of ${stmtMoney(S.balance)} payable to you.*` : 'Your account is fully settled. Thank you!');
+        L.push('', '📞 91597 66611');
+        window.open((digits.length >= 11 ? `https://wa.me/${digits}` : 'https://wa.me/') + '?text=' + encodeURIComponent(L.join('\n')), '_blank');
+    }
+    // kept for any older caller
+    function confirmStatementPicker() { stmtAction('pdf'); }
+    function printUnifiedClientStatement(client, period, rows, openingBalance) {
+        _stmtClient = client; _stmtPeriod = period; _stmtOpening = openingBalance || 0; _stmtRows = rows;
+        stmtPrint(rows);
+    }
+    function stmtChangePeriod(p) { if (_stmtClient) openStatementPicker(_stmtClient, p); }
 
     function typeColor(t) {
         return {INV:'#0B5A94',SAL:'#1C7A3E',QUO:'#6B3FA0',ADV:'#92400E',RCP:'#0B5A94',CRN:'#A32A2E',EXP:'#5F5D70',RCM:'#92400E'}[t] || '#1C1C27';
@@ -22558,8 +23024,11 @@
     function computeOutstandingRows(types) {
         types = types || ['INV', 'SAL'];
 
+        // vBeta62: receipts are applied across ALL of a client's INV+SAL so the total
+        // owed no longer changes with the filter dropdown; the filter only narrows
+        // which rows are shown (applied at the end).
         let docs = savedDocs.filter(d =>
-            types.includes(d.type) &&
+            ['INV','SAL'].includes(d.type) &&
             !d.docNo.includes('VOID')
         );
 
@@ -22580,6 +23049,28 @@
             if (!key) return;
             rcpPoolByClient[key] = (rcpPoolByClient[key] || 0) + (d.total || 0);
         });
+        // vBeta62 (Raaja's rules): an advance not linked to any invoice, and a credit
+        // note with no (or an unknown) original invoice number, both reduce what the
+        // client owes. They join the same oldest-first pool as receipts.
+        {
+            let allInvNos = new Set(docs.map(d => d.docNo));
+            let allLinkRefs = new Set();
+            docs.forEach(d => (d.advLinks || []).forEach(l => { if (l && l.ref) allLinkRefs.add(l.ref); }));
+            savedDocs.filter(a => a.type === 'ADV' && !a.docNo.includes('VOID')).forEach(a => {
+                if (allLinkRefs.has(a.docNo)) return;
+                if (a.linkedInvoice && allInvNos.has(a.linkedInvoice)) return;
+                let desc = a.vDesc || '';
+                if (desc && docs.some(d => desc.includes(d.docNo))) return;
+                let key = (a.clientName || '').trim().toLowerCase();
+                if (!key) return;
+                rcpPoolByClient[key] = (rcpPoolByClient[key] || 0) + (a.total || 0);
+            });
+            savedDocs.filter(c => c.type === 'CRN' && !c.docNo.includes('VOID') && !(c.crnOrigRef && allInvNos.has(c.crnOrigRef))).forEach(c => {
+                let key = (c.clientName || '').trim().toLowerCase();
+                if (!key) return;
+                rcpPoolByClient[key] = (rcpPoolByClient[key] || 0) + (c.total || 0);
+            });
+        }
 
         // Sort candidate invoices oldest-first BEFORE computing balances,
         // so RCP pool consumption happens in the correct chronological
@@ -22656,7 +23147,7 @@
             let balanceDue = Math.max(0, (d.total||0) - totalCredit - writeOffAmt);
             let unquantifiedPayMode = !!(d.payMode && totalCredit === 0 && balanceDue > 0);
             return { ...d, balanceDue, totalCredit, cashPaymentsForDoc, rcpApplied, unquantifiedPayMode, writeOffAmt };
-        }).filter(d => d.balanceDue > 0);
+        }).filter(d => d.balanceDue > 0 && types.includes(d.type));
 
         docs.sort((a,b) => parseLocalDate(a.date) - parseLocalDate(b.date));
 
@@ -22954,8 +23445,20 @@
 
     function openMonthlySummary() {
         document.getElementById('summaryModal').style.display='flex';
+        document.getElementById('dsDate').value = todayISO();
+        setSummaryMode('monthly');
         populateSummaryFYDropdown();
         renderSummary();
+    }
+    // vBeta80: Summary has two tabs — Monthly (the old report) and Daily (the Daily Sales log + PDF).
+    function setSummaryMode(mode) {
+        let daily = mode === 'daily';
+        document.getElementById('summaryMonthlyPane').style.display = daily ? 'none' : '';
+        document.getElementById('summaryDailyPane').style.display = daily ? '' : 'none';
+        document.getElementById('tabSumMonthly').classList.toggle('active', !daily);
+        document.getElementById('tabSumDaily').classList.toggle('active', daily);
+        document.getElementById('btnSummaryCsv').style.display = daily ? 'none' : '';
+        if (daily) dsOpenPane();
     }
     function closeSummary() { document.getElementById('summaryModal').style.display='none'; }
 
@@ -24257,18 +24760,23 @@
         // against the invoice's own printed GST. It also only worked for the
         // rates it happened to encounter. Now routed through the single shared
         // totals engine that the invoice itself uses.
-        let invDocs = docs.filter(d => d.type === 'INV');
+        // vBeta62: voided documents may be SHOWN (checkbox) but must never be COUNTED;
+        // credit notes reduce the period's figures instead of adding to them.
+        const _isVoidDoc = d => d.voided || String(d.docNo || '').includes('VOID');
+        const _auditAmt = d => (d.type === 'CRN' ? -1 : 1) * (parseFloat(d.total) || 0);
+        let liveDocs = docs.filter(d => !_isVoidDoc(d));
+        let invDocs = liveDocs.filter(d => d.type === 'INV');
         let totalGst = invDocs.reduce((s, d) => s + computeDocTotals(d).totalGst, 0);
         let totalInv = invDocs.reduce((s,d)=>s+(d.total||0),0);
-        let totalSal = docs.filter(d=>d.type==='SAL').reduce((s,d)=>s+(d.total||0),0);
-        let totalRcm = docs.filter(d=>d.type==='RCM').reduce((s,d)=>s+(d.total||0),0);
-        let totalExp = docs.filter(d=>d.type==='EXP').reduce((s,d)=>s+(d.total||0),0);
+        let totalSal = liveDocs.filter(d=>d.type==='SAL').reduce((s,d)=>s+(d.total||0),0);
+        let totalRcm = liveDocs.filter(d=>d.type==='RCM').reduce((s,d)=>s+(d.total||0),0);
+        let totalExp = liveDocs.filter(d=>d.type==='EXP').reduce((s,d)=>s+(d.total||0),0);
 
         document.getElementById('auditorSummaryCards').innerHTML = `
             <div class="stat-card"><h3>Tax Invoices</h3><div class="stat-val">₹${Math.round(totalInv).toLocaleString('en-IN')}</div><div class="stat-sub">${invDocs.length} docs · GST ₹${Math.round(totalGst).toLocaleString('en-IN')}</div></div>
-            <div class="stat-card" style="border-color:#1C7A3E;"><h3>Sales Invoices</h3><div class="stat-val">₹${Math.round(totalSal).toLocaleString('en-IN')}</div><div class="stat-sub">${docs.filter(d=>d.type==='SAL').length} docs</div></div>
-            <div class="stat-card" style="border-color:#92400E;"><h3>RCM Liability</h3><div class="stat-val">₹${Math.round(totalRcm).toLocaleString('en-IN')}</div><div class="stat-sub">${docs.filter(d=>d.type==='RCM').length} vouchers</div></div>
-            <div class="stat-card" style="border-color:#A32A2E;"><h3>Expenses</h3><div class="stat-val">₹${Math.round(totalExp).toLocaleString('en-IN')}</div><div class="stat-sub">${docs.filter(d=>d.type==='EXP').length} vouchers</div></div>`;
+            <div class="stat-card" style="border-color:#1C7A3E;"><h3>Sales Invoices</h3><div class="stat-val">₹${Math.round(totalSal).toLocaleString('en-IN')}</div><div class="stat-sub">${liveDocs.filter(d=>d.type==='SAL').length} docs</div></div>
+            <div class="stat-card" style="border-color:#92400E;"><h3>RCM Liability</h3><div class="stat-val">₹${Math.round(totalRcm).toLocaleString('en-IN')}</div><div class="stat-sub">${liveDocs.filter(d=>d.type==='RCM').length} vouchers</div></div>
+            <div class="stat-card" style="border-color:#A32A2E;"><h3>Expenses</h3><div class="stat-val">₹${Math.round(totalExp).toLocaleString('en-IN')}</div><div class="stat-sub">${liveDocs.filter(d=>d.type==='EXP').length} vouchers</div></div>`;
 
         if(docs.length === 0) { document.getElementById('auditorBody').innerHTML='<p style="color:#5F5D70;padding:20px;">No documents in this range.</p>'; return; }
 
@@ -24283,7 +24791,7 @@
                 <td><b>${esc(d.docNo)}</b></td>
                 <td><span style="background:${typeColor(d.type)};color:#FFFFFF;padding:2px 7px;border-radius:10px;font-size:11px;">${esc(d.type)}</span></td>
                 <td>${esc(d.clientName || d.vPaidTo || '—')}</td>
-                <td style="text-align:right;font-weight:bold;">₹${(d.total||0).toLocaleString('en-IN')}</td>
+                <td style="text-align:right;font-weight:bold;">${d.type==='CRN'&&!isVoid?'−':''}₹${(parseFloat(d.total)||0).toLocaleString('en-IN')}</td>
                 <td style="font-size:12px;">${payInfo}</td>
             </tr>`;
         });
@@ -24292,12 +24800,12 @@
         // meaningless for accounting; subtotals per type are what the CA
         // actually needs to reconcile the period.
         let typeGroups = {};
-        docs.forEach(d => { typeGroups[d.type] = (typeGroups[d.type]||0) + (d.total||0); });
-        let grandTotal = docs.reduce((s,d)=>s+(d.total||0),0);
+        liveDocs.forEach(d => { typeGroups[d.type] = (typeGroups[d.type]||0) + _auditAmt(d); });
+        let grandTotal = liveDocs.reduce((s,d)=>s+_auditAmt(d),0);
         let subtotalCols = Object.entries(typeGroups).map(([t,v]) =>
             `<td style="text-align:center; font-size:11px; color:#1C1C27;">${t}: ₹${Math.round(v).toLocaleString('en-IN')}</td>`
         ).join('');
-        html += `<tr class="total-row"><td colspan="4">GRAND TOTAL (${docs.length} docs)${Object.keys(typeGroups).length > 1 ? '' : ''}</td><td style="text-align:right;">₹${grandTotal.toLocaleString('en-IN')}</td><td></td></tr>`;
+        html += `<tr class="total-row"><td colspan="4">GRAND TOTAL (${liveDocs.length} docs${docs.length!==liveDocs.length?', '+(docs.length-liveDocs.length)+' voided not counted':''})${Object.keys(typeGroups).length > 1 ? '' : ''}</td><td style="text-align:right;">₹${grandTotal.toLocaleString('en-IN')}</td><td></td></tr>`;
         if (Object.keys(typeGroups).length > 1) {
             html += `<tr style="background:#EDEDF1; font-size:11px; color:#1C1C27; border-top:1px dashed #E1E1E6;"><td colspan="2" style="font-style:italic; padding:6px 8px;">By type:</td><td colspan="3" style="padding:6px 8px;">${Object.entries(typeGroups).map(([t,v]) => `${t} ₹${Math.round(v).toLocaleString('en-IN')}`).join(' · ')}</td><td></td></tr>`;
         }
@@ -24676,7 +25184,15 @@
     // Cash entries stored in localStorage for offline use
     // Key: 'kenCashBook' → array of { id, date, direction, amount, category, party, linkedDoc, ts }
     function getCashEntries() {
-        try { return JSON.parse(localStorage.getItem('kenCashBook') || '[]'); } catch(e) { return []; }
+        try {
+            // vBeta64: amounts saved as strings ("500") were concatenated by totals
+            // ("0"+"500"+"200" = "0500200"). Always hand back real numbers.
+            return JSON.parse(localStorage.getItem('kenCashBook') || '[]').map(e => {
+                if (e && typeof e.amount === 'string') e.amount = parseFloat(e.amount.replace(/,/g,'')) || 0;
+                if (e && typeof e.assetAmount === 'string') e.assetAmount = parseFloat(e.assetAmount.replace(/,/g,'')) || 0;
+                return e;
+            });
+        } catch(e) { return []; }
     }
     function saveCashEntries(entries) {
         try { localStorage.setItem('kenCashBook', JSON.stringify(entries)); } catch(e) { alert('Storage full! Export data first.'); }
@@ -24714,7 +25230,7 @@
     function openTrips() {
         document.getElementById('tripsModal').style.display = 'flex';
         resetModalView('tripsModal'); // vBeta31 — reopened ~400px down
-        document.getElementById('tripDate').valueAsDate = new Date();
+        document.getElementById('tripDate').value = todayISO(); // vBeta64: valueAsDate used UTC, so the default was yesterday between midnight and 5:30am IST
         populateTripsProjectDropdown();
         renderTrips();
         initToolSectionScrollspy('tripsJumpNav'); // vBeta20 — see openCashBook
@@ -24832,8 +25348,16 @@
 
     function editTrip(id) {
         let trips = getTrips();
-        let trip = trips.find(t => t.id === id);
+        let trip = trips.find(t => String(t.id) === String(id)); // vBeta66: ids can be numeric strings
         if (!trip) return;
+
+        let newDate = prompt('Date (YYYY-MM-DD):', trip.date || todayISO());
+        if (newDate === null) return;
+        newDate = newDate.trim();
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate)) { alert('Date must look like 2026-10-31.'); return; }
+        let newDistance = prompt('Distance (km):', trip.distance || 0);
+        if (newDistance === null) return;
+        newDistance = Math.max(0, parseFloat(newDistance) || 0);
 
         let newRoute = prompt('Route / description:', trip.route);
         if (newRoute === null) return;
@@ -24868,6 +25392,8 @@
             else if (num > 0 && num <= projects.length) newProjectId = projects[num - 1].id;
         }
 
+        trip.date = newDate;
+        trip.distance = newDistance;
         trip.route = newRoute;
         trip.material = newMaterial;
         trip.earnings = newEarnings;
@@ -24881,7 +25407,7 @@
 
     function deleteTrip(id) {
         if (!confirm('Delete this trip?')) return;
-        saveTrips(getTrips().filter(t => t.id !== id));
+        saveTrips(getTrips().filter(t => String(t.id) !== String(id)));
         renderTrips();
         showToast('Trip deleted', 'info');
     }
@@ -24902,10 +25428,15 @@
         let totalExpenses = trips.reduce((s,t) => s + (t.expenses||0), 0);
         let totalNet = totalEarnings - totalExpenses;
         let totalDistance = trips.reduce((s,t) => s + (t.distance||0), 0);
+        // vBeta64: a zero-km trip (e.g. a charging stop) has expenses but no distance;
+        // it used to push its cost into cost/km while adding nothing to the km.
+        let kmTrips = trips.filter(t => (t.distance||0) > 0);
+        let kmExpenses = kmTrips.reduce((s,t) => s + (t.expenses||0), 0);
+        let kmEarnings = kmTrips.reduce((s,t) => s + (t.earnings||0), 0);
         // #17: cost-per-km — a simple efficiency figure using data that
         // was already being logged but never turned into this ratio.
-        let costPerKm = totalDistance > 0 ? (totalExpenses / totalDistance) : null;
-        let earningsPerKm = totalDistance > 0 ? (totalEarnings / totalDistance) : null;
+        let costPerKm = totalDistance > 0 ? (kmExpenses / totalDistance) : null;
+        let earningsPerKm = totalDistance > 0 ? (kmEarnings / totalDistance) : null;
 
         document.getElementById('tripsSummary').innerHTML = `
             <div style="background:#EBFCEC; border:1px solid #EBFCEC; border-radius:8px; padding:10px; text-align:center;">
@@ -25184,6 +25715,315 @@
     }
 
     // ================================================================
+    // vBeta67: QUICK SALE (voice or typed) — turns one spoken sentence into a DRAFT
+    // quotation/sales invoice. Nothing is saved by the parser. "Save" fills the normal
+    // form and calls saveDocument(), so every existing gate (stock, below-cost, credit
+    // period, audit lock, doc-number collision) still applies. English only for now.
+    // ================================================================
+    let _qs = { type: 'SAL', draft: null, rec: null, listening: false };
+
+    const QS_NUM_WORDS = {zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,
+        thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20,thirty:30,forty:40,
+        fifty:50,sixty:60,seventy:70,eighty:80,ninety:90};
+
+    // "hundred fifty" -> "150", "four inch" -> "4 inch", "two lakh" -> "200000", "six fifty" -> "650"
+    function qsNormalizeNumbers(raw) {
+        let toks = String(raw || '').toLowerCase().replace(/₹/g, ' rs ').replace(/,/g, ' , ').replace(/[^a-z0-9.,@" ]/g, ' ').split(/\s+/).filter(Boolean);
+        let out = [], i = 0;
+        const isNumTok = t => t in QS_NUM_WORDS || t === 'hundred' || t === 'thousand' || t === 'lakh' || t === 'lakhs' || t === 'a' && false;
+        while (i < toks.length) {
+            if (!isNumTok(toks[i])) { out.push(toks[i]); i++; continue; }
+            let total = 0, cur = 0, prevUnit = 0;
+            while (i < toks.length && isNumTok(toks[i])) {
+                let t = toks[i], n = QS_NUM_WORDS[t];
+                if (t === 'hundred') { cur = (cur || 1) * 100; prevUnit = 0; }
+                else if (t === 'thousand') { total += (cur || 1) * 1000; cur = 0; prevUnit = 0; }
+                else if (t === 'lakh' || t === 'lakhs') { total += (cur || 1) * 100000; cur = 0; prevUnit = 0; }
+                else if (prevUnit && n >= 20 && cur === prevUnit) { cur = prevUnit * 100 + n; prevUnit = 0; } // "six fifty" = 650
+                else { cur += n; prevUnit = (n >= 1 && n <= 9) ? n : 0; }
+                i++;
+            }
+            out.push(String(total + cur));
+        }
+        return out.join(' ').replace(/\s+,/g, ',').replace(/\s+/g, ' ').trim();
+    }
+
+    function qsFindAnchors(s) {
+        let anchors = [];
+        let brands = (pricingConfig.brands || []).map(b => String(b).toLowerCase());
+        let brandRx = brands.length ? '(' + brands.map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')' : null;
+        // blocks: [brand] 4 inch [block(s)] [brand]
+        let rx = new RegExp((brandRx ? '(?:' + brandRx + '\\s+)?' : '') + '\\b([4689])\\s*(?:inch|inches|in|")\\b(?:\\s*(?:aac\\s+)?blocks?)?' + (brandRx ? '(?:\\s+' + brandRx + ')?' : ''), 'g');
+        let m;
+        while ((m = rx.exec(s)) !== null) {
+            let groups = brandRx ? [m[1], m[3], m[4]] : [null, m[1], null];
+            let brandSpoken = brandRx ? (m[1] || m[3]) : null;
+            let size = parseInt(brandRx ? m[2] : m[1], 10);
+            let brand = brandSpoken ? (pricingConfig.brands || []).find(b => String(b).toLowerCase() === brandSpoken) : null;
+            anchors.push({ start: m.index, end: m.index + m[0].length, kind: 'block', size, brand });
+        }
+        // other catalogued items (mortar, transport, unloading, custom items)
+        let names = Object.keys(pricingConfig.itemDefaults || {}).concat((pricingConfig.customItems || []).map(c => c.name));
+        names.forEach(name => {
+            let key = name.toLowerCase().replace(/\(.*?\)/g, '').trim();
+            // full name, plus any single distinctive word ("mortar", "transport", "unloading")
+            let keyWords = key.split(/[^a-z0-9]+/).filter(w => w.length >= 6 && w !== 'charges');
+            [key, ...keyWords].forEach((k, idx) => {
+                if (!k || k.length < 4) return;
+                let r2 = new RegExp('\\b' + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + 's?\\b', 'g'), mm;
+                while ((mm = r2.exec(s)) !== null) {
+                    let a = { start: mm.index, end: mm.index + mm[0].length, kind: 'item', name };
+                    if (!anchors.some(x => a.start < x.end && a.end > x.start)) anchors.push(a);
+                }
+            });
+        });
+        return anchors.sort((a, b) => a.start - b.start);
+    }
+
+    function qsBlockName(size, brand) { return `AAC Block ${size} Inch` + (brand ? ` (${brand})` : ''); }
+
+    function qsMatchClient(spoken) {
+        let norm = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+        let t = norm(spoken);
+        if (!t) return { kind: 'walkin' };
+        let clients = getClients();
+        let exact = clients.filter(c => norm(c.name) === t);
+        if (exact.length === 1) return { kind: 'matched', client: exact[0] };
+        let part = clients.filter(c => { let n = norm(c.name).replace(/^(mr|mrs|ms|dr|m\/s|shri|smt)\.?\s+/, ''); return n === t || n.startsWith(t + ' ') || (' ' + n + ' ').includes(' ' + t + ' '); });
+        if (part.length === 1) return { kind: 'matched', client: part[0] };
+        if (part.length > 1) return { kind: 'ambiguous', options: part.slice(0, 5), spoken };
+        return { kind: 'new', spoken };
+    }
+
+    function qsCap(s) { return String(s || '').replace(/\b[a-z]/g, c => c.toUpperCase()); }
+
+    function qsParse(raw) {
+        let s = qsNormalizeNumbers(raw);
+        let draft = { raw, norm: s, type: _qs.type, client: { kind: 'walkin' }, lines: [], notes: [] };
+        if (/\b(quote|quotation|estimate)\b/.test(s)) draft.type = 'QUO';
+        else if (/\b(sale|sales|sell|sold|invoice|bill)\b/.test(s)) draft.type = 'SAL';
+        let anchors = qsFindAnchors(s);
+        if (!anchors.length) { draft.notes.push('I could not find any product (like "Birla 4 inch" or "mortar"). Try again or open the full form.'); return draft; }
+
+        // client = words after "for/to" before the first product
+        let pre = s.slice(0, anchors[0].start);
+        let cm = pre.match(/\b(?:for|to)\s+([a-z][a-z .'\/]*?)(?=\s*(?:,|\d|$))/);
+        let spoken = cm ? cm[1].trim() : '';
+        spoken = spoken.replace(/\b(sale|sales|quote|quotation|estimate|invoice|bill|the|customer|client)\b/g, ' ').replace(/\s+/g, ' ').trim();
+        if (!spoken) { // "...200 at 58 for Kumar" — name said after the products
+            let tm = s.slice(anchors[anchors.length - 1].end).match(/\bfor\s+([a-z][a-z .'\/]*?)\s*$/);
+            if (tm && !/\d/.test(tm[1])) spoken = tm[1].replace(/\b(the|customer|client)\b/g, ' ').replace(/\s+/g, ' ').trim();
+        }
+        if (/^walk ?in$/.test(spoken)) spoken = '';
+        draft.client = qsMatchClient(spoken);
+
+        anchors.forEach((a, i) => {
+            let spanEnd = i + 1 < anchors.length ? anchors[i + 1].start : s.length;
+            let span = s.slice(a.end, spanEnd);
+            let rate = null, qty = null;
+            let rm = span.match(/(?:\brate\b|\bprice\b|\bat\b|@|\brs\b)\s*(\d+(?:\.\d+)?)/) || span.match(/(\d+(?:\.\d+)?)\s*(?:rupees|rs)\b/);
+            if (rm) { rate = parseFloat(rm[1]); span = span.replace(rm[0], ' '); }
+            let qm = span.match(/(\d+(?:\.\d+)?)/);
+            if (qm) qty = parseFloat(qm[1]);
+            if (qty === null && i === 0) { // "150 birla 4 inch" — number said before the product
+                let pm = pre.match(/(\d+(?:\.\d+)?)\s*(?:nos|numbers|blocks?|pieces|pcs)?\s*[a-z ]*$/);
+                if (pm && !/(?:rate|price|at|rs)\s*$/.test(pre.slice(0, pm.index))) qty = parseFloat(pm[1]);
+            }
+            let line;
+            if (a.kind === 'block') {
+                line = { name: qsBlockName(a.size, a.brand), isBlock: true, brandHeard: !!a.brand };
+            } else {
+                line = { name: a.name, isBlock: false, brandHeard: true };
+            }
+            line.qty = qty;
+            line.listRate = getDynamicBlockRate(line.name, 'DEFAULT', currentDeliveryMode) || 0;
+            if (a.kind === 'block' && a.brand) { // a brand priced at 0 in the price list would otherwise show just the retail premium
+                let tr = (pricingConfig.tiers || {})[getCurrentTier()] || {};
+                if (tr[a.brand] === 0) { line.listRate = 0; line.noBrandPrice = true; }
+            }
+            line.rate = rate !== null ? rate : line.listRate;
+            line.rateSpoken = rate !== null;
+            line.flags = [];
+            if (!line.rateSpoken) line.flags.push('You did not say a rate, so the list rate was used.');
+            if (line.rateSpoken && line.listRate && Math.abs(line.rate - line.listRate) > 0.1) line.flags.push(`Rate differs from your price list (₹${line.listRate}).`);
+            if (qty === null) { line.qty = 1; line.flags.push('No quantity heard — set to 1.'); }
+            if (line.isBlock && !line.brandHeard) line.flags.push('No brand heard — using the blank-brand rate.');
+            if (line.noBrandPrice && !line.rateSpoken) line.flags.push(`No price set for ${a.brand} in your price list — enter a rate.`);
+            else if (!line.listRate && !line.rateSpoken) line.flags.push('No price on file for this item — enter a rate.');
+            line.confirmed = line.flags.length === 0;
+            draft.lines.push(line);
+        });
+        return draft;
+    }
+
+    function openQuickSale() {
+        document.getElementById('qsModal').style.display = 'flex';
+        qsSetType(_qs.type);
+        let t = document.getElementById('qsText'); if (t) t.focus();
+    }
+    function closeQuickSale() {
+        qsStopMic();
+        document.getElementById('qsModal').style.display = 'none';
+    }
+    function qsSetType(t) {
+        _qs.type = t;
+        ['QUO', 'SAL'].forEach(k => {
+            let b = document.getElementById('qsTab' + k); if (!b) return;
+            let on = (k === t);
+            b.style.background = on ? '#2c3e50' : '#FFFFFF';
+            b.style.color = on ? '#FFFFFF' : '#2c3e50';
+            b.style.border = on ? '1px solid #2c3e50' : '1px solid #D4D4DC';
+        });
+        if (_qs.draft) { _qs.draft.type = t; qsRender(); }
+    }
+
+    function qsToggleMic() { if (_qs.listening) qsStopMic(); else qsStartMic(); }
+    function qsStopMic() {
+        if (_qs.rec) { try { _qs.rec.stop(); } catch (e) {} }
+        _qs.listening = false;
+        let b = document.getElementById('qsMicBtn');
+        if (b) { b.innerText = '🎤 Tap to speak'; b.style.background = '#2c3e50'; }
+    }
+    function qsStartMic() {
+        let SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { document.getElementById('qsMicNote').innerText = 'This browser has no speech recognition (use Chrome on Android). Type the sale instead, or use your keyboard\'s mic.'; return; }
+        let rec = new SR();
+        rec.lang = 'en-IN'; rec.continuous = false; rec.interimResults = true; rec.maxAlternatives = 1;
+        let box = document.getElementById('qsText');
+        rec.onresult = e => {
+            let txt = '';
+            for (let i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript + ' ';
+            box.value = txt.trim();
+        };
+        rec.onerror = e => {
+            document.getElementById('qsMicNote').innerText = e.error === 'not-allowed' ? 'Microphone permission is blocked. Allow the mic for this site, or type instead.' : 'Could not hear that (' + e.error + '). Try again or type.';
+            qsStopMic();
+        };
+        rec.onend = () => { let had = _qs.listening; qsStopMic(); if (had && box.value.trim()) qsParseNow(); };
+        _qs.rec = rec; _qs.listening = true;
+        let b = document.getElementById('qsMicBtn'); b.innerText = '⏺ Listening… tap to stop'; b.style.background = '#A32A2E';
+        try { rec.start(); } catch (e) { qsStopMic(); }
+    }
+
+    function qsParseNow() {
+        let raw = document.getElementById('qsText').value.trim();
+        if (!raw) { document.getElementById('qsMicNote').innerText = 'Say or type the sale first.'; return; }
+        _qs.draft = qsParse(raw);
+        _qs.type = _qs.draft.type;
+        qsSetType(_qs.type);
+        qsRender();
+    }
+
+    function qsLineTotal(l) { return (parseFloat(l.qty) || 0) * (parseFloat(l.rate) || 0); }
+    function qsGrand() {
+        let d = _qs.draft; if (!d) return 0;
+        try {
+            let doc = { type: d.type, inclusiveTax: true, discountAmt: '', cart: d.lines.map(l => ({ p: l.name, q: parseFloat(l.qty) || 0, r: parseFloat(l.rate) || 0, g: l.isBlock ? 12 : 18 })) };
+            return computeDocTotals(doc).grand;
+        } catch (e) { return Math.round(d.lines.reduce((s, l) => s + qsLineTotal(l), 0)); }
+    }
+
+    function qsRender() {
+        let d = _qs.draft, box = document.getElementById('qsResult'), foot = document.getElementById('qsFooter');
+        if (!d) { box.innerHTML = ''; foot.style.display = 'none'; return; }
+        let card = 'background:#FFFFFF;border:1px solid #E1E1E6;border-radius:12px;padding:12px;';
+        let lbl = 'font-size:11px;color:#5F5D70;font-weight:700;';
+        let h = '<div style="font-size:12px;font-weight:700;color:#5F5D70;letter-spacing:0.4px;margin-bottom:8px;">WHAT I UNDERSTOOD</div><div style="display:flex;flex-direction:column;gap:8px;">';
+        h += d.notes.map(n => `<div style="${card}border:2px solid #92400E;background:#FFF8EC;font-size:14px;">${esc(n)}</div>`).join('');
+        // client
+        let c = d.client, cdesc = '';
+        if (c.kind === 'matched') cdesc = `<div style="font-size:15px;font-weight:700;">${esc(c.client.name)} <span style="font-weight:400;color:#5F5D70;">· matched ${esc(c.client.id)}</span></div>`;
+        else if (c.kind === 'walkin') cdesc = `<div style="font-size:15px;font-weight:700;">${esc(WALKIN_LABEL)} <span style="font-weight:400;color:#5F5D70;">· no name heard</span></div>`;
+        else if (c.kind === 'new') cdesc = `<div style="font-size:15px;font-weight:700;">${esc(qsCap(c.spoken))} <span style="font-weight:400;color:#92400E;">· not in your client list, will be saved as typed</span></div>`;
+        else cdesc = `<div style="font-size:14px;font-weight:700;color:#92400E;">Which "${esc(c.spoken)}"?</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">${c.options.map((o, i) => `<button onclick="qsPickClient(${i})" style="height:40px;padding:0 12px;border:1px solid #D4D4DC;border-radius:10px;background:#FFFFFF;color:#2c3e50;font-size:13px;font-weight:700;cursor:pointer;margin:0;">${esc(o.name)} (${esc(o.id)})</button>`).join('')}</div>`;
+        h += `<div style="${card}"><div style="${lbl}">CLIENT</div>${cdesc}</div>`;
+        h += `<div style="${card}display:flex;align-items:center;gap:10px;"><div style="flex:1;"><div style="${lbl}">DOCUMENT</div><div style="font-size:15px;font-weight:700;">${d.type === 'QUO' ? 'Quotation' : 'Sales Invoice'}</div></div></div>`;
+        d.lines.forEach((l, i) => {
+            let flagged = l.flags.length && !l.confirmed;
+            let st = flagged ? 'background:#FFF8EC;border:2px solid #92400E;' : 'background:#FFFFFF;border:1px solid #E1E1E6;';
+            h += `<div style="${st}border-radius:12px;padding:12px;">
+              ${flagged ? '<div style="font-size:11px;color:#92400E;font-weight:900;">CHECK THIS</div>' : ''}
+              <div style="font-size:15px;font-weight:700;">${esc(l.name)}</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                <input type="number" inputmode="decimal" value="${l.qty}" onchange="qsEdit(${i},'qty',this.value)" style="width:78px;height:40px;box-sizing:border-box;font-size:15px;border:1px solid #D4D4DC;border-radius:10px;padding:0 8px;margin:0;" aria-label="Quantity">
+                <span style="color:#5F5D70;">×  ₹</span>
+                <input type="number" inputmode="decimal" value="${l.rate}" onchange="qsEdit(${i},'rate',this.value)" style="width:90px;height:40px;box-sizing:border-box;font-size:15px;border:1px solid #D4D4DC;border-radius:10px;padding:0 8px;margin:0;" aria-label="Rate">
+                <span style="font-size:15px;font-weight:700;flex:1;text-align:right;">= ₹${Math.round(qsLineTotal(l)).toLocaleString('en-IN')}</span>
+              </div>
+              ${l.flags.map(f => `<div style="font-size:12px;color:#5F5D70;margin-top:6px;">${esc(f)}</div>`).join('')}
+              ${flagged ? `<button onclick="qsConfirm(${i})" style="height:40px;margin:8px 0 0;padding:0 16px;border:none;border-radius:10px;background:#92400E;color:#FFFFFF;font-size:13px;font-weight:700;cursor:pointer;">Confirm</button>` : ''}
+              <button onclick="qsRemove(${i})" style="height:36px;margin:8px 0 0 ${flagged ? '8px' : '0'};padding:0 12px;border:1px solid #D4D4DC;border-radius:10px;background:#FFFFFF;color:#5F5D70;font-size:12px;font-weight:700;cursor:pointer;">Remove</button>
+            </div>`;
+        });
+        h += '</div><div style="font-size:12px;color:#5F5D70;line-height:1.4;margin-top:10px;">Anything I was unsure about is highlighted. Nothing is saved until you tap Save.</div>';
+        box.innerHTML = h;
+        let pending = d.lines.filter(l => l.flags.length && !l.confirmed).length + (d.client.kind === 'ambiguous' ? 1 : 0);
+        foot.style.display = 'flex';
+        document.getElementById('qsFootLines').innerText = `${d.lines.length} LINE${d.lines.length === 1 ? '' : 'S'}${pending ? ' · ' + pending + ' TO CHECK' : ''}`;
+        document.getElementById('qsFootTotal').innerText = '₹' + qsGrand().toLocaleString('en-IN');
+        let sb = document.getElementById('qsSaveBtn');
+        sb.disabled = pending > 0 || d.lines.length === 0;
+        sb.style.opacity = sb.disabled ? '0.45' : '1';
+        sb.innerText = d.type === 'QUO' ? 'Save Quote' : 'Save Sale';
+    }
+    function qsEdit(i, field, v) {
+        let l = _qs.draft.lines[i]; l[field] = parseFloat(v) || 0;
+        if (field === 'rate') { l.rateSpoken = true; l.flags = l.flags.filter(f => !/rate/i.test(f) || /Rate differs/.test(f) && Math.abs(l.rate - l.listRate) > 0.1); l.confirmed = true; }
+        if (field === 'qty') { l.flags = l.flags.filter(f => !/quantity/i.test(f)); }
+        qsRender();
+    }
+    function qsConfirm(i) { let l = _qs.draft.lines[i]; if (!(parseFloat(l.rate) > 0)) { alert('Enter a rate first.'); return; } l.confirmed = true; qsRender(); }
+    function qsRemove(i) { _qs.draft.lines.splice(i, 1); qsRender(); }
+    function qsPickClient(i) { _qs.draft.client = { kind: 'matched', client: _qs.draft.client.options[i] }; qsRender(); }
+
+    function qsApply(save) {
+        let d = _qs.draft; if (!d || !d.lines.length) return;
+        if (cart.length > 0 && !confirm('Replace the document currently open with this Quick Sale draft?')) return;
+        hasUnsavedChanges = false; cart = [];
+        createNewDoc();
+        document.getElementById('docType').value = d.type;
+        switchAppMode();
+        let c = d.client;
+        if (c.kind === 'matched') {
+            document.getElementById('clientNameIn').value = c.client.name;
+            if (c.client.phone) document.getElementById('phoneIn').value = c.client.phone;
+            if (c.client.gstin) document.getElementById('gstinIn').value = c.client.gstin;
+            if (c.client.location) document.getElementById('locIn').value = c.client.location;
+        } else if (c.kind === 'new') {
+            document.getElementById('clientNameIn').value = qsCap(c.spoken);
+        } else {
+            document.getElementById('clientNameIn').value = WALKIN_LABEL;
+            handleClientShortcut();
+        }
+        d.lines.forEach(l => {
+            let cfg = (pricingConfig.itemDefaults || {})[l.name] || (pricingConfig.customItems || []).find(x => x.name === l.name);
+            let hsn = cfg ? (cfg.hsn || '9965') : (l.isBlock ? '6815' : '9965');
+            let g = cfg ? (cfg.gst || 18) : (l.isBlock ? 12 : 18);
+            let q = parseFloat(l.qty) || 1, r = parseFloat(l.rate) || 0;
+            cart.push({ p: l.name, hsn, q, r, g, rawQ: String(q), unit: cfg && cfg.unit ? cfg.unit : (l.isBlock ? 'Nos' : 'Nos'), notes: '',
+                defaultSortIndex: 999, isManuallyPriced: Math.abs(r - (l.listRate || 0)) > 0.1, tierOverride: 'DEFAULT', deliveryOverride: 'DEFAULT' });
+        });
+        try { executeCartDefaultSort(); } catch (e) {}
+        updateCartPricing();
+        updateInfo();
+        markDirty();
+        closeQuickSale();
+        if (save) saveDocument();
+        else showToast('Draft loaded. Check it, then Save Doc.', 'info');
+    }
+
+    window.addEventListener('load', () => {
+        if (/[?&]quick=/.test(location.search)) {
+            let m = location.search.match(/[?&]quick=(\w+)/);
+            // vBeta80: ?quick=tap opens the tap-based Quick Sale page, ?quick=stock the Current Stock popup
+            if (m && /^tap$/i.test(m[1])) { setTimeout(openQuickTap, 1200); return; }
+            if (m && /^stock$/i.test(m[1])) { setTimeout(openCurrentStock, 1200); return; }
+            if (m && /^(quo|quote)$/i.test(m[1])) _qs.type = 'QUO';
+            setTimeout(openQuickSale, 1200);
+        }
+    });
+
+    // ================================================================
     // VOICE ENTRY — Web Speech API, no server, no API key.
     // Works on Android Chrome (browser + PWA) and iOS Safari 14.5+
     // (browser only — Apple blocks mic in standalone PWA mode on iOS).
@@ -25271,10 +26111,21 @@
         let direction = 'OUT'; // default: paying out is more common in expense context
         let inWords = ['received','receive','got','get','collected','collect','incoming','income','from client','payment received','advance received'];
         let outWords = ['paid','pay','spent','spend','bought','buy','gave','give','expense','expenses','purchased','purchase','payment made'];
-        if (inWords.some(w => text.includes(w))) direction = 'IN';
-        if (outWords.some(w => text.includes(w))) direction = 'OUT';
+        // vBeta64: whole-word match, and the EARLIEST direction word wins. Substring
+        // matching made "received payment" contain "pay" -> OUT, and OUT always beat IN.
+        const wordPos = (list) => {
+            let best = -1;
+            list.forEach(w => {
+                let m = new RegExp('\\b' + w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\b').exec(text);
+                if (m && (best === -1 || m.index < best)) best = m.index;
+            });
+            return best;
+        };
+        let inPos = wordPos(inWords), outPos = wordPos(outWords);
+        if (inPos !== -1 && (outPos === -1 || inPos < outPos)) direction = 'IN';
+        else if (outPos !== -1) direction = 'OUT';
         // "from" strongly implies IN (received from someone)
-        if (/\bfrom\b/.test(text) && !outWords.some(w => text.includes(w))) direction = 'IN';
+        if (/\bfrom\b/.test(text) && outPos === -1) direction = 'IN';
 
         // 2. AMOUNT — try in order: lakh notation, k-notation, written
         //    numbers, then plain digits
@@ -25302,17 +26153,21 @@
             if (kMatch) amount = parseFloat(kMatch[1]) * 1000;
         }
         if (!amount) {
-            let numMatch = text.match(/\b(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?)\b/);
-            if (numMatch) amount = parseFloat(numMatch[1].replace(/,/g,''));
+            // vBeta64: take the LARGEST number said, not the first ("2 bags 4500" read as 2).
+            let all = (text.match(/\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?/g) || []).map(x => parseFloat(x.replace(/,/g,'')));
+            if (all.length) amount = Math.max(...all);
         }
 
         // Try written numbers if still nothing
         if (!amount) {
             let words = text.split(/\s+/);
-            let total = 0, current = 0;
+            let total = 0, current = 0, prevUnit = 0;
             words.forEach(w => {
                 let n = wordNums[w];
-                if (n === undefined) return;
+                if (n === undefined) { prevUnit = 0; return; }
+                // vBeta64: Indian speech "six fifty" means 650, not 56.
+                if (prevUnit && n >= 20 && n <= 90 && n % 10 === 0 && current === prevUnit) { current = prevUnit * 100 + n; prevUnit = 0; return; }
+                prevUnit = (n >= 1 && n <= 9) ? n : 0;
                 if (n === 100) { current = current === 0 ? 100 : current * 100; }
                 else if (n >= 1000) { total += (current === 0 ? 1 : current) * n; current = 0; }
                 else { current += n; }
@@ -25334,7 +26189,7 @@
             [['drawing','owner','personal','self'], 'Drawing'],
             [['shed','capital','construction','build'], 'Shed / Capital'],
             [['fuel','petrol','diesel','oil'], 'Transport'], // fuel → transport is most natural
-            [['electricity','current','EB','power','bill'], 'Other Expense'],
+            [['electricity','current','eb','power','bill'], 'Other Expense'],
             [['phone','mobile','internet','recharge'], 'Other Expense'],
         ];
         let category = 'Other Expense';
@@ -25567,6 +26422,7 @@
         if (!entry) return;
         _editingCashEntryId = id;
         document.getElementById('editCashEntryParty').value = entry.party || '';
+        document.getElementById('editCashEntryDirection').value = entry.direction === 'IN' ? 'IN' : 'OUT'; // vBeta66
         document.getElementById('editCashEntryDate').value = entry.date || '';
         document.getElementById('editCashEntryAmount').value = entry.amount || '';
         let hasAsset = (entry.assetAmount || 0) > 0;
@@ -25603,6 +26459,7 @@
         if (!newAmount || newAmount <= 0) { alert('Enter a valid amount.'); return; }
 
         entry.party = newParty;
+        entry.direction = document.getElementById('editCashEntryDirection').value === 'IN' ? 'IN' : 'OUT'; // vBeta66: a wrong IN/OUT no longer needs delete + re-enter
         entry.date = newDate;
         entry.amount = newAmount;
         entry.assetAmount = newAssetAmount;
@@ -25638,6 +26495,10 @@
     function renderCashBook() {
         bindDateRange('cashBookFrom', 'cashBookTo'); // vBeta31 — see bindDateRange
         let all = getCashEntries();
+        // vBeta66: entries with no date can never fall in any month/range, so they were
+        // silently missing from every total. Say so instead.
+        let _undated = all.filter(e => !e.date).length;
+        if (_undated) showToast(`⚠️ ${_undated} Cash Book entr${_undated === 1 ? 'y has' : 'ies have'} no date and ${_undated === 1 ? 'is' : 'are'} not in these totals`, 'error');
         let entries;
         // #13: custom date range as an alternative to the single-month
         // picker — lets you view a quarter or any arbitrary span.
@@ -26052,6 +26913,529 @@
                 </div>
             </div>`;
         }).join('');
+    }
+
+    // ================================================================
+    // vBeta68: DAILY SALES — a fast log of everyday counter sales, plus a one-page
+    // summary PDF per day. Stored in localStorage 'kenDailySales' and synced through
+    // the generic Config store (same path as Advance Pool etc). Deliberately SEPARATE
+    // from invoices: it never creates documents, stock movements or ledger entries.
+    // ================================================================
+    function getDailySales() {
+        try {
+            return JSON.parse(localStorage.getItem('kenDailySales') || '[]').map(e => {
+                if (typeof e.amount === 'string') e.amount = parseFloat(e.amount) || 0;
+                return e;
+            });
+        } catch (e) { return []; }
+    }
+    function saveDailySales(list) {
+        try { localStorage.setItem('kenDailySales', JSON.stringify(list)); } catch (e) { alert('Storage full! Export data first.'); return; }
+        queueConfigCollectionSync('dailySales', list);
+    }
+    function dsDay() { return document.getElementById('dsDate').value || todayISO(); }
+    function dsEntries(day) { return getDailySales().filter(e => e.date === day).sort((a, b) => String(a.ts || '').localeCompare(String(b.ts || ''))); }
+    function dsFmt(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
+
+    // ================================================================
+    // vBeta80: QUICK SALE (tap version). Seven buttons -> quantity + price popup -> running list.
+    // Saved as an internal "Quick Sale" record (kenQuickSales, cloud-synced like Daily Sales)
+    // that can be loaded into a Sales Invoice later. Never touches stock or the ledger by itself.
+    // Price presets are user-defined per button (kenQuickPresets).
+    // ================================================================
+    const QT_ITEMS = [
+        { key: 'b4', label: '4"', sub: 'AAC Block', name: 'AAC Block 4 Inch', unit: 'Nos', short: '4" block' },
+        { key: 'b6', label: '6"', sub: 'AAC Block', name: 'AAC Block 6 Inch', unit: 'Nos', short: '6" block' },
+        { key: 'b8', label: '8"', sub: 'AAC Block', name: 'AAC Block 8 Inch', unit: 'Nos', short: '8" block' },
+        { key: 'b9', label: '9"', sub: 'AAC Block', name: 'AAC Block 9 Inch', unit: 'Nos', short: '9" block' },
+        { key: 'm25', label: '25 kg', sub: 'Mortar bag', name: 'Jointing Mortar (25 Kg bag)', unit: 'Bags', short: '25 kg mortar' },
+        { key: 'm40', label: '40 kg', sub: 'Mortar bag', name: 'Jointing Mortar (40 Kg bag)', unit: 'Bags', short: '40 kg mortar' },
+        { key: 'tr', label: '🚚 Transport', sub: '', name: 'Transport', unit: 'Trip', short: '🚚 Transport', wide: true }
+    ];
+    let _qt = { lines: [], editKey: null, editId: null, tab: 'new', undoTimer: null };
+    let _qtInit = false;
+
+    function qtItem(key) { return QT_ITEMS.find(i => i.key === key); }
+    function qtMoney(n) { return '₹' + (Math.round((Number(n) || 0) * 100) / 100).toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
+    function qtNum(s) { let n = parseFloat(String(s).replace(/,/g, '')); return isFinite(n) ? n : 0; }
+    function getQuickSales() { try { return JSON.parse(localStorage.getItem('kenQuickSales') || '[]'); } catch (e) { return []; } }
+    function saveQuickSales(list) {
+        try { localStorage.setItem('kenQuickSales', JSON.stringify(list)); } catch (e) { alert('Storage full! Export data first.'); return false; }
+        queueConfigCollectionSync('quickSales', list);
+        return true;
+    }
+    function getQtPresets() { try { return JSON.parse(localStorage.getItem('kenQuickPresets') || '{}') || {}; } catch (e) { return {}; } }
+    function saveQtPresets(p) {
+        try { localStorage.setItem('kenQuickPresets', JSON.stringify(p)); } catch (e) {}
+        queueConfigCollectionSync('quickPresets', p);
+    }
+    function qtListRate(item) {
+        try { let r = getDynamicBlockRate(item.name); return r > 0 ? Math.round(r * 100) / 100 : 0; } catch (e) { return 0; }
+    }
+
+    function qtRefreshBadge() {
+        let n = getQuickSales().filter(r => r.status !== 'converted').length;
+        let b = document.getElementById('qtHomeBadge'); if (b) b.innerText = n ? ' · ' + n + ' saved' : '';
+        let t = document.getElementById('qtTabSaved'); if (t) t.innerText = 'Saved (' + n + ')';
+    }
+
+    function openQuickTap() {
+        if (!_qtInit) {
+            _qtInit = true;
+            qtBindPress(document.getElementById('qtBtns'));
+            qtBindPress(document.getElementById('qtList'));
+        }
+        document.getElementById('qtNameList').innerHTML = getClients().map(c => `<option value="${esc(c.name)}"></option>`).join('');
+        document.getElementById('qtModal').style.display = 'flex';
+        qtSwitchTab(_qt.tab === 'saved' ? 'saved' : 'new');
+        qtRender();
+        if (!document.getElementById('qtPhone').value) qtPasteFromClipboard(true);
+    }
+    function closeQuickTap() { document.getElementById('qtModal').style.display = 'none'; }
+    function qtSwitchTab(t) {
+        _qt.tab = t;
+        document.getElementById('qtNewPane').style.display = t === 'new' ? '' : 'none';
+        document.getElementById('qtSavedPane').style.display = t === 'saved' ? '' : 'none';
+        document.getElementById('qtTabNew').classList.toggle('on', t === 'new');
+        document.getElementById('qtTabSaved').classList.toggle('on', t === 'saved');
+        if (t === 'saved') qtRenderSaved();
+        qtRefreshBadge();
+    }
+
+    // tap = add/change, hold (0.6 s) = remove — works for the 7 buttons and for the list rows
+    function qtBindPress(el) {
+        let timer = null, fired = false, sx = 0, sy = 0;
+        el.addEventListener('pointerdown', e => {
+            let t = e.target.closest('[data-key]'); if (!t) return;
+            fired = false; sx = e.clientX; sy = e.clientY; clearTimeout(timer);
+            timer = setTimeout(() => { if (_qt.lines.some(l => l.key === t.dataset.key)) { fired = true; qtRemove(t.dataset.key, true); } }, 600);
+        });
+        let cancel = () => clearTimeout(timer);
+        el.addEventListener('pointerup', cancel); el.addEventListener('pointercancel', cancel); el.addEventListener('pointerleave', cancel);
+        el.addEventListener('pointermove', e => { if (Math.abs(e.clientX - sx) > 10 || Math.abs(e.clientY - sy) > 10) cancel(); });
+        el.addEventListener('contextmenu', e => e.preventDefault());
+        el.addEventListener('click', e => {
+            let t = e.target.closest('[data-key]'); if (!t) return;
+            if (fired) { fired = false; return; }
+            qtOpenEntry(t.dataset.key);
+        });
+    }
+
+    function qtTotal() { return _qt.lines.reduce((s, l) => s + l.qty * l.price, 0); }
+    function qtRender() {
+        document.getElementById('qtBtns').innerHTML = QT_ITEMS.map(it => {
+            let l = _qt.lines.find(x => x.key === it.key);
+            return `<button class="qt-btn${l ? ' sel' : ''}${it.wide ? ' wide' : ''}" data-key="${it.key}">${it.label}${it.sub ? '<small>' + it.sub + '</small>' : ''}${l ? '<small>' + l.qty + ' × ' + qtMoney(l.price) + '</small>' : ''}</button>`;
+        }).join('');
+        let list = document.getElementById('qtList');
+        list.innerHTML = _qt.lines.length ? _qt.lines.map(l => {
+            let it = qtItem(l.key);
+            return `<div class="qt-row" data-key="${l.key}"><div><div style="font-size:15px; font-weight:800; color:#000;">${esc(it.short)}</div><div style="font-size:12px; color:#333;">${l.qty} ${it.unit} × ${qtMoney(l.price)}</div></div><div style="font-size:17px; font-weight:900; color:#000;">${qtMoney(l.qty * l.price)}</div></div>`;
+        }).join('') : '<div style="color:#333; font-size:13px; padding:12px 4px;">Nothing selected yet. Tap a button above.</div>';
+        document.getElementById('qtTotalVal').innerText = qtMoney(qtTotal());
+        document.getElementById('qtSaveBtn').innerText = _qt.editId ? '💾 Update Quick Sale' : '💾 Save Quick Sale';
+        qtRefreshBadge();
+    }
+
+    // ---- quantity + price popup ----
+    function qtPresetList(item) {
+        let p = getQtPresets()[item.key];
+        return Array.isArray(p) ? p : [];
+    }
+    function qtOpenEntry(key) {
+        let it = qtItem(key), l = _qt.lines.find(x => x.key === key);
+        _qt.editKey = key;
+        document.getElementById('qtEntryTitle').innerText = it.sub ? it.label + ' ' + it.sub : it.label;
+        document.getElementById('qtQtyLbl').innerText = 'Quantity (' + it.unit + ')';
+        document.getElementById('qtQty').value = l ? l.qty : (key === 'tr' ? 1 : '');
+        document.getElementById('qtPrice').value = l ? l.price : '';
+        document.getElementById('qtOkBtn').innerText = l ? 'Update' : 'Add';
+        document.getElementById('qtRemoveBtn').style.display = l ? '' : 'none';
+        document.getElementById('qtPresetEdit').style.display = 'none';
+        document.getElementById('qtPresetIn').value = qtPresetList(it).join(', ');
+        document.getElementById('qtEntryErr').style.display = 'none';
+        qtRenderChips(); qtEntryChanged();
+        document.getElementById('qtEntry').style.display = 'flex';
+        setTimeout(() => { let f = document.getElementById(key === 'tr' && !l ? 'qtPrice' : 'qtQty'); f.focus(); f.select(); }, 60);
+    }
+    function qtCloseEntry() { document.getElementById('qtEntry').style.display = 'none'; _qt.editKey = null; }
+    function qtRenderChips() {
+        let it = qtItem(_qt.editKey), cur = qtNum(document.getElementById('qtPrice').value);
+        let chips = qtPresetList(it).map(v => ({ v, tag: '' }));
+        document.getElementById('qtChips').innerHTML = chips.length ? chips.map(c => `<button class="qt-chip${cur === c.v ? ' on' : ''}" onclick="qtPickPreset(${c.v})">${c.v}</button>`).join('') : '<span style="font-size:12px; color:#333;">No presets yet. Tap "Edit price presets" to add some.</span>';
+    }
+    function qtPickPreset(v) { document.getElementById('qtPrice').value = v; qtEntryChanged(); }
+    function qtEntryChanged() {
+        let q = qtNum(document.getElementById('qtQty').value), p = qtNum(document.getElementById('qtPrice').value);
+        document.getElementById('qtEntryTotal').innerText = q > 0 && p > 0 ? q + ' × ' + qtMoney(p) + ' = ' + qtMoney(q * p) : '';
+        document.getElementById('qtEntryErr').style.display = 'none';
+        if (_qt.editKey) qtRenderChips();
+    }
+    function qtTogglePresetEdit() {
+        let b = document.getElementById('qtPresetEdit'); b.style.display = b.style.display === 'none' ? '' : 'none';
+        if (b.style.display !== 'none') document.getElementById('qtPresetIn').focus();
+    }
+    // "66, 70-73, 58-60" -> [58, 59, 60, 66, 70, 71, 72, 73]. A range of whole numbers is expanded
+    // one by one (at most 200 steps); anything else in a range keeps just its two ends.
+    function qtParsePresets(text) {
+        let t = String(text || '').replace(/\s*(?:-|–|—|\bto\b)\s*/gi, '-');
+        let out = new Set();
+        t.split(/[\s,;]+/).forEach(tok => {
+            if (!tok) return;
+            let m = tok.match(/^(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)$/);
+            if (m) {
+                let a = parseFloat(m[1]), b = parseFloat(m[2]);
+                if (a > b) [a, b] = [b, a];
+                if (Number.isInteger(a) && Number.isInteger(b) && b - a <= 200) { for (let v = a; v <= b; v++) if (v > 0) out.add(v); }
+                else { if (a > 0) out.add(a); if (b > 0) out.add(b); }
+            } else { let n = parseFloat(tok); if (isFinite(n) && n > 0) out.add(n); }
+        });
+        return [...out].sort((a, b) => a - b);
+    }
+    function qtSavePresets() {
+        let it = qtItem(_qt.editKey);
+        let vals = qtParsePresets(document.getElementById('qtPresetIn').value);
+        let all = getQtPresets(); all[it.key] = vals; saveQtPresets(all);
+        document.getElementById('qtPresetIn').value = vals.join(', ');
+        document.getElementById('qtPresetEdit').style.display = 'none';
+        qtRenderChips(); showToast('Presets saved for ' + it.short + ': ' + (vals.join(', ') || 'none'), 'success');
+    }
+    function qtConfirmEntry() {
+        let key = _qt.editKey; if (!key) return;
+        let q = qtNum(document.getElementById('qtQty').value), p = qtNum(document.getElementById('qtPrice').value);
+        let err = document.getElementById('qtEntryErr');
+        if (q <= 0) { err.innerText = 'Enter a quantity.'; err.style.display = 'block'; return; }
+        if (p <= 0) { err.innerText = 'Enter a price.'; err.style.display = 'block'; return; }
+        let l = _qt.lines.find(x => x.key === key);
+        if (l) { l.qty = q; l.price = p; } else _qt.lines.push({ key, qty: q, price: p });
+        _qt.lines.sort((a, b) => QT_ITEMS.findIndex(i => i.key === a.key) - QT_ITEMS.findIndex(i => i.key === b.key));
+        qtCloseEntry(); qtRender();
+    }
+    function qtRemoveFromEntry() { let k = _qt.editKey; qtCloseEntry(); qtRemove(k, false); }
+    function qtRemove(key, withUndo) {
+        let i = _qt.lines.findIndex(l => l.key === key); if (i < 0) return;
+        let gone = _qt.lines.splice(i, 1)[0];
+        qtRender();
+        if (navigator.vibrate) { try { navigator.vibrate(30); } catch (e) {} }
+        let u = document.getElementById('qtUndo');
+        u.innerHTML = '<span>Removed ' + esc(qtItem(key).short) + '</span><button style="width:auto; margin:0; padding:6px 14px; background:#FFFFFF !important; color:#000 !important; border-radius:6px; font-weight:800;" onclick="qtUndoRemove()">Undo</button>';
+        u.style.display = 'flex'; u._gone = gone;
+        clearTimeout(_qt.undoTimer); _qt.undoTimer = setTimeout(() => { u.style.display = 'none'; }, 6000);
+    }
+    function qtUndoRemove() {
+        let u = document.getElementById('qtUndo'); if (!u._gone) return;
+        _qt.lines.push(u._gone); u._gone = null; u.style.display = 'none';
+        _qt.lines.sort((a, b) => QT_ITEMS.findIndex(i => i.key === a.key) - QT_ITEMS.findIndex(i => i.key === b.key));
+        qtRender();
+    }
+    function qtClear() {
+        if (_qt.lines.length && !confirm('Clear everything on this screen?')) return;
+        _qt.lines = []; _qt.editId = null;
+        ['qtName', 'qtPhone'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('qtCustHint').style.display = 'none';
+        qtRender();
+    }
+
+    // ---- customer name + phone ----
+    function qtCleanPhone(t) {
+        let d = String(t || '').replace(/\D/g, '');
+        if (d.length >= 12 && d.startsWith('91')) d = d.slice(2);
+        if (d.length === 11 && d[0] === '0') d = d.slice(1);
+        return d;
+    }
+    async function qtPasteFromClipboard(auto) {
+        try {
+            if (!navigator.clipboard || !navigator.clipboard.readText) throw new Error('no clipboard');
+            let d = qtCleanPhone(await navigator.clipboard.readText());
+            if (/^[6-9]\d{9}$/.test(d)) {
+                document.getElementById('qtPhone').value = d; qtPhoneChanged();
+                showToast('📋 Phone number pasted', 'info'); return true;
+            }
+            if (!auto) showToast('The clipboard has no 10-digit mobile number.', 'info');
+        } catch (e) {
+            if (!auto) { document.getElementById('qtPhone').focus(); showToast('Paste is blocked here. Long-press the phone box and tap Paste.', 'info'); }
+        }
+        return false;
+    }
+    function qtFindClient(name, phone) {
+        let cs = getClients();
+        if (phone && phone.length === 10) { let c = cs.find(x => qtCleanPhone(x.phone) === phone); if (c) return c; }
+        if (name) { let n = name.trim().toLowerCase(); return cs.find(x => (x.name || '').trim().toLowerCase() === n) || null; }
+        return null;
+    }
+    function qtPhoneChanged() {
+        let ph = qtCleanPhone(document.getElementById('qtPhone').value), nm = document.getElementById('qtName');
+        let c = ph.length === 10 ? qtFindClient('', ph) : null, h = document.getElementById('qtCustHint');
+        if (c) { if (!nm.value.trim()) nm.value = c.name; h.innerText = '✓ Existing client: ' + c.name; h.style.display = 'block'; } else h.style.display = 'none';
+    }
+    function qtNameChanged() {
+        let nm = document.getElementById('qtName').value.trim(), ph = document.getElementById('qtPhone');
+        let c = nm ? qtFindClient(nm, '') : null, h = document.getElementById('qtCustHint');
+        if (c) { if (!ph.value.trim() && c.phone) ph.value = qtCleanPhone(c.phone); h.innerText = '✓ Existing client: ' + c.name; h.style.display = 'block'; } else h.style.display = 'none';
+    }
+
+    // ---- save / saved list ----
+    function qtSave() {
+        if (!_qt.lines.length) { showToast('Pick at least one item first.', 'error'); return; }
+        let name = document.getElementById('qtName').value.trim(), phone = qtCleanPhone(document.getElementById('qtPhone').value);
+        if (phone && phone.length !== 10 && !confirm('The phone number is not 10 digits. Save anyway?')) return;
+        let list = getQuickSales();
+        let rec = {
+            id: _qt.editId || ('QS' + Date.now()), ts: new Date().toISOString(), date: todayISO(), customer: name, phone, status: 'pending',
+            lines: _qt.lines.map(l => ({ key: l.key, name: qtItem(l.key).name, unit: qtItem(l.key).unit, qty: l.qty, price: l.price })),
+            total: Math.round(qtTotal() * 100) / 100
+        };
+        let i = list.findIndex(r => r.id === rec.id);
+        if (i >= 0) { rec.ts = list[i].ts; rec.date = list[i].date; list[i] = rec; } else list.push(rec);
+        if (!saveQuickSales(list)) return;
+        _qt.lines = []; _qt.editId = null;
+        ['qtName', 'qtPhone'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('qtCustHint').style.display = 'none';
+        qtRender();
+        showToast('✅ Quick sale saved · ' + qtMoney(rec.total), 'success');
+    }
+    function qtLineText(r) { return r.lines.map(l => { let it = qtItem(l.key); return (it ? it.short : l.name) + ' ' + l.qty + ' × ' + qtMoney(l.price); }).join(' · '); }
+    function qtRenderSaved() {
+        let all = getQuickSales().sort((a, b) => String(b.ts).localeCompare(String(a.ts)));
+        let pend = all.filter(r => r.status !== 'converted');
+        let pane = document.getElementById('qtSavedPane');
+        if (!all.length) { pane.innerHTML = '<p style="color:#333; text-align:center; padding:20px; font-size:13px;">No saved quick sales yet.</p>'; return; }
+        pane.innerHTML = `<div style="display:flex; justify-content:space-between; font-size:13px; font-weight:800; color:#000; padding:4px 2px 10px;"><span>${pend.length} waiting</span><span>${qtMoney(pend.reduce((s, r) => s + r.total, 0))}</span></div>` +
+            all.map(r => {
+                let done = r.status === 'converted';
+                return `<div style="border:1.5px solid ${done ? '#B8B8C4' : '#2c3e50'}; border-radius:10px; padding:10px 12px; margin-bottom:10px; ${done ? 'opacity:.6;' : ''}">
+                    <div style="display:flex; justify-content:space-between; gap:8px;"><div><div style="font-size:15px; font-weight:800; color:#000;">${esc(r.customer || 'Walk-in')}</div><div style="font-size:12px; color:#333;">${formatDateDisplay(r.date)}${r.phone ? ' · ' + esc(r.phone) : ''}${done ? ' · ✓ converted' : ''}</div></div><div style="font-size:18px; font-weight:900; color:#000;">${qtMoney(r.total)}</div></div>
+                    <div style="font-size:12px; color:#111; margin:6px 0 8px;">${esc(qtLineText(r))}</div>
+                    <div style="display:flex; gap:6px;">
+                        <button onclick="qtConvert('${r.id}')" style="flex:3; margin:0; padding:10px; background:#1C7A3E !important; color:#FFFFFF !important; border-radius:8px; font-size:13px; font-weight:800;">${done ? 'Load again' : 'Convert to Sales Invoice'}</button>
+                        ${done ? '' : `<button onclick="qtEditSaved('${r.id}')" style="flex:1; margin:0; padding:10px; background:#EDEDF1 !important; color:#000 !important; border-radius:8px; font-size:13px; font-weight:700;">Edit</button>`}
+                        <button onclick="qtDeleteSaved('${r.id}')" style="flex:1; margin:0; padding:10px; background:#EDEDF1 !important; color:#A32A2E !important; border-radius:8px; font-size:13px; font-weight:700;">🗑</button>
+                    </div></div>`;
+            }).join('');
+    }
+    function qtEditSaved(id) {
+        let r = getQuickSales().find(x => x.id === id); if (!r) return;
+        if (_qt.lines.length && !confirm('Replace what is on the New sale screen?')) return;
+        _qt.lines = r.lines.map(l => ({ key: l.key, qty: l.qty, price: l.price })); _qt.editId = r.id;
+        document.getElementById('qtName').value = r.customer || ''; document.getElementById('qtPhone').value = r.phone || '';
+        qtSwitchTab('new'); qtRender();
+    }
+    function qtDeleteSaved(id) {
+        if (!confirm('Delete this saved quick sale?')) return;
+        guardRunDestructive(() => saveQuickSales(getQuickSales().filter(r => r.id !== id)));
+        qtRenderSaved(); qtRefreshBadge();
+    }
+    function qtConvert(id) {
+        let list = getQuickSales(), r = list.find(x => x.id === id); if (!r) return;
+        if (cart.length > 0 && !confirm('Replace the document currently open with this Quick Sale?')) return;
+        hasUnsavedChanges = false; cart = [];
+        createNewDoc();
+        document.getElementById('docType').value = 'SAL';
+        switchAppMode();
+        let c = qtFindClient(r.customer, r.phone);
+        if (c) {
+            document.getElementById('clientNameIn').value = c.name;
+            if (c.phone) document.getElementById('phoneIn').value = c.phone;
+            if (c.gstin) document.getElementById('gstinIn').value = c.gstin;
+            if (c.location) document.getElementById('locIn').value = c.location;
+        } else if (r.customer) {
+            document.getElementById('clientNameIn').value = r.customer;
+            if (r.phone) document.getElementById('phoneIn').value = r.phone;
+        } else {
+            document.getElementById('clientNameIn').value = WALKIN_LABEL;
+            handleClientShortcut();
+            if (r.phone) document.getElementById('phoneIn').value = r.phone;
+        }
+        r.lines.forEach(l => {
+            let isBlock = getBlockSize(l.name) > 0, isMortar = /mortar/i.test(l.name);
+            let cfg = (pricingConfig.itemDefaults || {})[l.name] || (pricingConfig.customItems || []).find(x => x.name === l.name);
+            let hsn = cfg ? (cfg.hsn || '9965') : (isBlock ? '6815' : isMortar ? '3824' : '9965');
+            let g = cfg ? (cfg.gst || 18) : (isBlock ? 12 : 18);
+            cart.push({ p: l.name, hsn, q: l.qty, r: l.price, g, rawQ: String(l.qty), unit: l.unit || 'Nos', notes: '',
+                defaultSortIndex: 999, isManuallyPriced: true, tierOverride: 'DEFAULT', deliveryOverride: 'DEFAULT' });
+        });
+        try { executeCartDefaultSort(); } catch (e) {}
+        updateCartPricing(); updateInfo(); markDirty();
+        r.status = 'converted'; r.convertedAt = new Date().toISOString(); saveQuickSales(list);
+        closeQuickTap();
+        showToast('Loaded as a Sales Invoice. Check it, then Save Doc.', 'info');
+    }
+    window.addEventListener('load', () => setTimeout(qtRefreshBadge, 1500));
+
+    // vBeta80: CURRENT STOCK popup (home page button). One row per tracked item — each block
+    // size/brand and the jointing mortar — using the same live quantity the Stock grid shows
+    // (what is left in the stock batches, all locations added together).
+    function openCurrentStock() {
+        let names = getAllTrackedItemNames();
+        let order = n => { let i = STOCK_SIZE_GROUP_ORDER.indexOf(getStockSizeGroupLabel(n)); return i === -1 ? 99 : i; };
+        names.sort((a, b) => order(a) - order(b) || (getBlockBrand(a) ? 1 : 0) - (getBlockBrand(b) ? 1 : 0) || a.localeCompare(b));
+        let items = getStockItems();
+        let body = document.getElementById('currentStockBody');
+        if (!names.length) {
+            body.innerHTML = '<p style="color:#333; padding:14px; text-align:center; font-size:13px;">No stock recorded yet. Add a batch in the Stock page to get started.</p>';
+        } else {
+            let totalBlocks = 0;
+            body.innerHTML = names.map(n => {
+                let qty = getStockQty(n), isMortar = n.toLowerCase().includes('mortar'), size = getBlockSize(n);
+                let it = items.find(x => x.name === n), threshold = it && it.lowStockThreshold != null ? it.lowStockThreshold : 50;
+                if (size > 0) totalBlocks += qty;
+                let color = qty <= 0 ? '#A32A2E' : (qty < threshold ? '#B25E00' : '#1C7A3E');
+                let label = size > 0 ? size + '" AAC Block' : (isMortar ? 'Jointing Mortar' : n);
+                let brand = isMortar ? null : getBlockBrand(n);
+                let locs = [...new Set(getStockBatches().filter(b => b.itemName === n).map(b => b.location))].map(l => [l, getStockQty(n, l)]).filter(x => x[1] !== 0);
+                let split = locs.length > 1 ? '<div style="font-size:11px; color:#333; margin-top:2px;">' + locs.map(x => esc(x[0]) + ' ' + x[1]).join(' · ') + '</div>' : '';
+                let flag = qty <= 0 ? 'Out of stock' : (qty < threshold ? 'Low' : '');
+                return `<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 4px; border-bottom:1px solid #E1E1E6;">
+                    <div><div style="font-size:15px; font-weight:700; color:#000;">${esc(label)}${brand ? ' <span style="font-size:12px; font-weight:700; background:#EDEDF1; border-radius:6px; padding:2px 7px;">' + esc(brand) + '</span>' : ''}</div>${split}${flag ? '<div style="font-size:11px; font-weight:700; color:' + color + ';">' + flag + '</div>' : ''}</div>
+                    <div style="text-align:right; white-space:nowrap;"><span style="font-size:26px; font-weight:900; color:${color};">${qty.toLocaleString('en-IN')}</span> <span style="font-size:12px; color:#333;">${isMortar ? 'bags' : 'Nos'}</span></div>
+                </div>`;
+            }).join('') + (totalBlocks ? `<div style="display:flex; justify-content:space-between; padding:12px 4px; font-weight:700; font-size:14px;"><span>Total blocks</span><span>${totalBlocks.toLocaleString('en-IN')} Nos</span></div>` : '');
+        }
+        document.getElementById('currentStockAsOf').innerText = 'As of ' + formatDateDisplay(todayISO()) + ' · ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('currentStockModal').style.display = 'flex';
+    }
+    function closeCurrentStock() { document.getElementById('currentStockModal').style.display = 'none'; }
+
+    // vBeta80: Daily Sales now lives in the Summary page's Daily tab (the old standalone page is gone).
+    function dsOpenPane() {
+        if (!document.getElementById('dsDate').value) document.getElementById('dsDate').value = todayISO();
+        let names = [];
+        [4, 6, 8, 9].forEach(sz => { (pricingConfig.brands || []).forEach(b => names.push(qsBlockName(sz, b))); names.push(qsBlockName(sz, null)); });
+        names = names.concat(Object.keys(pricingConfig.itemDefaults || {}), (pricingConfig.customItems || []).map(c => c.name));
+        document.getElementById('dsItemList').innerHTML = [...new Set(names)].map(n => `<option value="${esc(n)}"></option>`).join('');
+        dsRender();
+    }
+    function openDailySales() { openMonthlySummary(); setSummaryMode('daily'); }
+    function closeDailySales() { closeSummary(); }
+    function dsShiftDay(delta) {
+        let p = parseLocalDate(dsDay());
+        p.setDate(p.getDate() + delta);
+        document.getElementById('dsDate').value = toLocalISO(p);
+        dsRender();
+    }
+    function dsItemChosen() {
+        let name = document.getElementById('dsItem').value.trim();
+        let r = 0;
+        try { r = getDynamicBlockRate(name, 'DEFAULT', currentDeliveryMode) || 0; } catch (e) {}
+        let known = r > 0 && (getBlockSize(name) > 0 || (pricingConfig.itemDefaults || {})[name] || (pricingConfig.customItems || []).some(c => c.name === name));
+        if (known && !document.getElementById('dsRate').value) { document.getElementById('dsRate').value = r; dsCalc(); }
+    }
+    function dsCalc() {
+        let q = parseFloat(document.getElementById('dsQty').value) || 0, r = parseFloat(document.getElementById('dsRate').value) || 0;
+        if (q > 0 && r > 0) document.getElementById('dsAmount').value = Math.round(q * r * 100) / 100;
+    }
+    function dsAdd() {
+        let item = document.getElementById('dsItem').value.trim();
+        let qty = parseFloat(document.getElementById('dsQty').value) || 0;
+        let rate = parseFloat(document.getElementById('dsRate').value) || 0;
+        let amount = parseFloat(document.getElementById('dsAmount').value) || (qty * rate);
+        let mode = document.getElementById('dsMode').value;
+        let client = document.getElementById('dsClient').value.trim();
+        if (!item) { alert('Enter the item sold.'); return; }
+        if (!(amount > 0)) { alert('Enter the amount (or quantity and rate).'); return; }
+        if (mode === 'Credit' && !client) { alert('For a credit sale, enter the customer name so you know who owes you.'); return; }
+        let list = getDailySales();
+        list.push({ id: 'DS' + Date.now() + Math.floor(Math.random() * 1000), date: dsDay(), ts: new Date().toISOString(), item, qty, rate, amount, mode, client });
+        saveDailySales(list);
+        ['dsItem', 'dsQty', 'dsRate', 'dsAmount', 'dsClient'].forEach(id => document.getElementById(id).value = '');
+        dsRender();
+        showToast('✅ Sale added', 'success');
+    }
+    function dsDelete(id) {
+        if (!confirm('Delete this sale entry?')) return;
+        saveDailySales(getDailySales().filter(e => e.id !== id));
+        dsRender();
+    }
+    function dsSummary(day) {
+        let es = dsEntries(day);
+        let total = es.reduce((s, e) => s + e.amount, 0);
+        let byMode = { Cash: 0, UPI: 0, Bank: 0, Credit: 0 };
+        es.forEach(e => { byMode[e.mode] = (byMode[e.mode] || 0) + e.amount; });
+        let items = {};
+        es.forEach(e => {
+            let k = e.item.trim().toLowerCase();
+            if (!items[k]) items[k] = { item: e.item, qty: 0, amount: 0 };
+            items[k].qty += e.qty || 0; items[k].amount += e.amount;
+        });
+        let credits = es.filter(e => e.mode === 'Credit');
+        return { es, total, byMode, items: Object.values(items).sort((a, b) => b.amount - a.amount), credits, received: total - byMode.Credit };
+    }
+    function dsRender() {
+        let day = dsDay(), s = dsSummary(day);
+        let tile = (label, val, color) => `<div style="flex:1; min-width:90px; background:#FFFFFF; border:1px solid #E1E1E6; border-radius:10px; padding:8px 10px;"><div style="font-size:10px; color:#5F5D70; font-weight:bold; text-transform:uppercase;">${label}</div><div style="font-size:16px; font-weight:900; color:${color};">${dsFmt(val)}</div></div>`;
+        document.getElementById('dsTotals').innerHTML = `<div style="display:flex; gap:6px; flex-wrap:wrap;">${tile('Day total', s.total, '#2c3e50')}${tile('Cash', s.byMode.Cash, '#1C7A3E')}${tile('UPI / Bank', s.byMode.UPI + s.byMode.Bank, '#0B5A94')}${tile('To collect', s.byMode.Credit, s.byMode.Credit ? '#A32A2E' : '#5F5D70')}</div>`;
+        if (!s.es.length) { document.getElementById('dsList').innerHTML = '<p style="color:#5F5D70; padding:14px 0; font-size:13px;">No sales logged for this day yet.</p>'; return; }
+        document.getElementById('dsList').innerHTML = s.es.map(e => `
+            <div style="display:flex; align-items:center; gap:8px; padding:10px 0; border-bottom:1px solid #EDEDF1;">
+                <div style="flex:1; min-width:0;">
+                    <div style="font-size:14px; font-weight:bold; overflow-wrap:anywhere;">${esc(e.item)}</div>
+                    <div style="font-size:12px; color:#5F5D70;">${e.qty ? e.qty + ' × ₹' + e.rate + ' · ' : ''}${esc(e.mode)}${e.client ? ' · ' + esc(e.client) : ''}</div>
+                </div>
+                <div style="font-size:15px; font-weight:900; color:${e.mode === 'Credit' ? '#A32A2E' : '#1C1C27'};">${dsFmt(e.amount)}</div>
+                <button onclick="dsDelete('${e.id}')" aria-label="Delete" style="width:40px; height:40px; margin:0; padding:0; border:1px solid #E1E1E6; border-radius:8px; background:#FFFFFF; color:#A32A2E; cursor:pointer;">🗑</button>
+            </div>`).join('');
+    }
+    function dsText(day) {
+        let s = dsSummary(day);
+        let L = [`📒 *KEN TRADERS — Daily Sales*`, `📅 ${formatDateDisplay(day)}`, ''];
+        s.es.forEach((e, i) => L.push(`${i + 1}. ${e.item}${e.qty ? ' × ' + e.qty : ''} — ${dsFmt(e.amount)} (${e.mode}${e.client ? ', ' + e.client : ''})`));
+        L.push('', `*Total: ${dsFmt(s.total)}*`, `Cash ${dsFmt(s.byMode.Cash)} · UPI/Bank ${dsFmt(s.byMode.UPI + s.byMode.Bank)} · To collect ${dsFmt(s.byMode.Credit)}`);
+        return L.join('\n');
+    }
+    function dsCopyText() {
+        let day = dsDay();
+        if (!dsEntries(day).length) { alert('No sales logged for this day.'); return; }
+        let t = dsText(day);
+        if (navigator.clipboard) navigator.clipboard.writeText(t).then(() => showToast('📋 Copied — paste into WhatsApp', 'success'), () => prompt('Copy this text:', t));
+        else prompt('Copy this text:', t);
+    }
+    function dsBuildPdfHtml(day) {
+        let s = dsSummary(day);
+        let th = 'text-align:left; padding:6px 8px; background:#2c3e50; color:#FFFFFF; font-size:12px;';
+        let td = 'padding:6px 8px; border-bottom:1px solid #E1E1E6; font-size:12px; vertical-align:top;';
+        let rows = s.es.map((e, i) => `<tr><td style="${td}">${i + 1}</td><td style="${td}">${esc(e.item)}</td><td style="${td} text-align:right;">${e.qty || ''}</td><td style="${td} text-align:right;">${e.rate ? '₹' + e.rate : ''}</td><td style="${td}">${esc(e.mode)}${e.client ? ' · ' + esc(e.client) : ''}</td><td style="${td} text-align:right; font-weight:bold;">${dsFmt(e.amount)}</td></tr>`).join('');
+        let itemRows = s.items.map(it => `<tr><td style="${td}">${esc(it.item)}</td><td style="${td} text-align:right;">${it.qty || '—'}</td><td style="${td} text-align:right;">${dsFmt(it.amount)}</td></tr>`).join('');
+        let box = (label, val, color) => `<td style="border:1px solid #E1E1E6; padding:8px 10px; width:25%;"><div style="font-size:10px; color:#5F5D70; font-weight:bold; text-transform:uppercase;">${label}</div><div style="font-size:16px; font-weight:900; color:${color};">${dsFmt(val)}</div></td>`;
+        let credit = s.credits.length ? `<div style="margin-top:14px; font-size:12px;"><b>To collect (credit sales):</b> ${s.credits.map(c => esc(c.client) + ' ' + dsFmt(c.amount)).join(' · ')}</div>` : '';
+        return `<div style="width:794px; box-sizing:border-box; padding:36px 40px; background:#FFFFFF; color:#1C1C27; font-family:Lato, system-ui, sans-serif;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid #2c3e50; padding-bottom:10px;">
+                <div><div style="font-size:22px; font-weight:900; color:#2c3e50;">KEN TRADERS</div><div style="font-size:13px; color:#5F5D70;">Daily Sales Summary</div></div>
+                <div style="text-align:right;"><div style="font-size:11px; color:#5F5D70; font-weight:bold;">DATE</div><div style="font-size:18px; font-weight:900;">${formatDateDisplay(day)}</div></div>
+            </div>
+            <table style="width:100%; border-collapse:collapse; margin:16px 0;"><tr>${box('Day total', s.total, '#2c3e50')}${box('Cash', s.byMode.Cash, '#1C7A3E')}${box('UPI / Bank', s.byMode.UPI + s.byMode.Bank, '#0B5A94')}${box('To collect', s.byMode.Credit, '#A32A2E')}</tr></table>
+            <div style="font-size:12px; font-weight:bold; color:#5F5D70; text-transform:uppercase; margin-bottom:6px;">Sales (${s.es.length})</div>
+            <table style="width:100%; border-collapse:collapse;"><thead><tr><th style="${th}">#</th><th style="${th}">Item</th><th style="${th} text-align:right;">Qty</th><th style="${th} text-align:right;">Rate</th><th style="${th}">Paid by</th><th style="${th} text-align:right;">Amount</th></tr></thead><tbody>${rows}
+            <tr><td colspan="5" style="padding:8px; text-align:right; font-weight:900;">TOTAL</td><td style="padding:8px; text-align:right; font-weight:900; font-size:14px;">${dsFmt(s.total)}</td></tr></tbody></table>
+            <div style="font-size:12px; font-weight:bold; color:#5F5D70; text-transform:uppercase; margin:18px 0 6px;">Items sold</div>
+            <table style="width:100%; border-collapse:collapse;"><thead><tr><th style="${th}">Item</th><th style="${th} text-align:right;">Qty</th><th style="${th} text-align:right;">Amount</th></tr></thead><tbody>${itemRows}</tbody></table>
+            <div style="margin-top:14px; font-size:12px;"><b>Money received today:</b> ${dsFmt(s.received)} (Cash ${dsFmt(s.byMode.Cash)}, UPI ${dsFmt(s.byMode.UPI)}, Bank ${dsFmt(s.byMode.Bank)})</div>
+            ${credit}
+            <div style="margin-top:28px; font-size:10px; color:#5F5D70;">Counter-sale log summary. Invoices are listed separately in the Sales and Audit reports.</div>
+        </div>`;
+    }
+    function dsPdf(share) {
+        let day = dsDay();
+        if (!dsEntries(day).length) { alert('No sales logged for this day.'); return; }
+        if (typeof html2pdf === 'undefined') { alert('PDF tool did not load (check your internet connection once, then try again).'); return; }
+        let wrap = document.createElement('div');
+        wrap.style.cssText = 'position:fixed; left:0; top:0; z-index:-1; background:#FFFFFF;';
+        wrap.innerHTML = dsBuildPdfHtml(day);
+        document.body.appendChild(wrap);
+        let filename = `KEN-DailySales-${day}.pdf`;
+        let opt = { margin: 0, filename, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['css', 'legacy'] } };
+        let done = () => { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); };
+        setTimeout(() => {
+            if (share && navigator.canShare) {
+                html2pdf().set(opt).from(wrap.firstElementChild).outputPdf('blob').then(blob => {
+                    let file = new File([blob], filename, { type: 'application/pdf' });
+                    done();
+                    if (navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: 'Daily Sales ' + formatDateDisplay(day) }).catch(() => {});
+                    let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+                }).catch(err => { done(); alert('Could not make the PDF: ' + err.message); });
+            } else {
+                html2pdf().set(opt).from(wrap.firstElementChild).save().then(done).catch(err => { done(); alert('Could not make the PDF: ' + err.message); });
+            }
+        }, 150);
     }
 
     function openLeadsManager() {
@@ -26506,6 +27890,47 @@
         if (!project.siteId) return null;
         let site = getSites().find(s => s.id === project.siteId);
         return site ? site.name : null;
+    }
+
+    // vBeta80: PROJECT STATEMENT — the same statement as a client's, for one project.
+    // Documents are matched exactly as getProjectFinancials does (delivery site or manually
+    // linked). Money fronted for the customer, reimbursements and return refunds come from
+    // the Cash Book entries tagged to the project. Runs to as many pages as it needs.
+    function getProjectMatchingDocs(project) {
+        let siteName = getProjectSiteNameForMatching(project);
+        let linkedIds = new Set(project.linkedDocIds || []);
+        let siteMatched = siteName ? savedDocs.filter(d => !d.docNo.includes('VOID') && (d.deliverySite || '').toLowerCase().includes(siteName.toLowerCase())) : [];
+        let manual = savedDocs.filter(d => linkedIds.has(d.id) && !d.docNo.includes('VOID'));
+        return [...new Map([...siteMatched, ...manual].map(d => [d.id, d])).values()];
+    }
+    function openProjectStatement(projectId) {
+        let project = getProjectsFlat().find(p => String(p.id) === String(projectId || _pdProjectId));
+        if (!project) return;
+        let docs = getProjectMatchingDocs(project).filter(d => ['INV', 'SAL', 'ADV', 'RCP', 'CRN'].includes(d.type));
+        let payDocNos = new Set(docs.filter(d => ['INV', 'SAL'].includes(d.type)).map(d => d.docNo));
+        let cash = getCashEntries().filter(e => String(e.projectId) === String(project.id));
+        let rows = docs.map(d => ({ ...d, _isCashPayment: false }));
+        // customer payments recorded in the Cash Book against this project's invoices
+        getCashEntries().filter(e => e.direction === 'IN' && e.linkedDoc && payDocNos.has(e.linkedDoc) && !e.linkedExpenseId)
+            .forEach(e => rows.push({ _isCashPayment: true, id: e.id, date: e.date, docNo: e.linkedDoc, amount: e.amount, party: e.party }));
+        // reimbursements of money we fronted for the customer
+        cash.filter(e => e.direction === 'IN' && e.linkedExpenseId)
+            .forEach(e => rows.push({ _isCashPayment: true, id: e.id, date: e.date, docNo: '', amount: e.amount, party: 'Reimbursement' }));
+        rows.sort((a, b) => parseLocalDate(a.date) - parseLocalDate(b.date));
+        let behalf = cash.filter(e => e.direction === 'OUT' && e.scope === 'customer').map(e => ({ date: e.date, sub: e.party || e.category || '', debit: e.amount || 0 }));
+        let refunds = cash.filter(e => e.direction === 'OUT' && e.category === 'Sales Return Refund').map(e => ({ date: e.date, sub: e.party || 'Sales return refund', debit: e.amount || 0 }));
+        if (!rows.length && !behalf.length && !refunds.length) { alert('No invoices, payments or customer expenses found for this project yet.'); return; }
+        let title = project.name + ' (' + project.id + ')';
+        _stmtClient = project.clientName || project.name; _stmtPeriod = 'ALL'; _stmtOpening = 0; _stmtRows = rows;
+        _stmtOpts = { project: true, title, behalf, refunds, fileLabel: project.name };
+        document.getElementById('statementPickerClientName').innerText = title;
+        document.getElementById('stmtPeriodSelect').style.display = 'none';
+        document.getElementById('statementPickerList').innerHTML = rows.map((d, i) => {
+            let chip = d._isCashPayment ? '<span style="background:#1C7A3E;color:#FFFFFF;padding:1px 6px;border-radius:8px;font-size:10px;">PAYMENT</span>' : `<span style="background:${typeColor(d.type)};color:#FFFFFF;padding:1px 6px;border-radius:8px;font-size:10px;">${esc(d.type)}</span>`;
+            let lbl = d._isCashPayment ? (d.docNo ? 'vs ' + esc(d.docNo) : esc(d.party || '')) : '<b>' + esc(d.docNo) + '</b>';
+            return `<label style="display:flex; align-items:center; gap:8px; padding:8px 10px; border-bottom:1px solid #EDEDF1; cursor:pointer; font-size:12px; color:#1C1C27;"><input type="checkbox" class="stmtRowChk" data-idx="${i}" checked style="margin:0;">${chip}<span>${formatDateDisplay(d.date)} — ${lbl}</span><span style="margin-left:auto; font-weight:bold;">₹${((d._isCashPayment ? d.amount : d.total) || 0).toLocaleString('en-IN')}</span></label>`;
+        }).join('');
+        document.getElementById('statementPickerModal').style.display = 'flex';
     }
 
     function openProjectDetail(projectId) {
@@ -27468,8 +28893,11 @@
 
         if (isReturn) {
             if (!confirm(`Return ${item.q} × "${item.p}" to stock at ${location}, from credit note ${docNo}?`)) return;
-            manualStockAdjustment(item.p, location, item.q, `Returned via credit note ${docNo}`);
-            logStockMovement({ type: 'CRN_RETURN', itemName: item.p, location, qty: item.q, docNo, note: `Returned via ${docNo}` });
+            // vBeta65: was a manual +adjustment AND a CRN_RETURN row with no batch (so a
+            // void could not unwind it, and "Bought" counted it). Now one costed batch.
+            let _retCost = Math.round((getWeightedAvgCost(item.p) || 0) * 100) / 100;
+            let _retBatch = createStockBatch({ itemName: item.p, location, qty: item.q, baseCost: _retCost, transportCost: 0, unloadingCost: 0, landingCost: _retCost, purchaseDate: todayISO(), origin: 'CRN_RETURN' });
+            logStockMovement({ type: 'CRN_RETURN', itemName: item.p, location, qty: item.q, batchId: _retBatch.id, docNo, note: `Returned via ${docNo}` });
         } else {
             if (!confirm(`Deduct ${item.q} × "${item.p}" from stock at ${location}, for invoice ${docNo}?\n\nThis uses FIFO and records realized profit — the same as the manual stock deduction flow.`)) return;
             let result = deductStockForSale(item.p, location, item.q, item.r || 0, docNo);
@@ -28800,7 +30228,7 @@
                     if (nm === want) entries = entries.concat((stored[k] && stored[k].entries) || []);
                 });
             }
-            pools[key].received -= entries.reduce((s,e) => s + (parseFloat(e.amount) || 0), 0);
+            pools[key].received -= entries.filter(e => e.scope === 'our').reduce((s,e) => s + (parseFloat(e.amount) || 0), 0); // vBeta62: Our Scope only
         });
 
         return Object.entries(pools)
@@ -28997,7 +30425,9 @@
         let entries = poolData.entries || [];
         let ourScopeTotal = entries.filter(e => e.scope === 'our').reduce((s,e) => s+(e.amount||0), 0);
         let clientScopeTotal = entries.filter(e => e.scope === 'client').reduce((s,e) => s+(e.amount||0), 0);
-        let poolBalance = totalReceived - ourScopeTotal - clientScopeTotal - invoiceAppliedTotal;
+        // vBeta62 (Raaja's rule): only Our Scope spends draw the advance down.
+        // Client Scope is shown as money the client owes, not taken from the pool.
+        let poolBalance = totalReceived - ourScopeTotal - invoiceAppliedTotal;
         let netUsable = poolBalance; // what client can still use
 
         // vBeta33: state how this pool's documents were matched.

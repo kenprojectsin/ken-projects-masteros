@@ -369,7 +369,7 @@
         .doc-section {
             background: var(--hp-surface); border-radius: var(--hp-radius-lg);
             border: 1px solid var(--hp-border); box-shadow: var(--hp-shadow);
-            padding: 16px 16px 18px; margin-bottom: 16px; scroll-margin-top: 62px;
+            padding: 16px 16px 18px; margin-bottom: 16px; scroll-margin-top: calc(var(--docStickyH, 130px) + 10px);
         }
         .doc-section-title {
             font-size: 13px; font-weight: 800; letter-spacing: -0.2px; color: var(--hp-ink);
@@ -546,6 +546,14 @@
             margin: 16px 0 20px; border: 1.5px solid var(--hp-border);
             box-shadow: var(--hp-shadow, 0 1px 2px rgba(28,28,39,0.04), 0 6px 16px -8px rgba(28,28,39,0.35));
         }
+        /* vBeta80: sticky Doc Type + tabs bar, prominent centred doc-type selector */
+        .doc-sticky-top { position: sticky; top: 0; z-index: 16; background: var(--hp-surface); padding: 8px 0 10px; margin: 0 0 14px; border-bottom: 1px solid var(--hp-border); }
+        @media (min-width: 1101px) { .doc-sticky-top { top: -20px; padding-top: 28px; margin-top: -8px; } } /* desktop: the editor box has 20px padding that the bar must cover */
+        .doc-sticky-top .doctype-spotlight { margin: 0; }
+        .doc-sticky-top .doctype-spotlight label { display: block; text-align: center; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: var(--hp-ink); margin: 0 0 5px; }
+        .doc-sticky-top .doctype-spotlight select { width: 100%; font-size: 20px; font-weight: 900; padding: 14px 38px 14px 14px; text-align: center; text-align-last: center; border-radius: 14px; box-shadow: 0 3px 10px rgba(28,28,39,0.28); }
+        .doc-sticky-top .doctype-spotlight select option { text-align: center; }
+        .doc-sticky-top .doc-jumpnav-wrap { position: static !important; top: auto !important; margin: 8px 0 0 !important; padding: 0 !important; border: none !important; background: none; }
         .doctype-spotlight { background: none; padding: 0; border-radius: 0; margin: 0 0 10px; border: none; box-shadow: none; }
         .doctype-spotlight label { color: var(--hp-ink-muted); font-size: 10px; margin: 0 0 6px 0; opacity: 1; }
         /* vBeta15: dark background needs its own white-stroke arrow — the
@@ -4482,7 +4490,7 @@
              the token this app already uses everywhere else for de-emphasized
              secondary text. -->
         <div onclick="checkForAppUpdate()" style="text-align:center; font-size:10px; color:var(--hp-ink-muted, #5F5D70); margin-bottom:8px; cursor:pointer; letter-spacing:0.5px;" title="Tap to check for updates">
-            <span id="appVersionBadge">vBeta70</span> · <span id="appUpdateStatus">tap to check for updates</span>
+            <span id="appVersionBadge">vBeta80</span> · <span id="appUpdateStatus">tap to check for updates</span>
         </div>
 
         <!-- vBeta15: app header logo bar — the header opened straight into the
@@ -4571,6 +4579,10 @@
         <div class="analytics-section pm-row" style="cursor:pointer;" onclick="openProjectManager()">
             <div class="analytics-section-title"><span>🏗️ Project Manager</span></div>
         </div>
+        <!-- vBeta80: one-tap popup of what is in stock right now -->
+        <div class="analytics-section pm-row" id="btnCurrentStock" style="cursor:pointer; background:#1C7A3E !important; border-color:#145c2d !important;" onclick="openCurrentStock()">
+            <div class="analytics-section-title"><span style="color:#FFFFFF !important;">📦 Current Stock</span></div>
+        </div>
         <!-- vBeta17: Reports & Tools / Blocks Calculator are now a true tab
              pair — see .section-tab/.section-tab-body CSS and
              selectHeaderTab-style logic in toggleAnalyticsSection()/
@@ -4606,7 +4618,6 @@
                      "coming soon" toast, nothing else) is now Leads —
                      phone/name/requirements/quoted price/needed-by date,
                      per Raaja's request. See openLeadsManager() below. -->
-                <button id="btnAnalyticsDailySales" class="analytics-grid-btn" onclick="openDailySales()"><span class="ag-icon" data-vicon="dailysales"></span><span>Daily Sales</span></button>
                 <button id="btnAnalyticsLeads" class="analytics-grid-btn" onclick="openLeadsManager()"><span class="ag-icon" data-vicon="leads"></span><span>Leads</span></button>
                 <!-- vBeta49: this tile was "Documents", a second way into the
                      same Cloud Document Manager the "📂 View List" button at
@@ -4732,7 +4743,13 @@
              (.doc-header-card) — per request, so this "about the document
              as a whole" cluster is visually one group with real spacing
              below it before the Info/Customer/Pricing/Product tab bar. -->
-        <div class="doc-header-card">
+        <div style="padding:0 4px; margin:4px 0 10px;">
+            <button id="btnQuickSalePage" onclick="openQuickTap()" style="width:100%; margin:0; padding:17px 12px; font-size:19px; font-weight:900; letter-spacing:.5px; background:#D9480F !important; color:#FFFFFF !important; border-radius:12px; box-shadow:0 3px 10px rgba(217,72,15,.35);">⚡ QUICK SALE<span id="qtHomeBadge" style="font-size:13px; font-weight:700;"></span></button>
+        </div>
+        <!-- vBeta80: Doc Type + the Info/Customer/Pricing/Product tabs form ONE sticky bar, so the top of the screen
+             always shows what kind of document this is and lets you jump between sections. The Convert / Pen / Boss / Void
+             card follows underneath and scrolls away normally. -->
+        <div class="doc-sticky-top" id="docStickyTop">
         <!-- U5: Doc Type gets its own dedicated, visually prominent block —
              it's the single most important selector in the form. -->
         <div class="doctype-spotlight">
@@ -4745,9 +4762,22 @@
                 <option value="INV">📄 Tax Invoice</option>
                 <option value="CRN">↩️ Credit Note</option>
                 <option value="EXP">💸 General Expense Voucher</option>
-                <option value="RCM">🔄 RCM Payment Voucher</option>
+                <option value="RCM">🔄 RCM Voucher</option>
             </select>
         </div>
+            <div class="doc-jumpnav-wrap">
+            <div class="doc-jumpnav" id="docJumpNav">
+                <div class="doc-jumpnav-item active" data-target="docSectionInfo" onclick="jumpToDocSection('docSectionInfo')">Info</div>
+                <div class="doc-jumpnav-item" data-target="docSectionCustomer" onclick="jumpToDocSection('docSectionCustomer')">Customer</div>
+                <div class="doc-jumpnav-item" data-target="docSectionPricing" onclick="jumpToDocSection('docSectionPricing')">Pricing</div>
+                <div class="doc-jumpnav-item" data-target="docSectionProduct" onclick="jumpToDocSection('docSectionProduct')">Product</div>
+                <div class="doc-jumpnav-item" data-target="docSectionPayment" onclick="jumpToDocSection('docSectionPayment')">Payment</div>
+                <div class="doc-jumpnav-item" data-target="docSectionDiscountDocs" onclick="jumpToDocSection('docSectionDiscountDocs')">Discount &amp; Docs</div>
+            </div>
+            </div>
+        </div>
+
+        <div class="doc-header-card">
 
         <!-- vBeta15: contextual actions for the CURRENTLY SELECTED document type,
              right under the selector that determines them — replaces the old
@@ -4877,16 +4907,6 @@
              don't have that tab system, switchAppMode() hides every pill
              except Info, since Info is the only thing here that applies
              to them. See switchAppMode() (JS) for the pill-hiding logic. -->
-        <div class="doc-jumpnav-wrap">
-            <div class="doc-jumpnav" id="docJumpNav">
-                <div class="doc-jumpnav-item active" data-target="docSectionInfo" onclick="jumpToDocSection('docSectionInfo')">Info</div>
-                <div class="doc-jumpnav-item" data-target="docSectionCustomer" onclick="jumpToDocSection('docSectionCustomer')">Customer</div>
-                <div class="doc-jumpnav-item" data-target="docSectionPricing" onclick="jumpToDocSection('docSectionPricing')">Pricing</div>
-                <div class="doc-jumpnav-item" data-target="docSectionProduct" onclick="jumpToDocSection('docSectionProduct')">Product</div>
-                <div class="doc-jumpnav-item" data-target="docSectionPayment" onclick="jumpToDocSection('docSectionPayment')">Payment</div>
-                <div class="doc-jumpnav-item" data-target="docSectionDiscountDocs" onclick="jumpToDocSection('docSectionDiscountDocs')">Discount &amp; Docs</div>
-            </div>
-        </div>
 
         <!-- vBeta34: Company Address / Document No. / Date grouped into
              their own section ("Info" — the user's suggested name, since
@@ -6638,12 +6658,18 @@
 <div id="summaryModal" class="modal-overlay" onclick="if(event.target===this) closeSummary()">
     <div class="modal-content analytics-modal">
         <div class="modal-header">
-            <h2>📊 Monthly Sales Summary</h2>
+            <h2>📊 Summary</h2>
             <div style="display:flex; gap:8px;">
-                <button onclick="exportSummaryCSV()" style="width:auto; margin:0; background:#1C7A3E; color:#FFFFFF; border:none; padding:9px 14px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold;">📄 Export CSV</button>
+                <button id="btnSummaryCsv" onclick="exportSummaryCSV()" style="width:auto; margin:0; background:#1C7A3E; color:#FFFFFF; border:none; padding:9px 14px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold;">📄 Export CSV</button>
                 <button class="close-btn" onclick="closeSummary()">X</button>
             </div>
         </div>
+        <!-- vBeta80: Monthly and Daily sit side by side. The Daily tab is the old Daily Sales page, moved here. -->
+        <div class="tab-bar" style="margin-bottom:12px;">
+            <button class="tab-btn active" id="tabSumMonthly" onclick="setSummaryMode('monthly')">📊 Monthly Summary</button>
+            <button class="tab-btn" id="tabSumDaily" onclick="setSummaryMode('daily')">📒 Daily Summary</button>
+        </div>
+        <div id="summaryMonthlyPane">
         <div class="period-select-row" style="flex-wrap:wrap; gap:8px;">
             <label>FY:</label>
             <select id="summaryFY" onchange="renderSummary()" aria-label="Financial year"></select>
@@ -6676,6 +6702,38 @@
         <div id="summaryScopeNote" style="display:none; font-size:12px; margin-bottom:12px; padding:8px 12px; border-radius:6px; background:var(--vista-amber-tint,#FEF3E0); color:#92400E;"></div>
         <div id="summaryStatsGrid" class="stat-grid"></div>
         <div id="summaryBody"></div>
+        </div><!-- /summaryMonthlyPane -->
+        <div id="summaryDailyPane" style="display:none;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <button onclick="dsShiftDay(-1)" aria-label="Previous day" style="width:44px; height:44px; margin:0; padding:0; border:1px solid #E1E1E6; border-radius:10px; background:#FFFFFF; color:#2c3e50; font-size:18px; cursor:pointer;">‹</button>
+            <input type="date" id="dsDate" onchange="dsRender()" style="flex:1; height:44px; box-sizing:border-box; margin:0; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:10px; padding:0 10px; font-size:15px;">
+            <button onclick="dsShiftDay(1)" aria-label="Next day" style="width:44px; height:44px; margin:0; padding:0; border:1px solid #E1E1E6; border-radius:10px; background:#FFFFFF; color:#2c3e50; font-size:18px; cursor:pointer;">›</button>
+        </div>
+        <div id="dsTotals" style="margin-bottom:12px;"></div>
+        <div style="background:#EDEDF1; border-radius:10px; padding:10px; margin-bottom:12px;">
+            <div style="font-size:11px; font-weight:bold; color:#5F5D70; text-transform:uppercase; margin-bottom:6px;">+ Add a sale</div>
+            <input type="text" id="dsItem" list="dsItemList" placeholder="Item (e.g. AAC Block 4 Inch (Birla))" oninput="dsItemChosen()" style="width:100%; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0 0 6px; font-size:15px;">
+            <datalist id="dsItemList"></datalist>
+            <div style="display:flex; gap:6px; margin-bottom:6px;">
+                <input type="number" inputmode="decimal" id="dsQty" placeholder="Qty" oninput="dsCalc()" style="flex:1; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
+                <input type="number" inputmode="decimal" id="dsRate" placeholder="Rate ₹" oninput="dsCalc()" style="flex:1; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
+                <input type="number" inputmode="decimal" id="dsAmount" placeholder="Amount ₹" style="flex:1.2; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
+            </div>
+            <div style="display:flex; gap:6px; margin-bottom:6px;">
+                <select id="dsMode" style="flex:1; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
+                    <option value="Cash">Cash</option><option value="UPI">UPI</option><option value="Bank">Bank</option><option value="Credit">Credit (to collect)</option>
+                </select>
+                <input type="text" id="dsClient" placeholder="Customer (optional)" style="flex:1.4; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
+            </div>
+            <button onclick="dsAdd()" style="background:#1C7A3E; color:#FFFFFF; border:none; padding:12px 14px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:bold; width:100%; margin:0;">Add sale</button>
+        </div>
+        <div id="dsList"></div>
+        <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+            <button onclick="dsPdf(false)" style="flex:1; min-width:140px; height:48px; margin:0; border:none; border-radius:10px; background:#2c3e50; color:#FFFFFF; font-size:14px; font-weight:bold; cursor:pointer;">📄 Summary PDF</button>
+            <button onclick="dsPdf(true)" style="flex:1; min-width:140px; height:48px; margin:0; border:1px solid #D4D4DC; border-radius:10px; background:#FFFFFF; color:#2c3e50; font-size:14px; font-weight:bold; cursor:pointer;">📤 Share PDF</button>
+            <button onclick="dsCopyText()" style="flex:1; min-width:140px; height:48px; margin:0; border:1px solid #D4D4DC; border-radius:10px; background:#FFFFFF; color:#2c3e50; font-size:14px; font-weight:bold; cursor:pointer;">📋 Copy text</button>
+        </div>
+        </div><!-- /summaryDailyPane -->
     </div>
 </div>
 
@@ -7415,7 +7473,9 @@
 <!-- #3: proper Edit Cash Entry modal — title, date, amount -->
 <!-- vBeta67: QUICK SALE — voice/typed sale or quote draft. Everything here is a DRAFT;
      "Save" and "Open full form" both go through the normal form + saveDocument() gates. -->
-<style>#qsModal button{width:auto !important; margin:0; box-sizing:border-box; white-space:nowrap;} #qsModal #qsMicBtn{flex:1 1 auto;} #qsFab{width:56px !important; padding:0; margin:0;}</style>
+<style>#qsModal button{width:auto !important; margin:0; box-sizing:border-box; white-space:nowrap;} #qsModal #qsMicBtn{flex:1 1 auto;} #qsFab{width:56px !important; padding:0; margin:0;}
+/* vBeta80: the floating mic button is hidden for now (the tap-based Quick Sale replaced it on the home page). To bring it back, delete the next line. */
+#qsFab{display:none !important;}</style>
 <button id="qsFab" class="no-print" onclick="openQuickSale()" aria-label="Quick Sale by voice" style="position:fixed; right:14px; bottom:84px; z-index:900; width:56px; height:56px; border-radius:28px; border:none; background:#2c3e50; color:#FFFFFF; font-size:24px; box-shadow:0 4px 14px rgba(0,0,0,0.3); cursor:pointer;">🎤</button>
 <div id="qsModal" class="no-print" onclick="if(event.target===this) closeQuickSale()" style="display:none; position:fixed; inset:0; z-index:2200; background:rgba(0,0,0,0.45); align-items:flex-end; justify-content:center;">
   <div style="width:100%; max-width:480px; height:92vh; background:#F6F6F9; color:#1C1C27; border-radius:18px 18px 0 0; display:flex; flex-direction:column; overflow:hidden; font-family:inherit;">
@@ -7608,41 +7668,96 @@
 </div>
 
 <!-- vBeta68: DAILY SALES — quick counter-sale log + one-page summary PDF per day -->
-<div id="dailySalesModal" class="modal-overlay" onclick="if(event.target===this) closeDailySales()">
-    <div class="modal-content" style="max-width:620px;">
+<!-- vBeta80: QUICK SALE (tap version). Seven item buttons -> quantity/price popup -> list + total.
+     Saved as internal "Quick Sale" records that can be converted into a Sales Invoice later. -->
+<style>
+    #qtModal .qt-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+    #qtModal .qt-btn { margin:0; width:100%; min-height:70px; border-radius:12px; border:2.5px solid #2c3e50 !important; background:#FFFFFF !important; color:#000 !important; font-size:20px; font-weight:900; line-height:1.15; padding:8px 6px; touch-action:manipulation; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    #qtModal .qt-btn small { display:block; font-size:12px; font-weight:700; margin-top:3px; }
+    #qtModal .qt-btn.sel { background:#1C7A3E !important; border-color:#145c2d !important; color:#FFFFFF !important; }
+    #qtModal .qt-btn.wide { grid-column:1 / span 2; }
+    #qtModal .qt-card { background:#EDEDF1; border-radius:10px; padding:12px; margin-bottom:14px; }
+    #qtModal .qt-card input { margin:0; width:100%; box-sizing:border-box; font-size:16px; padding:10px; border:1.5px solid #B8B8C4; border-radius:8px; background:#FFFFFF; color:#000; }
+    #qtModal .qt-tab { flex:1; margin:0; padding:10px; font-size:14px; font-weight:700; border-radius:8px; background:#EDEDF1 !important; color:#000 !important; }
+    #qtModal .qt-tab.on { background:#2c3e50 !important; color:#FFFFFF !important; }
+    #qtModal .qt-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:11px 4px; border-bottom:1px solid #E1E1E6; touch-action:manipulation; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+    #qtEntry .qt-chip { margin:0; width:auto; padding:9px 14px; font-size:16px; font-weight:800; border-radius:20px; background:#EDEDF1 !important; color:#000 !important; border:2px solid #B8B8C4 !important; }
+    #qtEntry .qt-chip.on { background:#1C7A3E !important; color:#FFFFFF !important; border-color:#145c2d !important; }
+    #qtEntry input.qt-big { margin:0; width:100%; box-sizing:border-box; font-size:28px; font-weight:900; padding:10px; border:2px solid #2c3e50; border-radius:10px; background:#FFFFFF; color:#000; text-align:center; }
+</style>
+<div id="qtModal" class="modal-overlay" onclick="if(event.target===this) closeQuickTap()">
+    <div class="modal-content" style="max-width:520px;">
         <div class="modal-header">
-            <h2>📒 Daily Sales</h2>
-            <button class="close-btn" onclick="closeDailySales()">X</button>
+            <h2>⚡ Quick Sale</h2>
+            <button class="close-btn" onclick="closeQuickTap()">X</button>
         </div>
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-            <button onclick="dsShiftDay(-1)" aria-label="Previous day" style="width:44px; height:44px; margin:0; padding:0; border:1px solid #E1E1E6; border-radius:10px; background:#FFFFFF; color:#2c3e50; font-size:18px; cursor:pointer;">‹</button>
-            <input type="date" id="dsDate" onchange="dsRender()" style="flex:1; height:44px; box-sizing:border-box; margin:0; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:10px; padding:0 10px; font-size:15px;">
-            <button onclick="dsShiftDay(1)" aria-label="Next day" style="width:44px; height:44px; margin:0; padding:0; border:1px solid #E1E1E6; border-radius:10px; background:#FFFFFF; color:#2c3e50; font-size:18px; cursor:pointer;">›</button>
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+            <button id="qtTabNew" class="qt-tab on" onclick="qtSwitchTab('new')">New sale</button>
+            <button id="qtTabSaved" class="qt-tab" onclick="qtSwitchTab('saved')">Saved (0)</button>
         </div>
-        <div id="dsTotals" style="margin-bottom:12px;"></div>
-        <div style="background:#EDEDF1; border-radius:10px; padding:10px; margin-bottom:12px;">
-            <div style="font-size:11px; font-weight:bold; color:#5F5D70; text-transform:uppercase; margin-bottom:6px;">+ Add a sale</div>
-            <input type="text" id="dsItem" list="dsItemList" placeholder="Item (e.g. AAC Block 4 Inch (Birla))" oninput="dsItemChosen()" style="width:100%; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0 0 6px; font-size:15px;">
-            <datalist id="dsItemList"></datalist>
-            <div style="display:flex; gap:6px; margin-bottom:6px;">
-                <input type="number" inputmode="decimal" id="dsQty" placeholder="Qty" oninput="dsCalc()" style="flex:1; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
-                <input type="number" inputmode="decimal" id="dsRate" placeholder="Rate ₹" oninput="dsCalc()" style="flex:1; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
-                <input type="number" inputmode="decimal" id="dsAmount" placeholder="Amount ₹" style="flex:1.2; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
+
+        <div id="qtNewPane">
+            <div id="qtBtns" class="qt-grid"></div>
+
+            <div class="qt-card">
+                <div style="font-size:12px; font-weight:700; color:#000; margin-bottom:6px;">Customer (optional)</div>
+                <input type="text" id="qtName" list="qtNameList" placeholder="Customer name" autocomplete="off" oninput="qtNameChanged()">
+                <datalist id="qtNameList"></datalist>
+                <div style="display:flex; gap:8px; margin-top:8px;">
+                    <input type="tel" id="qtPhone" placeholder="Phone number" inputmode="numeric" autocomplete="off" oninput="qtPhoneChanged()" style="flex:1;">
+                    <button onclick="qtPasteFromClipboard(false)" style="width:auto; margin:0; padding:0 14px; background:#2c3e50 !important; color:#FFFFFF !important; border-radius:8px; font-size:14px; font-weight:700;">📋 Paste</button>
+                </div>
+                <div id="qtCustHint" style="font-size:12px; color:#145c2d; font-weight:700; margin-top:6px; display:none;"></div>
             </div>
-            <div style="display:flex; gap:6px; margin-bottom:6px;">
-                <select id="dsMode" style="flex:1; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
-                    <option value="Cash">Cash</option><option value="UPI">UPI</option><option value="Bank">Bank</option><option value="Credit">Credit (to collect)</option>
-                </select>
-                <input type="text" id="dsClient" placeholder="Customer (optional)" style="flex:1.4; min-width:0; box-sizing:border-box; background:#FFFFFF; color:#1C1C27; border:1px solid #E1E1E6; border-radius:8px; padding:10px; margin:0; font-size:15px;">
+
+            <div style="font-size:13px; font-weight:800; color:#000; margin-bottom:2px;">Selected items <span style="font-weight:400; color:#333; font-size:11px;">(tap to change · hold to remove)</span></div>
+            <div id="qtList"></div>
+            <div id="qtUndo" style="display:none; background:#2c3e50; color:#FFFFFF; border-radius:8px; padding:8px 12px; margin-top:8px; font-size:13px; justify-content:space-between; align-items:center;"></div>
+            <div id="qtTotal" style="display:flex; justify-content:space-between; align-items:center; padding:14px 4px; font-size:22px; font-weight:900; border-top:2.5px solid #000; margin-top:6px;"><span>Total</span><span id="qtTotalVal">₹0</span></div>
+            <div style="display:flex; gap:8px;">
+                <button onclick="qtClear()" style="flex:1; margin:0; padding:14px; background:#EDEDF1 !important; color:#000 !important; border-radius:10px; font-size:14px; font-weight:700;">Clear</button>
+                <button id="qtSaveBtn" onclick="qtSave()" style="flex:3; margin:0; padding:14px; background:#1C7A3E !important; color:#FFFFFF !important; border-radius:10px; font-size:17px; font-weight:900;">💾 Save Quick Sale</button>
             </div>
-            <button onclick="dsAdd()" style="background:#1C7A3E; color:#FFFFFF; border:none; padding:12px 14px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:bold; width:100%; margin:0;">Add sale</button>
         </div>
-        <div id="dsList"></div>
-        <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
-            <button onclick="dsPdf(false)" style="flex:1; min-width:140px; height:48px; margin:0; border:none; border-radius:10px; background:#2c3e50; color:#FFFFFF; font-size:14px; font-weight:bold; cursor:pointer;">📄 Summary PDF</button>
-            <button onclick="dsPdf(true)" style="flex:1; min-width:140px; height:48px; margin:0; border:1px solid #D4D4DC; border-radius:10px; background:#FFFFFF; color:#2c3e50; font-size:14px; font-weight:bold; cursor:pointer;">📤 Share PDF</button>
-            <button onclick="dsCopyText()" style="flex:1; min-width:140px; height:48px; margin:0; border:1px solid #D4D4DC; border-radius:10px; background:#FFFFFF; color:#2c3e50; font-size:14px; font-weight:bold; cursor:pointer;">📋 Copy text</button>
+
+        <div id="qtSavedPane" style="display:none;"></div>
+    </div>
+</div>
+
+<div id="qtEntry" class="modal-overlay" style="z-index:2300;" onclick="if(event.target===this) qtCloseEntry()">
+    <div class="modal-content" style="max-width:420px;">
+        <div class="modal-header">
+            <h2 id="qtEntryTitle">Item</h2>
+            <button class="close-btn" onclick="qtCloseEntry()">X</button>
         </div>
+        <div style="font-size:12px; font-weight:700; color:#000; margin-bottom:4px;" id="qtQtyLbl">Quantity</div>
+        <input type="text" id="qtQty" class="qt-big" inputmode="decimal" placeholder="0" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('qtPrice').focus();}" oninput="qtEntryChanged()">
+        <div style="font-size:12px; font-weight:700; color:#000; margin:12px 0 4px;">Price per unit (₹)</div>
+        <input type="text" id="qtPrice" class="qt-big" inputmode="decimal" placeholder="0" onkeydown="if(event.key==='Enter'){event.preventDefault();qtConfirmEntry();}" oninput="qtEntryChanged()">
+        <div id="qtChips" style="display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 6px;"></div>
+        <div style="margin-bottom:10px;"><a href="#" onclick="qtTogglePresetEdit();return false;" style="font-size:13px; color:#0B5A94; font-weight:700;">✎ Edit price presets</a></div>
+        <div id="qtPresetEdit" style="display:none; margin-bottom:12px;">
+            <input type="text" id="qtPresetIn" placeholder="e.g. 66, 70-73, 58-60" style="width:100%; box-sizing:border-box; font-size:15px; padding:10px; border:1.5px solid #B8B8C4; border-radius:8px; margin:0 0 6px 0; background:#FFFFFF; color:#000;">
+            <button onclick="qtSavePresets()" style="width:100%; margin:0; padding:10px; background:#2c3e50 !important; color:#FFFFFF !important; border-radius:8px; font-size:14px; font-weight:700;">Save presets</button>
+        </div>
+        <div id="qtEntryTotal" style="text-align:center; font-size:15px; font-weight:800; margin-bottom:10px; color:#000;"></div>
+        <div id="qtEntryErr" style="color:#A32A2E; font-size:13px; font-weight:700; text-align:center; margin-bottom:8px; display:none;"></div>
+        <div style="display:flex; gap:8px;">
+            <button id="qtRemoveBtn" onclick="qtRemoveFromEntry()" style="flex:1; margin:0; padding:14px; background:#A32A2E !important; color:#FFFFFF !important; border-radius:10px; font-size:14px; font-weight:700; display:none;">Remove</button>
+            <button id="qtOkBtn" onclick="qtConfirmEntry()" style="flex:3; margin:0; padding:14px; background:#1C7A3E !important; color:#FFFFFF !important; border-radius:10px; font-size:17px; font-weight:900;">Add</button>
+        </div>
+    </div>
+</div>
+
+<div id="currentStockModal" class="modal-overlay" onclick="if(event.target===this) closeCurrentStock()">
+    <div class="modal-content" style="max-width:460px;">
+        <div class="modal-header">
+            <h2>📦 Current Stock</h2>
+            <button class="close-btn" onclick="closeCurrentStock()">X</button>
+        </div>
+        <div id="currentStockBody"></div>
+        <div id="currentStockAsOf" style="font-size:11px; color:#333; margin:10px 0 12px; text-align:center;"></div>
+        <button onclick="closeCurrentStock(); openStockManager();" style="width:100%; margin:0; background:#2c3e50 !important; color:#FFFFFF !important; padding:10px; font-size:13px; border-radius:8px;">Open full Stock page</button>
     </div>
 </div>
 
@@ -8034,7 +8149,7 @@
     <div class="modal-content" style="max-width:920px;">
         <div class="modal-header">
             <h2><span id="pdProjectBadge" style="background:#0B5A94;color:#FFFFFF;padding:3px 10px;border-radius:10px;font-size:14px;margin-right:8px;"></span><span id="pdProjectName"></span> <span id="pdProjectClientLabel" style="font-size:13px; font-weight:normal; color:#5F5D70;"></span></h2>
-            <button class="close-btn" onclick="closeProjectDetail()">X</button>
+            <button onclick="openProjectStatement()" style="width:auto; margin:0 8px 0 0; background:#2c3e50; color:#FFFFFF; padding:6px 12px; font-size:12px; border-radius:6px;">📄 Statement</button><button class="close-btn" onclick="closeProjectDetail()">X</button>
         </div>
 
         <!-- Summary cards: mirrors the old Site Manager header stat row -->
@@ -9000,7 +9115,7 @@
     // prefixed with a guessed future production version number (the old
     // "v96-beta*" scheme) — that guess was never meaningful since beta
     // doesn't necessarily become that exact production version.
-    const APP_VERSION = "vBeta70";
+    const APP_VERSION = "vBeta80";
 
     // ================================================================
     // DATA LOSS GUARD  (v73a)
@@ -9045,7 +9160,7 @@
         'kenSavedDocsCache', 'kenPricingConfig', 'kenAuditDocs',
         'kenTermsTemplates', 'kenCbTemplates', 'kenBrandAssets',
         'kenAdvancePool', 'kenTrash', 'kenAddressOptions',
-        'kenCustomItemUsage', 'kenOfflineDocQueue', 'kenDailySales',
+        'kenCustomItemUsage', 'kenOfflineDocQueue', 'kenDailySales', 'kenQuickSales',
         // v80: saved item bundles are a genuine business collection — how
         // this yard actually sells — so they get the same snapshot and
         // catastrophic-write protection as clients, sites and stock.
@@ -9138,7 +9253,7 @@
         kenAdvancePool: 'Advance Pool', kenTrash: 'Trash',
         kenAddressOptions: 'Address Options', kenCustomItemUsage: 'Custom Items',
         kenOfflineDocQueue: 'Offline Queue',
-        kenDailySales: 'Daily Sales'
+        kenDailySales: 'Daily Sales', kenQuickSales: 'Quick Sales'
     };
 
     // THE CHOKE POINT. Every localStorage.setItem in the app routes here.
@@ -9591,6 +9706,8 @@
         // this yard sells, and the review ceiling is a control the owner set —
         // both should follow him to a new phone, not live on one device.
         dailySales:       'kenDailySales',       // vBeta68: everyday counter-sale log (Daily Sales)
+        quickSales:       'kenQuickSales',       // vBeta80: tap-version Quick Sale records waiting to become Sales Invoices
+        quickPresets:     'kenQuickPresets',     // vBeta80: user-defined price presets for the Quick Sale buttons
         itemBundles:      'kenItemBundles',      // v80 item 22: saved cart combinations
         largeDocThreshold:'kenLargeDocThreshold' // v80 item 15: manual review ceiling (a scalar, stored raw)
     };
@@ -9602,6 +9719,8 @@
         _syncTimers[configKey] = setTimeout(() => runConfigCollectionSync(configKey, value), SYNC_DEBOUNCE_MS);
     }
 
+    const CHUNKED_CONFIG_KEYS = new Set(['quickSales', 'dailySales']);
+    const CONFIG_CHUNK_SIZE = 30000;
     function runConfigCollectionSync(configKey, value) {
         if (WEB_APP_URL === "PASTE_YOUR_WEB_APP_URL_HERE") return;
         if (_syncInFlight[configKey]) { _configRepush[configKey] = true; return; } // vBeta64: an edit made mid-push is pushed again afterwards, not dropped
@@ -9624,11 +9743,21 @@
             }
         } catch (e) {}
 
-        fetch(WEB_APP_URL, {
+        // vBeta80: one Google Sheets cell holds at most ~50,000 characters. Lists that keep growing
+        // (Quick Sales, Daily Sales) are cut into 30,000-character pieces saved as <key>__1, <key>__2 ...
+        // and a small "<key>" row says how many pieces there are. Short lists stay a single plain row.
+        const _pushRow = (key, val) => fetch(WEB_APP_URL, {
             method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: 'saveConfig', data: { key: configKey, value: payload } })
-        })
-        .then(r => r.json())
+            body: JSON.stringify({ action: 'saveConfig', data: { key, value: val } })
+        }).then(r => r.json());
+        let _job;
+        let _str = CHUNKED_CONFIG_KEYS.has(configKey) ? JSON.stringify(payload) : '';
+        if (_str.length > CONFIG_CHUNK_SIZE) {
+            let pieces = []; for (let i = 0; i < _str.length; i += CONFIG_CHUNK_SIZE) pieces.push('c:' + _str.slice(i, i + CONFIG_CHUNK_SIZE));
+            _job = pieces.reduce((chain, piece, i) => chain.then(r0 => (r0 && r0.success === false) ? r0 : _pushRow(configKey + '__' + (i + 1), piece)), Promise.resolve({ success: true }))
+                .then(r0 => (r0 && r0.success === false) ? r0 : _pushRow(configKey, { _chunked: pieces.length }));
+        } else _job = _pushRow(configKey, payload);
+        _job
         .then(res => {
             _syncInFlight[configKey] = false;
             if (res && res.success === false) {
@@ -11455,6 +11584,12 @@
     // section scrolls past in between — it simply confirms the same pill
     // once the scroll settles, and takes back over for ordinary free-scroll
     // after that.
+    function updateDocStickyH() {
+        let b = document.getElementById('docStickyTop');
+        if (b) document.documentElement.style.setProperty('--docStickyH', b.offsetHeight + 'px');
+    }
+    window.addEventListener('load', () => setTimeout(updateDocStickyH, 300));
+    window.addEventListener('resize', updateDocStickyH);
     var docJumpNavSuppressUntil = 0;
     function jumpToDocSection(id) {
         let el = document.getElementById(id);
@@ -11501,7 +11636,7 @@
                 navItems[idx].classList.add('active');
                 if (quickDots[idx]) { quickDots.forEach(d => d.classList.remove('active')); quickDots[idx].classList.add('active'); }
             });
-        }, { rootMargin: '-56px 0px -55% 0px', threshold: 0 });
+        }, { rootMargin: '-150px 0px -55% 0px', threshold: 0 });
         sections.forEach(s => obs.observe(s));
     })();
 
@@ -15054,6 +15189,17 @@
                         if (typeof val === 'string') {
                             try { val = JSON.parse(val); } catch(e) { /* may be a plain scalar string */ }
                         }
+                        // vBeta80: a list that was saved in pieces — put the pieces back together
+                        if (CHUNKED_CONFIG_KEYS.has(configKey) && val && typeof val === 'object' && !Array.isArray(val) && val._chunked) {
+                            let parts = [];
+                            for (let i = 1; i <= val._chunked; i++) {
+                                let c = data[configKey + '__' + i];
+                                if (typeof c !== 'string' || !c.startsWith('c:')) { parts = null; break; }
+                                parts.push(c.slice(2));
+                            }
+                            if (!parts) return; // a piece is missing — keep what this device has rather than guess
+                            try { val = JSON.parse(parts.join('')); } catch (e) { return; }
+                        }
                         if (val === null || val === undefined) return;
                         try {
                             // Most of these collections are arrays/objects, but
@@ -16384,7 +16530,7 @@
         }
 
         // Print titles
-        const titles = { INV:'TAX INVOICE', QUO:'QUOTATION', ADV:'ADVANCE RECEIPT', RCP:'PAYMENT RECEIPT', SAL:'SALES INVOICE', CRN:'CREDIT NOTE', RCM:'PAYMENT VOUCHER', EXP:'EXPENSE VOUCHER' };
+        const titles = { INV:'TAX INVOICE', QUO:'QUOTATION', ADV:'ADVANCE RECEIPT', RCP:'PAYMENT RECEIPT', SAL:'SALES INVOICE', CRN:'CREDIT NOTE', RCM:'RCM VOUCHER', EXP:'EXPENSE VOUCHER' };
         document.getElementById('printTitle').innerText = titles[type] || type;
 
         // A4: SAL "prices inclusive of GST" badge — moved out from above the doc
@@ -20095,7 +20241,7 @@
 
     const DOC_TYPE_SUMMARY_LABELS = {
         QUO: 'Quotation', SAL: 'Sales Invoice', INV: 'Tax Invoice', CRN: 'Credit Note',
-        ADV: 'Advance Receipt', RCP: 'Payment Receipt', EXP: 'Expense Voucher', RCM: 'RCM Payment Voucher'
+        ADV: 'Advance Receipt', RCP: 'Payment Receipt', EXP: 'Expense Voucher', RCM: 'RCM Voucher'
     };
 
     // Deliberately NOT a mini print preview — no header/company block, no
@@ -22366,6 +22512,7 @@
     let _stmtPeriod = 'ALL';
     let _stmtRows = [];       // allRows from getLedgerData, cached for the picker
     let _stmtOpening = 0;
+    let _stmtOpts = null;     // vBeta80: set for a PROJECT statement ({project, behalf, refunds, title, fileLabel}); null for a client statement
 
     // Called from the Ledger's Print Statement button.
     function openStatementPickerFromLedger() {
@@ -22412,8 +22559,9 @@
             alert('No financial documents found for this client in this period.');
             return;
         }
-        _stmtClient = client; _stmtPeriod = period;
+        _stmtClient = client; _stmtPeriod = period; _stmtOpts = null;
         _stmtRows = data.allRows; _stmtOpening = data.openingBalance;
+        document.getElementById('stmtPeriodSelect').style.display = '';
 
         document.getElementById('statementPickerClientName').innerText = client;
         document.getElementById('stmtPeriodSelect').value = period;
@@ -22455,13 +22603,13 @@
     }
     function stmtMoney(n) { return '₹' + (Math.abs(n) || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
 
-    function stmtCompute(client, period, rows, openingBalance) {
+    function stmtCompute(client, period, rows, openingBalance, opts) {
         let norm = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
         let entries = [];
         rows.forEach(r => {
             if (r._isCashPayment) {
                 let wo = /write-off/i.test(r.party || '');
-                entries.push({ date: r.date, ord: 1, label: wo ? 'Settled for less (write-off)' : 'Payment received', sub: 'against ' + (r.docNo || ''), debit: 0, credit: r.amount || 0 });
+                entries.push({ date: r.date, ord: 1, label: wo ? 'Settled for less (write-off)' : (r.party === 'Reimbursement' ? 'Reimbursement received' : 'Payment received'), sub: r.docNo ? 'against ' + r.docNo : '', debit: 0, credit: r.amount || 0 });
             } else if (['INV', 'SAL'].includes(r.type)) {
                 entries.push({ date: r.date, ord: 0, label: (r.type === 'INV' ? 'Tax Invoice ' : 'Sales Invoice ') + r.docNo, sub: r.deliverySite || '', debit: r.total || 0, credit: 0 });
             } else if (r.type === 'ADV') entries.push({ date: r.date, ord: 1, label: 'Advance received', sub: r.docNo, debit: 0, credit: r.total || 0 });
@@ -22470,74 +22618,112 @@
         });
         // Advance Pool entries: Client Scope = money spent on the client's behalf that they owe us.
         // Our Scope is settled from their advance and is shown for information only.
-        let reg = findClientByName(client);
-        let pool = getClientAdvPool(reg ? reg.id : ('unreg:' + client + ' — unregistered'));
-        if ((!pool.entries || !pool.entries.length) && !reg) pool = getClientAdvPool('unreg:' + client);
-        let pe = pool.entries || [];
-        let ourScope = pe.filter(e => e.scope === 'our'), clientScope = pe.filter(e => e.scope === 'client');
-        clientScope.forEach(e => entries.push({ date: e.date, ord: 0, label: 'Paid on your behalf', sub: e.desc || '', debit: parseFloat(e.amount) || 0, credit: 0 }));
+        // vBeta80: a PROJECT statement brings its own entries (opts) instead of the client's pool.
+        let ourScope = [];
+        if (opts && opts.project) {
+            (opts.behalf || []).forEach(e => entries.push({ date: e.date, ord: 0, label: 'Paid on your behalf', sub: e.sub || '', debit: e.debit || 0, credit: 0 }));
+            (opts.refunds || []).forEach(e => entries.push({ date: e.date, ord: 2, label: 'Refund paid to client', sub: e.sub || '', debit: e.debit || 0, credit: 0 }));
+        } else {
+            let reg = findClientByName(client);
+            let pool = getClientAdvPool(reg ? reg.id : ('unreg:' + client + ' — unregistered'));
+            if ((!pool.entries || !pool.entries.length) && !reg) pool = getClientAdvPool('unreg:' + client);
+            let pe = pool.entries || [];
+            ourScope = pe.filter(e => e.scope === 'our');
+            let clientScope = pe.filter(e => e.scope === 'client');
+            clientScope.forEach(e => entries.push({ date: e.date, ord: 0, label: 'Paid on your behalf', sub: e.desc || '', debit: parseFloat(e.amount) || 0, credit: 0 }));
+        }
         entries.sort((a, b) => parseLocalDate(a.date) - parseLocalDate(b.date) || a.ord - b.ord);
         let bal = openingBalance || 0;
         entries.forEach(e => { bal += e.debit - e.credit; e.balance = bal; });
         let billed = entries.reduce((s, e) => s + e.debit, 0), received = entries.reduce((s, e) => s + e.credit, 0);
         // pending invoices (Outstanding's own calculation, so the two screens agree)
-        let pending = computeOutstandingRows(['INV', 'SAL']).filter(d => norm(d.clientName) === norm(client));
+        let pending = (opts && opts.project) ? [] : computeOutstandingRows(['INV', 'SAL']).filter(d => norm(d.clientName) === norm(client));
         let creditDays = getCreditPeriodDays();
         return { entries, opening: openingBalance || 0, billed, received, balance: bal, ourScope, pending, creditDays };
     }
 
-    function stmtBuildHtml(client, period, rows, openingBalance, width) {
-        let S = stmtCompute(client, period, rows, openingBalance);
-        let periodLabel = { ALL: 'All time', FY: 'This financial year', '3M': 'Last 3 months', '1M': 'Last 1 month', CUSTOM: 'Selected dates' }[period] || 'All time';
+    function stmtBuildHtml(client, period, rows, openingBalance, width, opts) {
+        let S = stmtCompute(client, period, rows, openingBalance, opts);
+        let periodLabel = { ALL: 'All Time', FY: 'This Financial Year', '3M': 'Last 3 Months', '1M': 'Last 1 Month', CUSTOM: 'Selected Dates' }[period] || 'All Time';
         let asOf = formatDateDisplay(todayISO());
-        let lh = stmtLetterhead();
         let reg = findClientByName(client);
         let lastDoc = savedDocs.filter(d => d.clientName && d.clientName.trim().toLowerCase() === client.trim().toLowerCase()).slice(-1)[0] || {};
         let phone = (reg && reg.phone) || lastDoc.phone || '', loc = (reg && reg.location) || lastDoc.location || '', gst = (reg && reg.gstin) || lastDoc.gstin || '';
         let logoSrc = document.getElementById('mainLogo') ? document.getElementById('mainLogo').src : '';
-        let th = 'padding:7px 8px; background:#2c3e50; color:#FFFFFF; font-size:11px; text-align:left;';
-        let td = 'padding:7px 8px; border-bottom:1px solid #E1E1E6; font-size:12px; vertical-align:top;';
-        let r = 'text-align:right; white-space:nowrap;';
-        let balTxt = b => stmtMoney(b) + (b < -0.005 ? ' CR' : b > 0.005 ? ' DR' : '');
-        let body = '';
-        if (S.opening) body += `<tr style="background:#EDEDF1;"><td style="${td}"></td><td style="${td}" colspan="3"><b>Opening balance</b> <span style="color:#5F5D70;">(brought forward)</span></td><td style="${td}${r}"></td><td style="${td}${r} font-weight:bold;">${balTxt(S.opening)}</td></tr>`;
-        body += S.entries.map(e => `<tr style="page-break-inside:avoid;"><td style="${td} white-space:nowrap;">${formatDateDisplay(e.date)}</td><td style="${td}"><b>${esc(e.label)}</b>${e.sub ? '<div style="font-size:11px; color:#5F5D70;">' + esc(e.sub) + '</div>' : ''}</td><td style="${td}${r}">${e.debit ? stmtMoney(e.debit) : ''}</td><td style="${td}${r} color:#1C7A3E;">${e.credit ? stmtMoney(e.credit) : ''}</td><td style="${td}${r} font-weight:bold;">${balTxt(e.balance)}</td></tr>`).join('');
-        let colHead = `<tr><th style="${th}">Date</th><th style="${th}">Particulars</th><th style="${th}${r}">Debit</th><th style="${th}${r}">Credit</th><th style="${th}${r}">Balance</th></tr>`;
-        // header cells rebuilt without the unused first spacer column
-        body = body.replace(/<tr style="background:#EDEDF1;"><td style="[^"]*"><\/td><td style="([^"]*)" colspan="3">/, '<tr style="background:#EDEDF1;"><td style="$1" colspan="4">');
-        let pendingHtml = S.pending.length ? `
-            <div style="font-size:12px; font-weight:bold; color:#5F5D70; text-transform:uppercase; margin:20px 0 6px;">Pending invoices</div>
-            <table style="width:100%; border-collapse:collapse;"><thead><tr><th style="${th}">Invoice</th><th style="${th}">Date</th><th style="${th}">Due date</th><th style="${th}${r}">Balance</th><th style="${th}${r}">Overdue</th></tr></thead><tbody>
-            ${S.pending.map(d => { let due = new Date(parseLocalDate(d._cDate)); due.setDate(due.getDate() + S.creditDays); return `<tr style="page-break-inside:avoid;"><td style="${td}">${esc(d.docNo)}</td><td style="${td}">${formatDateDisplay(d._cDate)}</td><td style="${td}">${formatDateDisplay(toLocalISO(due))}</td><td style="${td}${r} font-weight:bold;">${stmtMoney(d.balanceDue)}</td><td style="${td}${r} color:${d._age > 0 ? '#A32A2E' : '#5F5D70'};">${d._age > 0 ? d._age + ' days' : 'not yet due'}</td></tr>`; }).join('')}
-            </tbody></table>` : '';
-        let ourHtml = S.ourScope.length ? `
-            <div style="font-size:12px; font-weight:bold; color:#5F5D70; text-transform:uppercase; margin:20px 0 6px;">Spent from your advance (for information)</div>
-            <table style="width:100%; border-collapse:collapse;"><tbody>${S.ourScope.map(e => `<tr style="page-break-inside:avoid;"><td style="${td}">${formatDateDisplay(e.date)}</td><td style="${td}">${esc(e.desc || '')}</td><td style="${td}${r}">${stmtMoney(parseFloat(e.amount) || 0)}</td></tr>`).join('')}</tbody></table>` : '';
-        let due = S.balance > 0.005;
-        let banner = `<div style="margin-top:22px; page-break-inside:avoid; border-radius:8px; padding:16px; text-align:center; background:${due ? '#A32A2E' : '#2c3e50'}; color:#FFFFFF;">
-            <div style="font-size:12px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; opacity:0.95;">${due ? 'Total due from you' : S.balance < -0.005 ? 'Credit balance with us' : 'Account fully settled'}</div>
-            <div style="font-size:30px; font-weight:900; margin:4px 0;">${stmtMoney(S.balance)}</div>
-            ${Math.abs(S.balance) > 0.5 ? `<div style="font-size:12px; opacity:0.95;">Rupees ${numberToWords(Math.round(Math.abs(S.balance)))} Only</div>` : ''}
-        </div>`;
-        let tile = (l, v, c) => `<td style="border:1px solid #E1E1E6; padding:8px 10px; width:25%;"><div style="font-size:10px; color:#5F5D70; font-weight:bold; text-transform:uppercase;">${l}</div><div style="font-size:15px; font-weight:900; color:${c};">${v}</div></td>`;
-        return `<div style="width:${width || 794}px; box-sizing:border-box; padding:${width ? '0' : '36px 40px'}; background:#FFFFFF; color:#1C1C27; font-family:Lato, 'Segoe UI', system-ui, sans-serif;">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid #2c3e50; padding-bottom:12px; gap:12px;">
-                <div style="display:flex; gap:12px; align-items:center;">
-                    ${logoSrc ? `<img src="${logoSrc}" onerror="this.style.display='none'" style="max-height:56px; max-width:110px;">` : ''}
-                    <div><div style="font-size:20px; font-weight:900; color:#2c3e50;">KEN TRADERS</div><div style="font-size:11px; color:#5F5D70; line-height:1.4;">A Unit of KEN PROJECTS · GSTIN ${esc(lh.gstin)}<br>${lh.lines.map(esc).join(', ')}<br>Phone: 91597 66611</div></div>
-                </div>
-                <div style="text-align:right;"><div style="font-size:18px; font-weight:900; color:#2c3e50;">STATEMENT OF ACCOUNT</div><div style="font-size:11px; color:#5F5D70;">${periodLabel} · as on ${asOf}</div></div>
+        let m = n => '₹' + (Math.round((Number(n) || 0) * 100) / 100).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+        let neg = n => '− ' + m(n);
+        let isRet = r => !r._isCashPayment && ['CRN', 'RET'].includes(r.type);
+        let invRows = rows.filter(r => !r._isCashPayment && ['INV', 'SAL'].includes(r.type));
+        let retRows = rows.filter(isRet);
+        let payRows = rows.filter(r => r._isCashPayment || ['ADV', 'RCP', 'REC'].includes(r.type));
+        let billed = invRows.reduce((s, d) => s + (d.total || 0), 0);
+        let returned = retRows.reduce((s, d) => s + (d.total || 0), 0);
+        let payAmt = r => r._isCashPayment ? (r.amount || 0) : (r.total || 0);
+        let received = payRows.reduce((s, r) => s + payAmt(r), 0);
+        let behalf = S.entries.filter(e => e.label === 'Paid on your behalf');
+        let behalfTotal = behalf.reduce((s, e) => s + e.debit, 0);
+
+        let sec = (t, c) => `<div class="pb-avoid" style="font-size:19px; font-weight:700; color:${c}; border-bottom:2.5px solid ${c}; padding-bottom:6px; margin:24px 0 4px;">${t}</div>`;
+        let line = (l, r2, bold) => `<div class="pb-avoid" style="display:flex; justify-content:space-between; gap:12px; padding:5px 0; font-size:${bold ? 13 : 12}px; ${bold ? 'font-weight:700;' : ''} page-break-inside:avoid;"><span>${l}</span><span style="white-space:nowrap; ${bold ? '' : 'font-weight:700;'}">${r2}</span></div>`;
+        let totRow = (l, v, c) => `<div class="pb-avoid" style="display:flex; justify-content:space-between; border-top:1.5px solid #000; margin-top:6px; padding-top:6px; font-weight:700; font-size:13px;"><span>${l}</span><span style="color:${c};">${v}</span></div>`;
+        // One document: its number/date/total, then each item line underneath
+        let docBlock = (d, sign, accent) => {
+            let c = computeDocLines(d), lines = c.lines.filter(l => (l._gross || 0) > 0);
+            let kind = d.type === 'INV' ? 'Tax Invoice' : d.type === 'SAL' ? 'Sales Invoice' : d.type === 'CRN' ? 'Credit Note' : d.type === 'RET' ? 'Sales Return' : d.type;
+            let head = `<div class="pb-avoid" style="display:flex; justify-content:space-between; gap:12px; margin-top:12px; font-size:13px; font-weight:700; page-break-after:avoid;"><span>${esc(d.docNo)} <span style="font-weight:400; font-size:11px; color:#333;">(${kind}) · ${formatDateDisplay(d.date)}${d.crnOrigRef ? ' · against ' + esc(d.crnOrigRef) : ''}</span></span><span style="white-space:nowrap; color:${accent};">${sign}${m(d.total)}</span></div>`;
+            let sum = lines.reduce((s, l) => s + l._gross, 0), disc = c.discount || 0;
+            let itemArr = lines.map(l => {
+                let q = Number(l.q) || 0, r = Number(l.r) || 0;
+                return `<div class="pb-avoid" style="display:flex; justify-content:space-between; gap:12px; padding:3px 0 3px 14px; font-size:12px; color:#111; page-break-inside:avoid;"><span>${esc(l.p || l.name || 'Item')}${l.notes ? '<div style="font-size:11px; color:#333;">' + esc(l.notes) + '</div>' : ''}<div style="font-size:11px; color:#333;">${q} ${esc(l.unit || 'Nos')} × ${m(r)}</div></span><span style="white-space:nowrap;">${m(l._gross)}</span></div>`;
+            });
+            let extra = '';
+            if (disc > 0) extra += `<div style="display:flex; justify-content:space-between; padding:3px 0 3px 14px; font-size:12px;"><span>Discount</span><span>− ${m(disc)}</span></div>`;
+            let resid = Math.round((d.total || 0) - (sum - disc));
+            if (lines.length && Math.abs(resid) >= 1) extra += `<div style="display:flex; justify-content:space-between; padding:3px 0 3px 14px; font-size:12px;"><span>${resid > 0 ? 'GST &amp; other charges' : 'Rounding / adjustment'}</span><span>${resid > 0 ? '' : '− '}${m(Math.abs(resid))}</span></div>`;
+            return '<div class="pb-avoid">' + head + (itemArr[0] || '') + '</div>' + itemArr.slice(1).join('') + extra;
+        };
+
+        let invHtml = invRows.length ? sec('Invoiced', '#0B5A94') + invRows.map(d => docBlock(d, '', '#0B5A94')).join('') + totRow('Total Billed', m(billed), '#0B5A94') : '';
+        let retHtml = retRows.length ? sec('Goods Returned / Credit Notes', '#B25E00') + retRows.map(d => docBlock(d, '− ', '#B25E00')).join('') + totRow('Total Returned', neg(returned), '#B25E00') : '';
+        let payHtml = payRows.length ? sec('Payments &amp; Advances Received', '#1C7A3E') + payRows.map(r => {
+            let wo = r._isCashPayment && /write-off/i.test(r.party || '');
+            let lbl = r._isCashPayment ? (wo ? 'Settled for less (write-off)' : (r.party === 'Reimbursement' ? 'Reimbursement received' : 'Payment received')) + (r.docNo ? ' <span style="font-weight:400; font-size:11px; color:#333;">· against ' + esc(r.docNo) + ' ·</span>' : '')
+                : (r.type === 'ADV' ? 'Advance received' : 'Payment received') + ' <span style="font-weight:400; font-size:11px; color:#333;">· ' + esc(r.docNo) + ' ·</span>';
+            return line(lbl + ' <span style="font-size:11px; color:#333;">' + formatDateDisplay(r.date) + '</span>', m(payAmt(r)));
+        }).join('') + totRow('Total Received', m(received), '#1C7A3E') : '';
+        let behalfHtml = behalf.length ? sec('Paid on Your Behalf (You Owe)', '#A32A2E') + behalf.map(e => line(esc(e.sub || e.label) + ' <span style="font-size:11px; color:#333;">' + formatDateDisplay(e.date) + '</span>', m(e.debit))).join('') + totRow('Total', m(behalfTotal), '#A32A2E') : '';
+        let refunds = S.entries.filter(e => e.label === 'Refund paid to client');
+        let refundTotal = refunds.reduce((s, e) => s + e.debit, 0);
+        let refundHtml = refunds.length ? sec('Refunds Paid to Client', '#B25E00') + refunds.map(e => line(esc(e.sub || 'Refund') + ' <span style="font-size:11px; color:#333;">' + formatDateDisplay(e.date) + '</span>', m(e.debit))).join('') + totRow('Total Refunded', m(refundTotal), '#B25E00') : '';
+        let ourHtml = S.ourScope.length ? sec('Spent From Your Advance (For Information)', '#333') + S.ourScope.map(e => line(esc(e.desc || '') + ' <span style="font-size:11px; color:#333;">' + formatDateDisplay(e.date) + '</span>', m(parseFloat(e.amount) || 0))).join('') : '';
+        let openHtml = S.opening ? `<div style="background:#EDEDF1; border-radius:6px; padding:10px 12px; margin-top:16px; font-size:12px;">Opening balance brought forward: <b>${m(Math.abs(S.opening))} ${S.opening > 0 ? 'due from you' : 'in your favour'}</b></div>` : '';
+
+        let bal = S.balance, due = bal > 0.005, credit = bal < -0.005;
+        let bg = due ? '#A32A2E' : credit ? '#1C7A3E' : '#2c3e50';
+        let head2 = due ? 'Total Due From Client' : credit ? 'Balance With KEN PROJECTS' : '✓ Settled';
+        let sub = due ? 'Rupees ' + numberToWords(Math.round(bal)) + ' Only' : credit ? 'Payable to client · Rupees ' + numberToWords(Math.round(-bal)) + ' Only' : 'Nothing due either way';
+        let banner = `<div class="pb-avoid" style="margin-top:22px; page-break-inside:avoid; border-radius:10px; padding:18px; text-align:center; background:${bg}; color:#FFFFFF;">
+            <div style="font-size:12px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase;">${head2}</div>
+            <div style="font-size:34px; font-weight:900; margin:6px 0;">${m(Math.abs(bal))}</div>
+            <div style="font-size:12px; font-weight:700;">${sub}</div></div>`;
+        let parts = [];
+        if (S.opening) parts.push(`${m(S.opening)} opening`);
+        parts.push(`${m(billed)} billed`);
+        if (behalfTotal) parts.push(`${m(behalfTotal)} paid on your behalf`);
+        if (refundTotal) parts.push(`${m(refundTotal)} refunded`);
+        let recon = parts.join(' + ') + (returned ? ` − ${m(returned)} returned` : '') + ` − ${m(received)} received = ${m(Math.abs(bal))}${bal < -0.005 ? ' payable to you' : ''}`;
+
+        return `<div style="width:${width || 794}px; box-sizing:border-box; padding:${width ? '0' : '36px 40px'}; background:#FFFFFF; color:#000; font-family:Lato, 'Segoe UI', system-ui, sans-serif;">
+            <div style="text-align:center;">
+                ${logoSrc ? `<img src="${logoSrc}" onerror="this.style.display='none'" style="max-height:62px; max-width:240px;">` : '<div style="font-size:22px; font-weight:900; color:#2c3e50;">KEN PROJECTS</div>'}
+                <div style="font-size:11.5px; color:#333; margin:8px 0 18px;">${opts && opts.project ? 'Project Statement' : 'Client Statement — ' + periodLabel} · As of ${asOf}</div>
             </div>
-            <div style="background:#EDEDF1; border-radius:8px; padding:10px 12px; margin:14px 0; font-size:13px; line-height:1.5;">
-                <b style="font-size:15px;">${esc(client)}</b>${reg ? ' <span style="color:#5F5D70;">(' + esc(reg.id) + ')</span>' : ''}<br>
-                <span style="color:#5F5D70;">${[phone ? 'Ph: ' + esc(phone) : '', loc ? esc(loc) : '', gst && gst !== 'URD' ? 'GSTIN: ' + esc(gst) : ''].filter(Boolean).join(' · ')}</span>
+            <div style="background:#EDEDF1; border-radius:8px; padding:12px 16px; font-size:15px; line-height:1.5;">
+                ${opts && opts.project ? '<b>Project:</b> ' + esc(opts.title) + '<div style="font-size:13px;"><b>Client:</b> ' + esc(client) + '</div>' : '<b>Client:</b> ' + esc(client) + (reg ? ' <span style="color:#333; font-size:12px;">(' + esc(reg.id) + ')</span>' : '')}
+                ${(phone || loc || (gst && gst !== 'URD')) ? '<div style="font-size:12px; color:#333;">' + [phone ? 'Ph: ' + esc(phone) : '', loc ? esc(loc) : '', gst && gst !== 'URD' ? 'GSTIN: ' + esc(gst) : ''].filter(Boolean).join(' · ') + '</div>' : ''}
             </div>
-            <table style="width:100%; border-collapse:collapse; margin-bottom:16px;"><tr>${tile('Opening', balTxt(S.opening), '#1C1C27')}${tile('Billed', stmtMoney(S.billed), '#0B5A94')}${tile('Received', stmtMoney(S.received), '#1C7A3E')}${tile('Balance', balTxt(S.balance), due ? '#A32A2E' : '#2c3e50')}</tr></table>
-            <table style="width:100%; border-collapse:collapse;"><thead>${colHead}</thead><tbody>${body}</tbody></table>
-            ${banner}
-            ${pendingHtml}
-            ${ourHtml}
-            <div style="margin-top:22px; font-size:10px; color:#5F5D70; line-height:1.5;">DR = amount you owe us. CR = credit in your favour. This is a computer-generated statement; please report any mismatch within 7 days.</div>
+            ${openHtml}${invHtml}${retHtml}${payHtml}${behalfHtml}${refundHtml}${ourHtml}${banner}
+            <div style="margin-top:14px; text-align:center; font-size:10.5px; color:#333; line-height:1.5;">${recon}<br>Internal statement — not a GST document. Please report any mismatch within 7 days.</div>
         </div>`;
     }
 
@@ -22545,7 +22731,7 @@
         let sel = new Set([...document.querySelectorAll('.stmtRowChk:checked')].map(cb => parseInt(cb.dataset.idx, 10)));
         return _stmtRows.filter((_, i) => sel.has(i));
     }
-    function stmtFileName() { return 'Statement-' + String(_stmtClient || 'client').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + todayISO() + '.pdf'; }
+    function stmtFileName() { return 'Statement-' + String((_stmtOpts && _stmtOpts.fileLabel) || _stmtClient || 'client').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + todayISO() + '.pdf'; }
 
     function stmtAction(kind) {
         if (!_stmtClient) return;
@@ -22557,23 +22743,31 @@
         let mm = 8, widthPx = Math.round((210 - 2 * mm) * 96 / 25.4);
         let wrap = document.createElement('div');
         wrap.style.cssText = 'position:fixed; left:0; top:0; z-index:-1; background:#FFFFFF;';
-        wrap.innerHTML = stmtBuildHtml(_stmtClient, _stmtPeriod, rows, _stmtOpening, widthPx);
+        wrap.innerHTML = stmtBuildHtml(_stmtClient, _stmtPeriod, rows, _stmtOpening, widthPx, _stmtOpts);
         document.body.appendChild(wrap);
         let filename = stmtFileName();
         let opt = { margin: [mm, mm, mm + 4, mm], filename, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.pb-avoid'] } };
         let done = () => { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); };
         setTimeout(() => {
             if (kind === 'share' && navigator.canShare) {
-                html2pdf().set(opt).from(wrap.firstElementChild).outputPdf('blob').then(blob => {
+                stmtPdfWorker(opt, wrap.firstElementChild).outputPdf('blob').then(blob => {
                     let file = new File([blob], filename, { type: 'application/pdf' });
                     done();
                     if (navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: 'Statement — ' + _stmtClient }).catch(() => {});
                     let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
                 }).catch(err => { done(); alert('Could not make the PDF: ' + err.message); });
             } else {
-                html2pdf().set(opt).from(wrap.firstElementChild).save().then(() => { done(); showToast('📥 Statement PDF saved', 'success'); }).catch(err => { done(); alert('Could not make the PDF: ' + err.message); });
+                stmtPdfWorker(opt, wrap.firstElementChild).save().then(() => { done(); showToast('📥 Statement PDF saved', 'success'); }).catch(err => { done(); alert('Could not make the PDF: ' + err.message); });
             }
         }, 150);
+    }
+    // vBeta80: adds "label · Page x of y" at the foot of every page (long statements run to several pages)
+    function stmtPdfWorker(opt, el) {
+        let label = (_stmtOpts && _stmtOpts.title) ? _stmtOpts.title : (_stmtClient || '');
+        return html2pdf().set(opt).from(el).toPdf().get('pdf').then(pdf => {
+            let n = pdf.internal.getNumberOfPages(), w = pdf.internal.pageSize.getWidth(), h = pdf.internal.pageSize.getHeight();
+            for (let i = 1; i <= n; i++) { pdf.setPage(i); pdf.setFontSize(8); pdf.setTextColor(60); pdf.text('KEN PROJECTS · ' + label + ' · Page ' + i + ' of ' + n, w / 2, h - 5, { align: 'center' }); }
+        });
     }
     function stmtPrint(rows) {
         // hidden iframe, not window.open: popup blockers kill the old approach on phones
@@ -22582,22 +22776,22 @@
         document.body.appendChild(fr);
         let doc = fr.contentWindow.document;
         doc.open();
-        doc.write('<html><head><title>' + esc(stmtFileName()) + '</title><style>@page{size:A4;margin:10mm;} body{margin:0;} tr{page-break-inside:avoid;} thead{display:table-header-group;}</style></head><body>' + stmtBuildHtml(_stmtClient, _stmtPeriod, rows, _stmtOpening, 700) + '</body></html>');
+        doc.write('<html><head><title>' + esc(stmtFileName()) + '</title><style>@page{size:A4;margin:10mm;} body{margin:0;} tr{page-break-inside:avoid;} thead{display:table-header-group;}</style></head><body>' + stmtBuildHtml(_stmtClient, _stmtPeriod, rows, _stmtOpening, 700, _stmtOpts) + '</body></html>');
         doc.close();
         setTimeout(() => { try { fr.contentWindow.focus(); fr.contentWindow.print(); } catch (e) { alert('Could not open the print dialog.'); } setTimeout(() => fr.remove(), 4000); }, 400);
     }
     function stmtWhatsApp(rows) {
-        let S = stmtCompute(_stmtClient, _stmtPeriod, rows, _stmtOpening);
+        let S = stmtCompute(_stmtClient, _stmtPeriod, rows, _stmtOpening, _stmtOpts);
         let reg = findClientByName(_stmtClient);
         let lastDoc = savedDocs.filter(d => d.clientName && d.clientName.trim().toLowerCase() === _stmtClient.trim().toLowerCase()).slice(-1)[0] || {};
         let digits = String((reg && reg.phone) || lastDoc.phone || '').replace(/\D/g, '');
         if (digits.length === 10) digits = '91' + digits;
-        let L = [`Dear ${_stmtClient},`, '', `Statement from *KEN TRADERS* as on ${formatDateDisplay(todayISO())}:`];
+        let L = [`Dear ${_stmtClient},`, '', `${_stmtOpts && _stmtOpts.title ? 'Project statement (' + _stmtOpts.title + ')' : 'Statement'} from *KEN TRADERS* as on ${formatDateDisplay(todayISO())}:`];
         if (S.balance > 0.5) {
             L.push(`*Amount due: ${stmtMoney(S.balance)}*`);
             S.pending.slice(0, 6).forEach(d => L.push(`• ${d.docNo} (${formatDateDisplay(d._cDate)}) — ${stmtMoney(d.balanceDue)}`));
             L.push('', 'Kindly arrange the payment. Thank you.');
-        } else L.push(S.balance < -0.5 ? `You have a credit balance of ${stmtMoney(S.balance)} with us.` : 'Your account is fully settled. Thank you!');
+        } else L.push(S.balance < -0.5 ? `*KEN PROJECTS holds a balance of ${stmtMoney(S.balance)} payable to you.*` : 'Your account is fully settled. Thank you!');
         L.push('', '📞 91597 66611');
         window.open((digits.length >= 11 ? `https://wa.me/${digits}` : 'https://wa.me/') + '?text=' + encodeURIComponent(L.join('\n')), '_blank');
     }
@@ -23251,8 +23445,20 @@
 
     function openMonthlySummary() {
         document.getElementById('summaryModal').style.display='flex';
+        document.getElementById('dsDate').value = todayISO();
+        setSummaryMode('monthly');
         populateSummaryFYDropdown();
         renderSummary();
+    }
+    // vBeta80: Summary has two tabs — Monthly (the old report) and Daily (the Daily Sales log + PDF).
+    function setSummaryMode(mode) {
+        let daily = mode === 'daily';
+        document.getElementById('summaryMonthlyPane').style.display = daily ? 'none' : '';
+        document.getElementById('summaryDailyPane').style.display = daily ? '' : 'none';
+        document.getElementById('tabSumMonthly').classList.toggle('active', !daily);
+        document.getElementById('tabSumDaily').classList.toggle('active', daily);
+        document.getElementById('btnSummaryCsv').style.display = daily ? 'none' : '';
+        if (daily) dsOpenPane();
     }
     function closeSummary() { document.getElementById('summaryModal').style.display='none'; }
 
@@ -25809,6 +26015,9 @@
     window.addEventListener('load', () => {
         if (/[?&]quick=/.test(location.search)) {
             let m = location.search.match(/[?&]quick=(\w+)/);
+            // vBeta80: ?quick=tap opens the tap-based Quick Sale page, ?quick=stock the Current Stock popup
+            if (m && /^tap$/i.test(m[1])) { setTimeout(openQuickTap, 1200); return; }
+            if (m && /^stock$/i.test(m[1])) { setTimeout(openCurrentStock, 1200); return; }
             if (m && /^(quo|quote)$/i.test(m[1])) _qs.type = 'QUO';
             setTimeout(openQuickSale, 1200);
         }
@@ -26728,17 +26937,376 @@
     function dsEntries(day) { return getDailySales().filter(e => e.date === day).sort((a, b) => String(a.ts || '').localeCompare(String(b.ts || ''))); }
     function dsFmt(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
 
-    function openDailySales() {
-        document.getElementById('dsDate').value = todayISO();
+    // ================================================================
+    // vBeta80: QUICK SALE (tap version). Seven buttons -> quantity + price popup -> running list.
+    // Saved as an internal "Quick Sale" record (kenQuickSales, cloud-synced like Daily Sales)
+    // that can be loaded into a Sales Invoice later. Never touches stock or the ledger by itself.
+    // Price presets are user-defined per button (kenQuickPresets).
+    // ================================================================
+    const QT_ITEMS = [
+        { key: 'b4', label: '4"', sub: 'AAC Block', name: 'AAC Block 4 Inch', unit: 'Nos', short: '4" block' },
+        { key: 'b6', label: '6"', sub: 'AAC Block', name: 'AAC Block 6 Inch', unit: 'Nos', short: '6" block' },
+        { key: 'b8', label: '8"', sub: 'AAC Block', name: 'AAC Block 8 Inch', unit: 'Nos', short: '8" block' },
+        { key: 'b9', label: '9"', sub: 'AAC Block', name: 'AAC Block 9 Inch', unit: 'Nos', short: '9" block' },
+        { key: 'm25', label: '25 kg', sub: 'Mortar bag', name: 'Jointing Mortar (25 Kg bag)', unit: 'Bags', short: '25 kg mortar' },
+        { key: 'm40', label: '40 kg', sub: 'Mortar bag', name: 'Jointing Mortar (40 Kg bag)', unit: 'Bags', short: '40 kg mortar' },
+        { key: 'tr', label: '🚚 Transport', sub: '', name: 'Transport', unit: 'Trip', short: '🚚 Transport', wide: true }
+    ];
+    let _qt = { lines: [], editKey: null, editId: null, tab: 'new', undoTimer: null };
+    let _qtInit = false;
+
+    function qtItem(key) { return QT_ITEMS.find(i => i.key === key); }
+    function qtMoney(n) { return '₹' + (Math.round((Number(n) || 0) * 100) / 100).toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
+    function qtNum(s) { let n = parseFloat(String(s).replace(/,/g, '')); return isFinite(n) ? n : 0; }
+    function getQuickSales() { try { return JSON.parse(localStorage.getItem('kenQuickSales') || '[]'); } catch (e) { return []; } }
+    function saveQuickSales(list) {
+        try { localStorage.setItem('kenQuickSales', JSON.stringify(list)); } catch (e) { alert('Storage full! Export data first.'); return false; }
+        queueConfigCollectionSync('quickSales', list);
+        return true;
+    }
+    function getQtPresets() { try { return JSON.parse(localStorage.getItem('kenQuickPresets') || '{}') || {}; } catch (e) { return {}; } }
+    function saveQtPresets(p) {
+        try { localStorage.setItem('kenQuickPresets', JSON.stringify(p)); } catch (e) {}
+        queueConfigCollectionSync('quickPresets', p);
+    }
+    function qtListRate(item) {
+        try { let r = getDynamicBlockRate(item.name); return r > 0 ? Math.round(r * 100) / 100 : 0; } catch (e) { return 0; }
+    }
+
+    function qtRefreshBadge() {
+        let n = getQuickSales().filter(r => r.status !== 'converted').length;
+        let b = document.getElementById('qtHomeBadge'); if (b) b.innerText = n ? ' · ' + n + ' saved' : '';
+        let t = document.getElementById('qtTabSaved'); if (t) t.innerText = 'Saved (' + n + ')';
+    }
+
+    function openQuickTap() {
+        if (!_qtInit) {
+            _qtInit = true;
+            qtBindPress(document.getElementById('qtBtns'));
+            qtBindPress(document.getElementById('qtList'));
+        }
+        document.getElementById('qtNameList').innerHTML = getClients().map(c => `<option value="${esc(c.name)}"></option>`).join('');
+        document.getElementById('qtModal').style.display = 'flex';
+        qtSwitchTab(_qt.tab === 'saved' ? 'saved' : 'new');
+        qtRender();
+        if (!document.getElementById('qtPhone').value) qtPasteFromClipboard(true);
+    }
+    function closeQuickTap() { document.getElementById('qtModal').style.display = 'none'; }
+    function qtSwitchTab(t) {
+        _qt.tab = t;
+        document.getElementById('qtNewPane').style.display = t === 'new' ? '' : 'none';
+        document.getElementById('qtSavedPane').style.display = t === 'saved' ? '' : 'none';
+        document.getElementById('qtTabNew').classList.toggle('on', t === 'new');
+        document.getElementById('qtTabSaved').classList.toggle('on', t === 'saved');
+        if (t === 'saved') qtRenderSaved();
+        qtRefreshBadge();
+    }
+
+    // tap = add/change, hold (0.6 s) = remove — works for the 7 buttons and for the list rows
+    function qtBindPress(el) {
+        let timer = null, fired = false, sx = 0, sy = 0;
+        el.addEventListener('pointerdown', e => {
+            let t = e.target.closest('[data-key]'); if (!t) return;
+            fired = false; sx = e.clientX; sy = e.clientY; clearTimeout(timer);
+            timer = setTimeout(() => { if (_qt.lines.some(l => l.key === t.dataset.key)) { fired = true; qtRemove(t.dataset.key, true); } }, 600);
+        });
+        let cancel = () => clearTimeout(timer);
+        el.addEventListener('pointerup', cancel); el.addEventListener('pointercancel', cancel); el.addEventListener('pointerleave', cancel);
+        el.addEventListener('pointermove', e => { if (Math.abs(e.clientX - sx) > 10 || Math.abs(e.clientY - sy) > 10) cancel(); });
+        el.addEventListener('contextmenu', e => e.preventDefault());
+        el.addEventListener('click', e => {
+            let t = e.target.closest('[data-key]'); if (!t) return;
+            if (fired) { fired = false; return; }
+            qtOpenEntry(t.dataset.key);
+        });
+    }
+
+    function qtTotal() { return _qt.lines.reduce((s, l) => s + l.qty * l.price, 0); }
+    function qtRender() {
+        document.getElementById('qtBtns').innerHTML = QT_ITEMS.map(it => {
+            let l = _qt.lines.find(x => x.key === it.key);
+            return `<button class="qt-btn${l ? ' sel' : ''}${it.wide ? ' wide' : ''}" data-key="${it.key}">${it.label}${it.sub ? '<small>' + it.sub + '</small>' : ''}${l ? '<small>' + l.qty + ' × ' + qtMoney(l.price) + '</small>' : ''}</button>`;
+        }).join('');
+        let list = document.getElementById('qtList');
+        list.innerHTML = _qt.lines.length ? _qt.lines.map(l => {
+            let it = qtItem(l.key);
+            return `<div class="qt-row" data-key="${l.key}"><div><div style="font-size:15px; font-weight:800; color:#000;">${esc(it.short)}</div><div style="font-size:12px; color:#333;">${l.qty} ${it.unit} × ${qtMoney(l.price)}</div></div><div style="font-size:17px; font-weight:900; color:#000;">${qtMoney(l.qty * l.price)}</div></div>`;
+        }).join('') : '<div style="color:#333; font-size:13px; padding:12px 4px;">Nothing selected yet. Tap a button above.</div>';
+        document.getElementById('qtTotalVal').innerText = qtMoney(qtTotal());
+        document.getElementById('qtSaveBtn').innerText = _qt.editId ? '💾 Update Quick Sale' : '💾 Save Quick Sale';
+        qtRefreshBadge();
+    }
+
+    // ---- quantity + price popup ----
+    function qtPresetList(item) {
+        let p = getQtPresets()[item.key];
+        return Array.isArray(p) ? p : [];
+    }
+    function qtOpenEntry(key) {
+        let it = qtItem(key), l = _qt.lines.find(x => x.key === key);
+        _qt.editKey = key;
+        document.getElementById('qtEntryTitle').innerText = it.sub ? it.label + ' ' + it.sub : it.label;
+        document.getElementById('qtQtyLbl').innerText = 'Quantity (' + it.unit + ')';
+        document.getElementById('qtQty').value = l ? l.qty : (key === 'tr' ? 1 : '');
+        document.getElementById('qtPrice').value = l ? l.price : '';
+        document.getElementById('qtOkBtn').innerText = l ? 'Update' : 'Add';
+        document.getElementById('qtRemoveBtn').style.display = l ? '' : 'none';
+        document.getElementById('qtPresetEdit').style.display = 'none';
+        document.getElementById('qtPresetIn').value = qtPresetList(it).join(', ');
+        document.getElementById('qtEntryErr').style.display = 'none';
+        qtRenderChips(); qtEntryChanged();
+        document.getElementById('qtEntry').style.display = 'flex';
+        setTimeout(() => { let f = document.getElementById(key === 'tr' && !l ? 'qtPrice' : 'qtQty'); f.focus(); f.select(); }, 60);
+    }
+    function qtCloseEntry() { document.getElementById('qtEntry').style.display = 'none'; _qt.editKey = null; }
+    function qtRenderChips() {
+        let it = qtItem(_qt.editKey), cur = qtNum(document.getElementById('qtPrice').value);
+        let chips = qtPresetList(it).map(v => ({ v, tag: '' }));
+        document.getElementById('qtChips').innerHTML = chips.length ? chips.map(c => `<button class="qt-chip${cur === c.v ? ' on' : ''}" onclick="qtPickPreset(${c.v})">${c.v}</button>`).join('') : '<span style="font-size:12px; color:#333;">No presets yet. Tap "Edit price presets" to add some.</span>';
+    }
+    function qtPickPreset(v) { document.getElementById('qtPrice').value = v; qtEntryChanged(); }
+    function qtEntryChanged() {
+        let q = qtNum(document.getElementById('qtQty').value), p = qtNum(document.getElementById('qtPrice').value);
+        document.getElementById('qtEntryTotal').innerText = q > 0 && p > 0 ? q + ' × ' + qtMoney(p) + ' = ' + qtMoney(q * p) : '';
+        document.getElementById('qtEntryErr').style.display = 'none';
+        if (_qt.editKey) qtRenderChips();
+    }
+    function qtTogglePresetEdit() {
+        let b = document.getElementById('qtPresetEdit'); b.style.display = b.style.display === 'none' ? '' : 'none';
+        if (b.style.display !== 'none') document.getElementById('qtPresetIn').focus();
+    }
+    // "66, 70-73, 58-60" -> [58, 59, 60, 66, 70, 71, 72, 73]. A range of whole numbers is expanded
+    // one by one (at most 200 steps); anything else in a range keeps just its two ends.
+    function qtParsePresets(text) {
+        let t = String(text || '').replace(/\s*(?:-|–|—|\bto\b)\s*/gi, '-');
+        let out = new Set();
+        t.split(/[\s,;]+/).forEach(tok => {
+            if (!tok) return;
+            let m = tok.match(/^(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)$/);
+            if (m) {
+                let a = parseFloat(m[1]), b = parseFloat(m[2]);
+                if (a > b) [a, b] = [b, a];
+                if (Number.isInteger(a) && Number.isInteger(b) && b - a <= 200) { for (let v = a; v <= b; v++) if (v > 0) out.add(v); }
+                else { if (a > 0) out.add(a); if (b > 0) out.add(b); }
+            } else { let n = parseFloat(tok); if (isFinite(n) && n > 0) out.add(n); }
+        });
+        return [...out].sort((a, b) => a - b);
+    }
+    function qtSavePresets() {
+        let it = qtItem(_qt.editKey);
+        let vals = qtParsePresets(document.getElementById('qtPresetIn').value);
+        let all = getQtPresets(); all[it.key] = vals; saveQtPresets(all);
+        document.getElementById('qtPresetIn').value = vals.join(', ');
+        document.getElementById('qtPresetEdit').style.display = 'none';
+        qtRenderChips(); showToast('Presets saved for ' + it.short + ': ' + (vals.join(', ') || 'none'), 'success');
+    }
+    function qtConfirmEntry() {
+        let key = _qt.editKey; if (!key) return;
+        let q = qtNum(document.getElementById('qtQty').value), p = qtNum(document.getElementById('qtPrice').value);
+        let err = document.getElementById('qtEntryErr');
+        if (q <= 0) { err.innerText = 'Enter a quantity.'; err.style.display = 'block'; return; }
+        if (p <= 0) { err.innerText = 'Enter a price.'; err.style.display = 'block'; return; }
+        let l = _qt.lines.find(x => x.key === key);
+        if (l) { l.qty = q; l.price = p; } else _qt.lines.push({ key, qty: q, price: p });
+        _qt.lines.sort((a, b) => QT_ITEMS.findIndex(i => i.key === a.key) - QT_ITEMS.findIndex(i => i.key === b.key));
+        qtCloseEntry(); qtRender();
+    }
+    function qtRemoveFromEntry() { let k = _qt.editKey; qtCloseEntry(); qtRemove(k, false); }
+    function qtRemove(key, withUndo) {
+        let i = _qt.lines.findIndex(l => l.key === key); if (i < 0) return;
+        let gone = _qt.lines.splice(i, 1)[0];
+        qtRender();
+        if (navigator.vibrate) { try { navigator.vibrate(30); } catch (e) {} }
+        let u = document.getElementById('qtUndo');
+        u.innerHTML = '<span>Removed ' + esc(qtItem(key).short) + '</span><button style="width:auto; margin:0; padding:6px 14px; background:#FFFFFF !important; color:#000 !important; border-radius:6px; font-weight:800;" onclick="qtUndoRemove()">Undo</button>';
+        u.style.display = 'flex'; u._gone = gone;
+        clearTimeout(_qt.undoTimer); _qt.undoTimer = setTimeout(() => { u.style.display = 'none'; }, 6000);
+    }
+    function qtUndoRemove() {
+        let u = document.getElementById('qtUndo'); if (!u._gone) return;
+        _qt.lines.push(u._gone); u._gone = null; u.style.display = 'none';
+        _qt.lines.sort((a, b) => QT_ITEMS.findIndex(i => i.key === a.key) - QT_ITEMS.findIndex(i => i.key === b.key));
+        qtRender();
+    }
+    function qtClear() {
+        if (_qt.lines.length && !confirm('Clear everything on this screen?')) return;
+        _qt.lines = []; _qt.editId = null;
+        ['qtName', 'qtPhone'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('qtCustHint').style.display = 'none';
+        qtRender();
+    }
+
+    // ---- customer name + phone ----
+    function qtCleanPhone(t) {
+        let d = String(t || '').replace(/\D/g, '');
+        if (d.length >= 12 && d.startsWith('91')) d = d.slice(2);
+        if (d.length === 11 && d[0] === '0') d = d.slice(1);
+        return d;
+    }
+    async function qtPasteFromClipboard(auto) {
+        try {
+            if (!navigator.clipboard || !navigator.clipboard.readText) throw new Error('no clipboard');
+            let d = qtCleanPhone(await navigator.clipboard.readText());
+            if (/^[6-9]\d{9}$/.test(d)) {
+                document.getElementById('qtPhone').value = d; qtPhoneChanged();
+                showToast('📋 Phone number pasted', 'info'); return true;
+            }
+            if (!auto) showToast('The clipboard has no 10-digit mobile number.', 'info');
+        } catch (e) {
+            if (!auto) { document.getElementById('qtPhone').focus(); showToast('Paste is blocked here. Long-press the phone box and tap Paste.', 'info'); }
+        }
+        return false;
+    }
+    function qtFindClient(name, phone) {
+        let cs = getClients();
+        if (phone && phone.length === 10) { let c = cs.find(x => qtCleanPhone(x.phone) === phone); if (c) return c; }
+        if (name) { let n = name.trim().toLowerCase(); return cs.find(x => (x.name || '').trim().toLowerCase() === n) || null; }
+        return null;
+    }
+    function qtPhoneChanged() {
+        let ph = qtCleanPhone(document.getElementById('qtPhone').value), nm = document.getElementById('qtName');
+        let c = ph.length === 10 ? qtFindClient('', ph) : null, h = document.getElementById('qtCustHint');
+        if (c) { if (!nm.value.trim()) nm.value = c.name; h.innerText = '✓ Existing client: ' + c.name; h.style.display = 'block'; } else h.style.display = 'none';
+    }
+    function qtNameChanged() {
+        let nm = document.getElementById('qtName').value.trim(), ph = document.getElementById('qtPhone');
+        let c = nm ? qtFindClient(nm, '') : null, h = document.getElementById('qtCustHint');
+        if (c) { if (!ph.value.trim() && c.phone) ph.value = qtCleanPhone(c.phone); h.innerText = '✓ Existing client: ' + c.name; h.style.display = 'block'; } else h.style.display = 'none';
+    }
+
+    // ---- save / saved list ----
+    function qtSave() {
+        if (!_qt.lines.length) { showToast('Pick at least one item first.', 'error'); return; }
+        let name = document.getElementById('qtName').value.trim(), phone = qtCleanPhone(document.getElementById('qtPhone').value);
+        if (phone && phone.length !== 10 && !confirm('The phone number is not 10 digits. Save anyway?')) return;
+        let list = getQuickSales();
+        let rec = {
+            id: _qt.editId || ('QS' + Date.now()), ts: new Date().toISOString(), date: todayISO(), customer: name, phone, status: 'pending',
+            lines: _qt.lines.map(l => ({ key: l.key, name: qtItem(l.key).name, unit: qtItem(l.key).unit, qty: l.qty, price: l.price })),
+            total: Math.round(qtTotal() * 100) / 100
+        };
+        let i = list.findIndex(r => r.id === rec.id);
+        if (i >= 0) { rec.ts = list[i].ts; rec.date = list[i].date; list[i] = rec; } else list.push(rec);
+        if (!saveQuickSales(list)) return;
+        _qt.lines = []; _qt.editId = null;
+        ['qtName', 'qtPhone'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('qtCustHint').style.display = 'none';
+        qtRender();
+        showToast('✅ Quick sale saved · ' + qtMoney(rec.total), 'success');
+    }
+    function qtLineText(r) { return r.lines.map(l => { let it = qtItem(l.key); return (it ? it.short : l.name) + ' ' + l.qty + ' × ' + qtMoney(l.price); }).join(' · '); }
+    function qtRenderSaved() {
+        let all = getQuickSales().sort((a, b) => String(b.ts).localeCompare(String(a.ts)));
+        let pend = all.filter(r => r.status !== 'converted');
+        let pane = document.getElementById('qtSavedPane');
+        if (!all.length) { pane.innerHTML = '<p style="color:#333; text-align:center; padding:20px; font-size:13px;">No saved quick sales yet.</p>'; return; }
+        pane.innerHTML = `<div style="display:flex; justify-content:space-between; font-size:13px; font-weight:800; color:#000; padding:4px 2px 10px;"><span>${pend.length} waiting</span><span>${qtMoney(pend.reduce((s, r) => s + r.total, 0))}</span></div>` +
+            all.map(r => {
+                let done = r.status === 'converted';
+                return `<div style="border:1.5px solid ${done ? '#B8B8C4' : '#2c3e50'}; border-radius:10px; padding:10px 12px; margin-bottom:10px; ${done ? 'opacity:.6;' : ''}">
+                    <div style="display:flex; justify-content:space-between; gap:8px;"><div><div style="font-size:15px; font-weight:800; color:#000;">${esc(r.customer || 'Walk-in')}</div><div style="font-size:12px; color:#333;">${formatDateDisplay(r.date)}${r.phone ? ' · ' + esc(r.phone) : ''}${done ? ' · ✓ converted' : ''}</div></div><div style="font-size:18px; font-weight:900; color:#000;">${qtMoney(r.total)}</div></div>
+                    <div style="font-size:12px; color:#111; margin:6px 0 8px;">${esc(qtLineText(r))}</div>
+                    <div style="display:flex; gap:6px;">
+                        <button onclick="qtConvert('${r.id}')" style="flex:3; margin:0; padding:10px; background:#1C7A3E !important; color:#FFFFFF !important; border-radius:8px; font-size:13px; font-weight:800;">${done ? 'Load again' : 'Convert to Sales Invoice'}</button>
+                        ${done ? '' : `<button onclick="qtEditSaved('${r.id}')" style="flex:1; margin:0; padding:10px; background:#EDEDF1 !important; color:#000 !important; border-radius:8px; font-size:13px; font-weight:700;">Edit</button>`}
+                        <button onclick="qtDeleteSaved('${r.id}')" style="flex:1; margin:0; padding:10px; background:#EDEDF1 !important; color:#A32A2E !important; border-radius:8px; font-size:13px; font-weight:700;">🗑</button>
+                    </div></div>`;
+            }).join('');
+    }
+    function qtEditSaved(id) {
+        let r = getQuickSales().find(x => x.id === id); if (!r) return;
+        if (_qt.lines.length && !confirm('Replace what is on the New sale screen?')) return;
+        _qt.lines = r.lines.map(l => ({ key: l.key, qty: l.qty, price: l.price })); _qt.editId = r.id;
+        document.getElementById('qtName').value = r.customer || ''; document.getElementById('qtPhone').value = r.phone || '';
+        qtSwitchTab('new'); qtRender();
+    }
+    function qtDeleteSaved(id) {
+        if (!confirm('Delete this saved quick sale?')) return;
+        guardRunDestructive(() => saveQuickSales(getQuickSales().filter(r => r.id !== id)));
+        qtRenderSaved(); qtRefreshBadge();
+    }
+    function qtConvert(id) {
+        let list = getQuickSales(), r = list.find(x => x.id === id); if (!r) return;
+        if (cart.length > 0 && !confirm('Replace the document currently open with this Quick Sale?')) return;
+        hasUnsavedChanges = false; cart = [];
+        createNewDoc();
+        document.getElementById('docType').value = 'SAL';
+        switchAppMode();
+        let c = qtFindClient(r.customer, r.phone);
+        if (c) {
+            document.getElementById('clientNameIn').value = c.name;
+            if (c.phone) document.getElementById('phoneIn').value = c.phone;
+            if (c.gstin) document.getElementById('gstinIn').value = c.gstin;
+            if (c.location) document.getElementById('locIn').value = c.location;
+        } else if (r.customer) {
+            document.getElementById('clientNameIn').value = r.customer;
+            if (r.phone) document.getElementById('phoneIn').value = r.phone;
+        } else {
+            document.getElementById('clientNameIn').value = WALKIN_LABEL;
+            handleClientShortcut();
+            if (r.phone) document.getElementById('phoneIn').value = r.phone;
+        }
+        r.lines.forEach(l => {
+            let isBlock = getBlockSize(l.name) > 0, isMortar = /mortar/i.test(l.name);
+            let cfg = (pricingConfig.itemDefaults || {})[l.name] || (pricingConfig.customItems || []).find(x => x.name === l.name);
+            let hsn = cfg ? (cfg.hsn || '9965') : (isBlock ? '6815' : isMortar ? '3824' : '9965');
+            let g = cfg ? (cfg.gst || 18) : (isBlock ? 12 : 18);
+            cart.push({ p: l.name, hsn, q: l.qty, r: l.price, g, rawQ: String(l.qty), unit: l.unit || 'Nos', notes: '',
+                defaultSortIndex: 999, isManuallyPriced: true, tierOverride: 'DEFAULT', deliveryOverride: 'DEFAULT' });
+        });
+        try { executeCartDefaultSort(); } catch (e) {}
+        updateCartPricing(); updateInfo(); markDirty();
+        r.status = 'converted'; r.convertedAt = new Date().toISOString(); saveQuickSales(list);
+        closeQuickTap();
+        showToast('Loaded as a Sales Invoice. Check it, then Save Doc.', 'info');
+    }
+    window.addEventListener('load', () => setTimeout(qtRefreshBadge, 1500));
+
+    // vBeta80: CURRENT STOCK popup (home page button). One row per tracked item — each block
+    // size/brand and the jointing mortar — using the same live quantity the Stock grid shows
+    // (what is left in the stock batches, all locations added together).
+    function openCurrentStock() {
+        let names = getAllTrackedItemNames();
+        let order = n => { let i = STOCK_SIZE_GROUP_ORDER.indexOf(getStockSizeGroupLabel(n)); return i === -1 ? 99 : i; };
+        names.sort((a, b) => order(a) - order(b) || (getBlockBrand(a) ? 1 : 0) - (getBlockBrand(b) ? 1 : 0) || a.localeCompare(b));
+        let items = getStockItems();
+        let body = document.getElementById('currentStockBody');
+        if (!names.length) {
+            body.innerHTML = '<p style="color:#333; padding:14px; text-align:center; font-size:13px;">No stock recorded yet. Add a batch in the Stock page to get started.</p>';
+        } else {
+            let totalBlocks = 0;
+            body.innerHTML = names.map(n => {
+                let qty = getStockQty(n), isMortar = n.toLowerCase().includes('mortar'), size = getBlockSize(n);
+                let it = items.find(x => x.name === n), threshold = it && it.lowStockThreshold != null ? it.lowStockThreshold : 50;
+                if (size > 0) totalBlocks += qty;
+                let color = qty <= 0 ? '#A32A2E' : (qty < threshold ? '#B25E00' : '#1C7A3E');
+                let label = size > 0 ? size + '" AAC Block' : (isMortar ? 'Jointing Mortar' : n);
+                let brand = isMortar ? null : getBlockBrand(n);
+                let locs = [...new Set(getStockBatches().filter(b => b.itemName === n).map(b => b.location))].map(l => [l, getStockQty(n, l)]).filter(x => x[1] !== 0);
+                let split = locs.length > 1 ? '<div style="font-size:11px; color:#333; margin-top:2px;">' + locs.map(x => esc(x[0]) + ' ' + x[1]).join(' · ') + '</div>' : '';
+                let flag = qty <= 0 ? 'Out of stock' : (qty < threshold ? 'Low' : '');
+                return `<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 4px; border-bottom:1px solid #E1E1E6;">
+                    <div><div style="font-size:15px; font-weight:700; color:#000;">${esc(label)}${brand ? ' <span style="font-size:12px; font-weight:700; background:#EDEDF1; border-radius:6px; padding:2px 7px;">' + esc(brand) + '</span>' : ''}</div>${split}${flag ? '<div style="font-size:11px; font-weight:700; color:' + color + ';">' + flag + '</div>' : ''}</div>
+                    <div style="text-align:right; white-space:nowrap;"><span style="font-size:26px; font-weight:900; color:${color};">${qty.toLocaleString('en-IN')}</span> <span style="font-size:12px; color:#333;">${isMortar ? 'bags' : 'Nos'}</span></div>
+                </div>`;
+            }).join('') + (totalBlocks ? `<div style="display:flex; justify-content:space-between; padding:12px 4px; font-weight:700; font-size:14px;"><span>Total blocks</span><span>${totalBlocks.toLocaleString('en-IN')} Nos</span></div>` : '');
+        }
+        document.getElementById('currentStockAsOf').innerText = 'As of ' + formatDateDisplay(todayISO()) + ' · ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('currentStockModal').style.display = 'flex';
+    }
+    function closeCurrentStock() { document.getElementById('currentStockModal').style.display = 'none'; }
+
+    // vBeta80: Daily Sales now lives in the Summary page's Daily tab (the old standalone page is gone).
+    function dsOpenPane() {
+        if (!document.getElementById('dsDate').value) document.getElementById('dsDate').value = todayISO();
         let names = [];
         [4, 6, 8, 9].forEach(sz => { (pricingConfig.brands || []).forEach(b => names.push(qsBlockName(sz, b))); names.push(qsBlockName(sz, null)); });
         names = names.concat(Object.keys(pricingConfig.itemDefaults || {}), (pricingConfig.customItems || []).map(c => c.name));
         document.getElementById('dsItemList').innerHTML = [...new Set(names)].map(n => `<option value="${esc(n)}"></option>`).join('');
-        document.getElementById('dailySalesModal').style.display = 'flex';
-        resetModalView('dailySalesModal');
         dsRender();
     }
-    function closeDailySales() { document.getElementById('dailySalesModal').style.display = 'none'; }
+    function openDailySales() { openMonthlySummary(); setSummaryMode('daily'); }
+    function closeDailySales() { closeSummary(); }
     function dsShiftDay(delta) {
         let p = parseLocalDate(dsDay());
         p.setDate(p.getDate() + delta);
@@ -27322,6 +27890,47 @@
         if (!project.siteId) return null;
         let site = getSites().find(s => s.id === project.siteId);
         return site ? site.name : null;
+    }
+
+    // vBeta80: PROJECT STATEMENT — the same statement as a client's, for one project.
+    // Documents are matched exactly as getProjectFinancials does (delivery site or manually
+    // linked). Money fronted for the customer, reimbursements and return refunds come from
+    // the Cash Book entries tagged to the project. Runs to as many pages as it needs.
+    function getProjectMatchingDocs(project) {
+        let siteName = getProjectSiteNameForMatching(project);
+        let linkedIds = new Set(project.linkedDocIds || []);
+        let siteMatched = siteName ? savedDocs.filter(d => !d.docNo.includes('VOID') && (d.deliverySite || '').toLowerCase().includes(siteName.toLowerCase())) : [];
+        let manual = savedDocs.filter(d => linkedIds.has(d.id) && !d.docNo.includes('VOID'));
+        return [...new Map([...siteMatched, ...manual].map(d => [d.id, d])).values()];
+    }
+    function openProjectStatement(projectId) {
+        let project = getProjectsFlat().find(p => String(p.id) === String(projectId || _pdProjectId));
+        if (!project) return;
+        let docs = getProjectMatchingDocs(project).filter(d => ['INV', 'SAL', 'ADV', 'RCP', 'CRN'].includes(d.type));
+        let payDocNos = new Set(docs.filter(d => ['INV', 'SAL'].includes(d.type)).map(d => d.docNo));
+        let cash = getCashEntries().filter(e => String(e.projectId) === String(project.id));
+        let rows = docs.map(d => ({ ...d, _isCashPayment: false }));
+        // customer payments recorded in the Cash Book against this project's invoices
+        getCashEntries().filter(e => e.direction === 'IN' && e.linkedDoc && payDocNos.has(e.linkedDoc) && !e.linkedExpenseId)
+            .forEach(e => rows.push({ _isCashPayment: true, id: e.id, date: e.date, docNo: e.linkedDoc, amount: e.amount, party: e.party }));
+        // reimbursements of money we fronted for the customer
+        cash.filter(e => e.direction === 'IN' && e.linkedExpenseId)
+            .forEach(e => rows.push({ _isCashPayment: true, id: e.id, date: e.date, docNo: '', amount: e.amount, party: 'Reimbursement' }));
+        rows.sort((a, b) => parseLocalDate(a.date) - parseLocalDate(b.date));
+        let behalf = cash.filter(e => e.direction === 'OUT' && e.scope === 'customer').map(e => ({ date: e.date, sub: e.party || e.category || '', debit: e.amount || 0 }));
+        let refunds = cash.filter(e => e.direction === 'OUT' && e.category === 'Sales Return Refund').map(e => ({ date: e.date, sub: e.party || 'Sales return refund', debit: e.amount || 0 }));
+        if (!rows.length && !behalf.length && !refunds.length) { alert('No invoices, payments or customer expenses found for this project yet.'); return; }
+        let title = project.name + ' (' + project.id + ')';
+        _stmtClient = project.clientName || project.name; _stmtPeriod = 'ALL'; _stmtOpening = 0; _stmtRows = rows;
+        _stmtOpts = { project: true, title, behalf, refunds, fileLabel: project.name };
+        document.getElementById('statementPickerClientName').innerText = title;
+        document.getElementById('stmtPeriodSelect').style.display = 'none';
+        document.getElementById('statementPickerList').innerHTML = rows.map((d, i) => {
+            let chip = d._isCashPayment ? '<span style="background:#1C7A3E;color:#FFFFFF;padding:1px 6px;border-radius:8px;font-size:10px;">PAYMENT</span>' : `<span style="background:${typeColor(d.type)};color:#FFFFFF;padding:1px 6px;border-radius:8px;font-size:10px;">${esc(d.type)}</span>`;
+            let lbl = d._isCashPayment ? (d.docNo ? 'vs ' + esc(d.docNo) : esc(d.party || '')) : '<b>' + esc(d.docNo) + '</b>';
+            return `<label style="display:flex; align-items:center; gap:8px; padding:8px 10px; border-bottom:1px solid #EDEDF1; cursor:pointer; font-size:12px; color:#1C1C27;"><input type="checkbox" class="stmtRowChk" data-idx="${i}" checked style="margin:0;">${chip}<span>${formatDateDisplay(d.date)} — ${lbl}</span><span style="margin-left:auto; font-weight:bold;">₹${((d._isCashPayment ? d.amount : d.total) || 0).toLocaleString('en-IN')}</span></label>`;
+        }).join('');
+        document.getElementById('statementPickerModal').style.display = 'flex';
     }
 
     function openProjectDetail(projectId) {

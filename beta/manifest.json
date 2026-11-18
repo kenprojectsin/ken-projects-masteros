@@ -36,10 +36,10 @@
   "lang": "en-IN",
   "shortcuts": [
     {
-      "name": "Quick Sale (voice)",
+      "name": "Quick Sale",
       "short_name": "Quick Sale",
-      "description": "Say a sale and review the draft",
-      "url": "./index.html?quick=sale",
+      "description": "Open the Quick Sale page",
+      "url": "./index.html?quick=tap",
       "icons": [
         {
           "src": "./icons/icon-192.png",
@@ -49,10 +49,10 @@
       ]
     },
     {
-      "name": "Quick Quote (voice)",
-      "short_name": "Quick Quote",
-      "description": "Say a quotation and review the draft",
-      "url": "./index.html?quick=quote",
+      "name": "Current Stock",
+      "short_name": "Stock",
+      "description": "See current stock",
+      "url": "./index.html?quick=stock",
       "icons": [
         {
           "src": "./icons/icon-192.png",
